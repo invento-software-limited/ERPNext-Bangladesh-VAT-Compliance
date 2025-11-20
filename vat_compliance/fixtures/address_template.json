@@ -1,0 +1,11 @@
+[
+ {
+  "country": "Bangladesh",
+  "docstatus": 0,
+  "doctype": "Address Template",
+  "is_default": 1,
+  "modified": "2025-11-20 11:01:07.157833",
+  "name": "Bangladesh",
+  "template": "{{ address_line1 }}, {% if address_line2 %}{{ address_line2 }}, {% endif -%}{{ city }}, {% if state %}{{ state }}, {% endif -%} {% if pincode %}{{ pincode }}, {% endif -%} {{ country }}\n\n{% if phone %}{{ _(\"Phone\") }}: {{ phone }},{% endif -%}\n{% if fax %}{{ _(\"Fax\") }}: {{ fax }},{% endif -%}\n{% if email_id %}{{ _(\"Email\") }}: {{ email_id }},{% endif -%}\n"
+ }
+]
