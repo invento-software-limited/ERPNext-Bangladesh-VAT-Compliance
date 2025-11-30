@@ -55,6 +55,18 @@ frappe.query_reports["Sales VAT Management"] = {
 			"options": "Company",
 			"default": frappe.defaults.get_user_default("Company"),
 			"read_only": 1
+		},
+		{
+			"fieldname": "sales_invoice",
+			"label": "Sales Invoice",
+			"fieldtype": "Link",
+			"options": "Sales Invoice"
+		},
+		{
+			"fieldname": "payment_entry",
+			"label": "Payment Entry",
+			"fieldtype": "Link",
+			"options": "Payment Entry"
 		}
 	],
 	get_datatable_options(options) {

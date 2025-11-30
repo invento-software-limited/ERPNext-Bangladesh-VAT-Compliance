@@ -22,6 +22,39 @@ frappe.query_reports["Mushak 6_3"] = {
 			options: 'Company',
 			default: frappe.defaults.get_user_default('Company'),
 			read_only: 1
+		},
+		{
+			fieldname: 'customer',
+			label: 'Customer',
+			fieldtype: 'Link',
+			options: 'Customer'
+		},
+		{
+			fieldname: 'sales_invoice',
+			label: 'Sales Invoice',
+			fieldtype: 'Link',
+			options: 'Sales Invoice'
+		},
+		{
+			fieldname: 'status',
+			label: 'Status',
+			fieldtype: 'Select',
+			options: [
+				'',
+				'Draft',
+				'Return',
+				'Credit Note Issued',
+				'Submitted',
+				'Paid',
+				'Partly Paid',
+				'Unpaid',
+				'Unpaid and Discounted',
+				'Partly Paid and Discounted',
+				'Overdue and Discounted',
+				'Overdue',
+				'Cancelled',
+				'Internal Transfer'
+			].join('\n')
 		}
 	],
 	get_datatable_options(options) {

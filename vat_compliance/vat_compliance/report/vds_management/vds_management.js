@@ -30,8 +30,8 @@ frappe.query_reports["VDS Management"] = {
 			"options": "\nDNGT\nDDGT",
 		},
 		{
-			"fieldname": "vendor",
-			"label": "Vendor",
+			"fieldname": "supplier",
+			"label": "Supplier",
 			"fieldtype": "Link",
 			"options": "Supplier"
 		},

@@ -1,0 +1,38 @@
+{
+ "allow_roles": [
+  {
+   "role": "Accounts Manager"
+  },
+  {
+   "role": "Accounts User"
+  },
+  {
+   "role": "System Manager"
+  }
+ ],
+ "creation": "2025-11-30 15:18:05.764459",
+ "docstatus": 0,
+ "doctype": "Module Onboarding",
+ "documentation_url": "/document",
+ "idx": 0,
+ "is_complete": 0,
+ "modified": "2025-11-30 15:37:11.591735",
+ "modified_by": "Administrator",
+ "module": "Vat Compliance",
+ "name": "Get Started with Bangladesh VAT Compliance",
+ "owner": "Administrator",
+ "steps": [
+  {
+   "step": "Setup Item Tax Template"
+  },
+  {
+   "step": "Create an Item"
+  },
+  {
+   "step": "Configure Item Tax Template In Item"
+  }
+ ],
+ "subtitle": "Follow the guided setup to enable automated VAT Reports.",
+ "success_message": "Configuration saved \u2014 your VAT compliance workflows are ready to go.",
+ "title": "Get Started with Bangladesh VAT Compliance"
+}

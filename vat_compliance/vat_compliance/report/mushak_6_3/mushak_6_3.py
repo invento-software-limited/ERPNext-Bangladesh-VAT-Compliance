@@ -18,12 +18,12 @@ def execute(filters=None):
 
 def get_columns():
 	return [
-		{"label": _("Invoice No"), "fieldname": "name", "fieldtype": "Link",
-		 "options": "Sales Invoice", "width": 160},
 		{"label": _("Posting Date"), "fieldname": "posting_date", "fieldtype": "Date",
 		 "width": 110},
-		{"label": _("Customer"), "fieldname": "customer_name", "fieldtype": "Data", "width": 180},
-		{"label": _("Company"), "fieldname": "company", "fieldtype": "Data", "width": 150},
+		{"label": _("Invoice No"), "fieldname": "name", "fieldtype": "Link",
+		 "options": "Sales Invoice", "width": 200},
+		{"label": _("Customer"), "fieldname": "customer", "fieldtype": "Link", "options": "Customer", "width": 180},
+		{"label": _("Company"), "fieldname": "company", "fieldtype": "Link", "options": "Company", "width": 150},
 		{"label": _("Total (Excl. VAT)"), "fieldname": "net_total", "fieldtype": "Currency",
 		 "width": 130},
 		{"label": _("Total VAT"), "fieldname": "total_taxes_and_charges", "fieldtype": "Currency",
@@ -41,7 +41,7 @@ def get_columns():
 
 
 def get_data(filters):
-	conditions = ["docstatus = 1"]
+	conditions = []
 	values = {}
 
 	if filters.get("from_date"):
@@ -56,13 +56,27 @@ def get_data(filters):
 		conditions.append("company = %(company)s")
 		values["company"] = filters.get("company")
 
+	if filters.get("customer"):
+		conditions.append("customer = %(customer)s")
+		values["customer"] = filters.get("customer")
+
+	if filters.get("sales_invoice"):
+		conditions.append("name = %(sales_invoice)s")
+		values["sales_invoice"] = filters.get("sales_invoice")
+
+	if filters.get("status"):
+		conditions.append("status = %(status)s")
+		values["status"] = filters.get("status")
+	else:
+		conditions.append("docstatus = 1")
+
 	where_clause = " AND ".join(conditions)
 
 	query = f"""
         SELECT
             name,
             posting_date,
-            customer_name,
+            customer,
             company,
             net_total,
             total_taxes_and_charges,
@@ -80,7 +94,7 @@ def get_data(filters):
 			f"<a class='btn btn-xs btn-success' "
 			f"href='/printview?doctype=Sales%20Invoice&name={inv.name}"
 			f"&trigger_print=1' target='_blank'>"
-			f"Download 6.3</a>"
+			f"<i class='fa fa-download'></i></a>"
 		)
 
 	return invoices

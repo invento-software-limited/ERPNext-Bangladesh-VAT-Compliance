@@ -1,0 +1,20 @@
+{
+ "action": "Show Form Tour",
+ "creation": "2025-11-30 15:37:07.748233",
+ "description": "Open each item and link the appropriate Item Tax Template under the tax section.\nThis ensures the correct VAT rates and section references are applied whenever the item is sold or purchased.",
+ "docstatus": 0,
+ "doctype": "Onboarding Step",
+ "idx": 0,
+ "is_complete": 0,
+ "is_single": 0,
+ "is_skipped": 0,
+ "modified": "2025-11-30 15:37:07.748233",
+ "modified_by": "Administrator",
+ "name": "Configure Item Tax Template In Item",
+ "owner": "Administrator",
+ "reference_document": "Item",
+ "show_form_tour": 0,
+ "show_full_form": 0,
+ "title": "Configure Item Tax Template In Item",
+ "validate_action": 1
+}

@@ -1,0 +1,21 @@
+{
+ "action": "Go to Page",
+ "action_label": "Go to Item Tax Template",
+ "creation": "2025-11-30 15:18:02.625496",
+ "description": "Set up the Item Tax Template with the required service information, section references, and applicable tax rates.\nThis template determines how VAT will be applied to each item during transactions, ensuring compliance and automation.",
+ "docstatus": 0,
+ "doctype": "Onboarding Step",
+ "idx": 1,
+ "is_complete": 0,
+ "is_single": 0,
+ "is_skipped": 0,
+ "modified": "2025-11-30 15:28:57.414235",
+ "modified_by": "Administrator",
+ "name": "Setup Item Tax Template",
+ "owner": "Administrator",
+ "path": "/app/item-tax-template",
+ "show_form_tour": 0,
+ "show_full_form": 0,
+ "title": "Setup Item Tax Template",
+ "validate_action": 1
+}

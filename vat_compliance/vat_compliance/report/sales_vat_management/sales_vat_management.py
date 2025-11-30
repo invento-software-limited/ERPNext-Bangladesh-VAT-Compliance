@@ -34,21 +34,21 @@ def get_columns():
 	return [
 		{
 			"fieldname": "payment_date",
-			"label": "Date",
+			"label": "Payment Date",
 			"fieldtype": "Date",
 			"width": 120
 		},
 		{
-			"fieldname": "status",
-			"label": "Status",
-			"fieldtype": "Data",
-			"width": 120
+			"fieldname": "invoice_id",
+			"label": "Invoice Number",
+			"fieldtype": "Link",
+			"options": "Sales Invoice",
+			"width": 200
 		},
 		{
-			"fieldname": "fiscal_year",
-			"label": "Fiscal Year",
-			"fieldtype": "Link",
-			"options": "Fiscal Year",
+			"fieldname": "invoice_status",
+			"label": "Invoice Status",
+			"fieldtype": "Data",
 			"width": 120
 		},
 		{
@@ -58,15 +58,8 @@ def get_columns():
 			"width": 150
 		},
 		{
-			"fieldname": "invoice_id",
-			"label": "INV Number",
-			"fieldtype": "Link",
-			"options": "Sales Invoice",
-			"width": 200
-		},
-		{
-			"fieldname": "invoice_status",
-			"label": "INV Status",
+			"fieldname": "status",
+			"label": "Status",
 			"fieldtype": "Data",
 			"width": 120
 		},
@@ -94,6 +87,13 @@ def get_columns():
 			"fieldname": "vds_amount",
 			"label": "VAT on Sales Amount",
 			"fieldtype": "Currency",
+			"width": 120
+		},
+		{
+			"fieldname": "fiscal_year",
+			"label": "Fiscal Year",
+			"fieldtype": "Link",
+			"options": "Fiscal Year",
 			"width": 120
 		},
 	]
@@ -124,7 +124,9 @@ def _get_payment_data(filters):
 		("to_date", "pe.posting_date <= %(to_date)s"),
 		("invoice_status", "si.status = %(invoice_status)s"),
 		("customer", "pe.party = %(customer)s"),
-		("company", "pe.company = %(company)s")
+		("company", "pe.company = %(company)s"),
+		("sales_invoice", "si.name = %(sales_invoice)s"),
+		("payment_entry", "pe.name = %(payment_entry)s")
 	]
 
 	conditions = _build_filter_conditions(base_conditions, filter_mapping, filters)
@@ -162,7 +164,8 @@ def _get_no_payment_data(filters):
 		("to_date", "si.posting_date <= %(to_date)s"),
 		("invoice_status", "si.status = %(invoice_status)s"),
 		("customer", "si.customer = %(customer)s"),
-		("company", "si.company = %(company)s")
+		("company", "si.company = %(company)s"),
+		("sales_invoice", "si.name = %(sales_invoice)s")
 	]
 
 	conditions = _build_filter_conditions(base_conditions, filter_mapping, filters)

@@ -19,7 +19,7 @@ def get_columns():
 	return [
 		{
 			"fieldname": "payment_date",
-			"label": "Date",
+			"label": "Payment Date",
 			"fieldtype": "Date",
 			"width": 120
 		},
@@ -30,41 +30,35 @@ def get_columns():
 			"width": 120
 		},
 		{
-			"fieldname": "status",
-			"label": "Status",
-			"fieldtype": "Data",
-			"width": 120
-		},
-		{
-			"fieldname": "fiscal_year",
-			"label": "Fiscal Year",
-			"fieldtype": "Link",
-			"options": "Fiscal Year",
-			"width": 120
-		},
-		{
-			"fieldname": "vendor_name",
-			"label": "Vendor Name",
-			"fieldtype": "Data",
-			"width": 150
-		},
-		{
 			"fieldname": "invoice_id",
-			"label": "INV Number",
+			"label": "Invoice Number",
 			"fieldtype": "Link",
 			"options": "Purchase Invoice",
 			"width": 200
 		},
 		{
 			"fieldname": "invoice_status",
-			"label": "INV Status",
+			"label": "Invoice Status",
 			"fieldtype": "Data",
 			"width": 120
+		},
+		{
+			"fieldname": "supplier_name",
+			"label": "Supplier Name",
+			"fieldtype": "Link",
+			"options": "Supplier",
+			"width": 150
 		},
 		{
 			"fieldname": "invoice_amount",
 			"label": "Invoice Amount",
 			"fieldtype": "Currency",
+			"width": 120
+		},
+		{
+			"fieldname": "status",
+			"label": "Status",
+			"fieldtype": "Data",
 			"width": 120
 		},
 		{
@@ -107,6 +101,13 @@ def get_columns():
 			"fieldtype": "Percent",
 			"width": 120
 		},
+		{
+			"fieldname": "fiscal_year",
+			"label": "Fiscal Year",
+			"fieldtype": "Link",
+			"options": "Fiscal Year",
+			"width": 120
+		},
 	]
 
 
@@ -137,7 +138,7 @@ def _build_filter_conditions(filters):
 		("from_date", "pe.posting_date >= %(from_date)s"),
 		("to_date", "pe.posting_date <= %(to_date)s"),
 		("invoice_status", "pi.status = %(invoice_status)s"),
-		("vendor", "pe.party = %(vendor)s"),
+		("supplier", "pe.party = %(supplier)s"),
 		("company", "pe.company = %(company)s")
 	]
 
@@ -160,7 +161,7 @@ def _get_payment_entry_data(filters):
 		SELECT
 			per.reference_name as invoice_id,
 			pe.posting_date as payment_date,
-			pe.party_name as vendor_name,
+			pe.party as supplier_name,
 			pi.status as invoice_status,
 			pe.name as payment_entry_id,
 			pi.grand_total as invoice_amount,
@@ -315,7 +316,7 @@ def make_journal_entry(rows):
 def _process_data_row(row, invoice_docs):
 	"""Process a single data row and return list of rows (parent + children)."""
 	row["check"] = 0
-	row["supplier_name"] = row.get('vendor_name')
+	row["supplier_name"] = row.get('supplier_name')
 
 	# Set status based on journal entry
 	je_status = _get_journal_entry_status(row.get("child_name"))
@@ -357,7 +358,7 @@ def _process_data_row(row, invoice_docs):
 			"payment_month": None,
 			"status": "",
 			"fiscal_year": None,
-			"vendor_name": "",
+			"supplier_name": "",
 			"invoice_id": "",
 			"invoice_status": "",
 			"payment_entry_id": "",
@@ -369,7 +370,7 @@ def _process_data_row(row, invoice_docs):
 			"applied_rate": group["applied_rate"],
 			"net_amount": group["net_amount"],
 			"child_name": row.get('child_name'),
-			"supplier_name": row.get('vendor_name'),
+			"supplier_name": row.get('supplier_name'),
 			"indent": 1
 		}
 		result_rows.append(child_row)
