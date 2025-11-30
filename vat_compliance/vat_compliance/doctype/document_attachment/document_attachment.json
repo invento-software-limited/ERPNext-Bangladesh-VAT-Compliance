@@ -1,0 +1,115 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-05-22 12:27:16.486999",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "document_type",
+  "column_break_xcel",
+  "file",
+  "tax_type",
+  "challan_info_section",
+  "challan_date",
+  "challan_amount",
+  "column_break_ljsh",
+  "challan_no",
+  "branch_and_bank_name",
+  "section_break_spib",
+  "inv_numbers",
+  "section_break_ugap",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "document_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Document Type",
+   "options": "\nChallan\nVoucher\nMoney Receipt / Cheque\nOthers",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_xcel",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "file",
+   "fieldtype": "Attach",
+   "in_list_view": 1,
+   "label": "File",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_spib",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "inv_numbers",
+   "fieldtype": "Text",
+   "label": "INV Numbers",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.document_type===\"Challan\"",
+   "fieldname": "challan_info_section",
+   "fieldtype": "Section Break",
+   "label": "Challan Info"
+  },
+  {
+   "fieldname": "challan_date",
+   "fieldtype": "Date",
+   "label": "Challan Date"
+  },
+  {
+   "fieldname": "challan_amount",
+   "fieldtype": "Currency",
+   "label": "Challan Amount"
+  },
+  {
+   "fieldname": "column_break_ljsh",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "challan_no",
+   "fieldtype": "Data",
+   "label": "Challan No"
+  },
+  {
+   "fieldname": "branch_and_bank_name",
+   "fieldtype": "Data",
+   "label": "Branch and Bank Name"
+  },
+  {
+   "fieldname": "tax_type",
+   "fieldtype": "Select",
+   "label": "Tax Type",
+   "options": "VAT\nTAX",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_ugap",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-10-01 12:06:38.669459",
+ "modified_by": "Administrator",
+ "module": "Vat Compliance",
+ "name": "Document Attachment",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

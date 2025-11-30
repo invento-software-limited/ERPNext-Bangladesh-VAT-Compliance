@@ -60,6 +60,9 @@ def calculate_tax_rows(doc: dict | str) -> list:
 			continue
 
 		cost_center = get_cost_center(inv_doc)
+		if not cost_center:
+			cost_center = frappe.get_value("Company", doc.company, "cost_center")
+
 		items = inv_doc.get("items", [])
 
 		taxable_items = [

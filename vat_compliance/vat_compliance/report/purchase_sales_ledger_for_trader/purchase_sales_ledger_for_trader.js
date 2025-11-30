@@ -26,13 +26,5 @@ frappe.query_reports["Purchase Sales Ledger For Trader"] = {
 			read_only: 1,
 			reqd: 1
 		}
-	],
-	onload: function(report) {
-		frappe.breadcrumbs.all[frappe.get_route_str()] = {
-			workspace: "Tax Center",
-			doctype: report.report_name,
-			type: "Report"
-		};
-		frappe.breadcrumbs.update();
-	}
+	]
 };

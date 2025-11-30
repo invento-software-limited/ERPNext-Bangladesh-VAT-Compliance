@@ -129,7 +129,11 @@ def get_data(filters):
 
 		if tax_rows:
 			first_key = next(iter(tax_rows))
-			tax_rate = tax_rows[first_key].get("tax_rate", 0)
+			tax_value = tax_rows[first_key]
+			if isinstance(tax_value, dict):
+				tax_rate = tax_value.get("tax_rate", 0)
+			else:
+				tax_rate = tax_value
 		else:
 			tax_rate = 0
 
@@ -178,7 +182,7 @@ def get_data(filters):
 			"supplementary_duty": 0,
 			"vat_amount": vat_amount,
 			"total_qty": row.get('qty'),
-			"total_amount": row.get('amount'),
+			"total_amount": row.get('amount') + vat_amount,
 			"stock_consumption_qty": production_consumption_qty,
 			"stock_consumption_value": production_consumption_value,
 			"closing_balance_qty": closing_balance_qty,

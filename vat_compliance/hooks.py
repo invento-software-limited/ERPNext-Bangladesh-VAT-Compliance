@@ -74,10 +74,9 @@ doctype_js = {"Payment Entry" : "public/js/payment_entry.js"}
 # ----------
 
 # add methods and filters to jinja environment
-# jinja = {
-# 	"methods": "vat_compliance.utils.jinja_methods",
-# 	"filters": "vat_compliance.utils.jinja_filters"
-# }
+jinja = {
+	"methods": "vat_compliance.vat_compliance.doctype.vat_deduction_certificate.vat_deduction_certificate.parse_context",
+}
 
 # Installation
 # ------------

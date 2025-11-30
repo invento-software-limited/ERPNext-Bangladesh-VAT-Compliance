@@ -34,12 +34,4 @@ frappe.query_reports["Sales Register - Mushak 6_2"] = {
 			"default": ""
 		}
 	],
-	onload: function (report) {
-		frappe.breadcrumbs.all[frappe.get_route_str()] = {
-			workspace: "Tax Center",
-			doctype: report.report_name,
-			type: "Report"
-		};
-		frappe.breadcrumbs.update();
-	}
 };
