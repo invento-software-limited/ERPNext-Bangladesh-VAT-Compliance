@@ -17,8 +17,12 @@ def get_message():
 	return """<span class="indicator blue">
         IPNR : Invoiced (Payment Not Received)
         </span> &nbsp;&nbsp;&nbsp;
-        <span class="indicator green">
+        <span class="indicator orange">
         Collected
+        </span>
+        &nbsp;&nbsp;&nbsp;
+        <span class="indicator green">
+        CDGT : Collected And Deposited Into Gov't Treasury
         </span>
         &nbsp;&nbsp;&nbsp
         <span class="indicator green">
@@ -248,6 +252,9 @@ def _calculate_vat_amount_and_accounts(inv_doc, row_data):
 			if row_data.get("payment_entry_id"):
 				if row_data.get("vds") == "Collected":
 					row_data["status"] = "Collected"
+					je_status = _get_journal_entry_status(row_data.get("child_name"))
+					if je_status:
+						row_data["status"] = je_status
 				
 				vat_amount += flt(item.get("net_amount", 0.0)) * (tax_rate / 100)
 			else:
@@ -259,7 +266,7 @@ def _calculate_vat_amount_and_accounts(inv_doc, row_data):
 def _process_invoice_status(row_data, attachments_map):
 	"""Process and set invoice status based on attachments"""
 	row_data["check"] = 0
-	row_data["status"] = "IPNR"  # Default status
+	row_data["status"] = "IPNR" 
 
 	if row_data["payment_entry_id"]:
 		row_data["status"] = "DVCNR"
@@ -376,3 +383,31 @@ def upload_challan(rows, challan_data):
 		doc.insert(ignore_permissions=True)
 
 	return True
+
+
+def _get_journal_entry_status(child_name):
+	"""Get journal entry status for a payment entry reference."""
+	if not child_name:
+		return None
+
+	je_account = frappe.db.get_all(
+		"Journal Entry Account",
+		filters={
+			"reference_detail_no": ["like", f"%{child_name}%"],
+			"custom_tax_type": "VAT"
+		},
+		fields=["parent"],
+	)
+
+	if not je_account:
+		return None
+
+	if je_account[0] and not je_account[0].get("parent"):
+		return None
+
+	je_doc = frappe.get_doc("Journal Entry", je_account[0]["parent"])
+
+	if je_doc.docstatus == 1:
+		return "CDGT"
+
+	return None

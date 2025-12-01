@@ -37,6 +37,7 @@ frappe.query_reports["Sales VAT Management"] = {
 				return [
 					{ value: "IPNR", description: "Invoiced (Payment Not Received)" },
 					{ value: "Collected", description: "Collected" },
+					{ value: "CDGT", description: "Collected And Deposited Into Gov't Treasury" },
 					{ value: "DVCR", description: "Deducted (VDS Certificate received)" },
 					{ value: "DVCNR", description: "Deducted  (VDS Certificate Not received)" },
 				];
@@ -77,8 +78,11 @@ frappe.query_reports["Sales VAT Management"] = {
 	formatter: function (value, row, column, data, default_formatter) {
 		let formatted_value = default_formatter(value, row, column, data);
 		if (data && column.fieldname === "status") {
-			if (data.status === "DVCR" || data.status === "Collected") {
+			if (data.status === "DVCR" || data.status === "CDGT") {
 				formatted_value = `<span class="indicator green">${value}</span>`;
+			}
+			if (data.status === "Collected") {
+				formatted_value = `<span class="indicator orange">${value}</span>`;
 			} else if (data.status === "DVCNR") {
 				formatted_value = `<span class="indicator red">${value}</span>`;
 			} else if (data.status === "IPNR") {
