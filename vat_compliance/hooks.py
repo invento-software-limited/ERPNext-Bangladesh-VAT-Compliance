@@ -86,7 +86,7 @@ jinja = {
 # ------------
 
 # before_install = "vat_compliance.install.before_install"
-# after_install = "vat_compliance.install.after_install"
+after_install = "vat_compliance.setup.setup_item_tax_templates"
 
 # Uninstallation
 # ------------
