@@ -15,39 +15,67 @@ def execute(filters=None):
 def get_columns():
 	return [
 		{"label": "Date", "fieldname": "posting_date", "fieldtype": "Date", "width": 120},
-		{"label": "Opening Balance Qty", "fieldname": "opening_balance_qty", "fieldtype": "Float",
-		 "width": 180},
-		{"label": "Opening Balance Value", "fieldname": "opening_balance_value",
-		 "fieldtype": "Currency", "width": 180},
-		{"label": "Production Qty", "fieldname": "production_qty", "fieldtype": "Float",
-		 "width": 120},
-		{"label": "Production Value", "fieldname": "production_value", "fieldtype": "Currency",
-		 "width": 150},
-		{"label": "Total Produced Qty", "fieldname": "total_produced_qty", "fieldtype": "Float",
-		 "width": 120},
-		{"label": "Total Produced Value", "fieldname": "total_produced_value",
-		 "fieldtype": "Currency", "width": 150},
+		{
+			"label": "Opening Balance Qty",
+			"fieldname": "opening_balance_qty",
+			"fieldtype": "Float",
+			"width": 180,
+		},
+		{
+			"label": "Opening Balance Value",
+			"fieldname": "opening_balance_value",
+			"fieldtype": "Currency",
+			"width": 180,
+		},
+		{"label": "Production Qty", "fieldname": "production_qty", "fieldtype": "Float", "width": 120},
+		{"label": "Production Value", "fieldname": "production_value", "fieldtype": "Currency", "width": 150},
+		{
+			"label": "Total Produced Qty",
+			"fieldname": "total_produced_qty",
+			"fieldtype": "Float",
+			"width": 120,
+		},
+		{
+			"label": "Total Produced Value",
+			"fieldname": "total_produced_value",
+			"fieldtype": "Currency",
+			"width": 150,
+		},
 		{"label": "Buyer Name", "fieldname": "buyer_name", "fieldtype": "Data", "width": 150},
-		{"label": "Buyer Address", "fieldname": "buyer_address", "fieldtype": "Data",
-		 "width": 200},
+		{"label": "Buyer Address", "fieldname": "buyer_address", "fieldtype": "Data", "width": 200},
 		{"label": "BIN/NID", "fieldname": "buyer_id", "fieldtype": "Data", "width": 120},
-		{"label": "Challan No", "fieldname": "challan_no", "fieldtype": "Link",
-		 "options": "Sales Invoice", "width": 200},
+		{
+			"label": "Challan No",
+			"fieldname": "challan_no",
+			"fieldtype": "Link",
+			"options": "Sales Invoice",
+			"width": 200,
+		},
 		{"label": "Challan Date", "fieldname": "challan_date", "fieldtype": "Date", "width": 120},
-		{"label": "Item Description", "fieldname": "item_description", "fieldtype": "Data",
-		 "width": 150},
+		{"label": "Item Description", "fieldname": "item_description", "fieldtype": "Data", "width": 150},
 		{"label": "Quantity", "fieldname": "qty", "fieldtype": "Float", "width": 120},
-		{"label": "Taxable Value", "fieldname": "taxable_value", "fieldtype": "Currency",
-		 "width": 150},
-		{"label": "Supplementary Duty", "fieldname": "supplementary_duty", "fieldtype": "Currency",
-		 "width": 180},
+		{"label": "Taxable Value", "fieldname": "taxable_value", "fieldtype": "Currency", "width": 150},
+		{
+			"label": "Supplementary Duty",
+			"fieldname": "supplementary_duty",
+			"fieldtype": "Currency",
+			"width": 180,
+		},
 		{"label": "VAT", "fieldname": "vat_amount", "fieldtype": "Currency", "width": 100},
-		{"label": "Closing Balance Qty", "fieldname": "closing_balance_qty", "fieldtype": "Float",
-		 "width": 180},
-		{"label": "Closing Balance Value", "fieldname": "closing_balance_value",
-		 "fieldtype": "Currency", "width": 180},
+		{
+			"label": "Closing Balance Qty",
+			"fieldname": "closing_balance_qty",
+			"fieldtype": "Float",
+			"width": 180,
+		},
+		{
+			"label": "Closing Balance Value",
+			"fieldname": "closing_balance_value",
+			"fieldtype": "Currency",
+			"width": 180,
+		},
 		{"label": "Remarks", "fieldname": "remarks", "fieldtype": "Data", "width": 150},
-		{"label": "Item Type", "fieldname": "item_type", "fieldtype": "Data", "width": 100}
+		{"label": "Item Type", "fieldname": "item_type", "fieldtype": "Data", "width": 100},
 		# Added to distinguish item types
 	]
 
@@ -55,7 +83,8 @@ def get_columns():
 def get_data(filters):
 	conditions = get_conditions(filters)
 
-	invoices = frappe.db.sql(f"""
+	invoices = frappe.db.sql(
+		f"""
 		SELECT
 			sii.parent AS name,
 			si.posting_date,
@@ -81,24 +110,27 @@ def get_data(filters):
 		INNER JOIN `tabItem` it ON sii.item_code = it.name
 		WHERE {conditions} AND si.docstatus = 1
 		ORDER BY si.posting_date ASC, si.name ASC
-	""", filters, as_dict=True)
+	""",
+		filters,
+		as_dict=True,
+	)
 
 	customer_cache = {}
 	address_cache = {}
-	item_cache = {}
+
 	data = []
 
 	# Get opening balances for stock items
 	opening_balances = get_opening_balances(filters)
 
 	for i, row in enumerate(invoices, start=1):
-		item_code = row.get('item_code')
-		is_stock_item = row.get('is_stock_item', 0)
+		item_code = row.get("item_code")
+		is_stock_item = row.get("is_stock_item", 0)
 
 		if is_stock_item:
 			# Stock item calculations
-			opening_balance_qty = opening_balances.get(item_code, {}).get('qty', 0)
-			opening_balance_value = opening_balances.get(item_code, {}).get('value', 0)
+			opening_balance_qty = opening_balances.get(item_code, {}).get("qty", 0)
+			opening_balance_value = opening_balances.get(item_code, {}).get("value", 0)
 
 			# Production quantity (for stock items, this would come from production records)
 			production_qty = get_production_qty(item_code, filters)
@@ -109,8 +141,8 @@ def get_data(filters):
 			total_produced_value = production_value
 
 			# Closing balance for stock items
-			closing_balance_qty = opening_balance_qty + production_qty - row.get('qty', 0)
-			closing_balance_value = opening_balance_value + production_value - row.get('amount', 0)
+			closing_balance_qty = opening_balance_qty + production_qty - row.get("qty", 0)
+			closing_balance_value = opening_balance_value + production_value - row.get("amount", 0)
 
 			item_type = "Stock Item"
 		else:
@@ -118,8 +150,8 @@ def get_data(filters):
 			opening_balance_qty = 0
 			opening_balance_value = 0
 
-			production_qty = row.get('qty', 0)
-			production_value = row.get('amount', 0)
+			production_qty = row.get("qty", 0)
+			production_value = row.get("amount", 0)
 
 			total_produced_qty = production_qty
 			total_produced_value = production_value
@@ -131,16 +163,15 @@ def get_data(filters):
 
 		# Calculate VAT amount
 		vat_amount = calculate_vat_amount(
-			row.get('item_tax_template'),
-			row.get('net_amount'),
-			filters.get('company')
+			row.get("item_tax_template"), row.get("net_amount"), filters.get("company")
 		)
 
 		# Get customer BIN/NID
 		customer = row.get("customer")
 		if customer and customer not in customer_cache:
-			customer_cache[customer] = frappe.db.get_value("Customer", customer,
-														   "custom_binvat_registration_no")
+			customer_cache[customer] = frappe.db.get_value(
+				"Customer", customer, "custom_binvat_registration_no"
+			)
 		row["buyer_id"] = customer_cache.get(customer) or row.get("buyer_id")
 
 		# Get formatted address
@@ -149,27 +180,27 @@ def get_data(filters):
 		# Prepare data row
 		data_row = {
 			"sl_no": i,
-			"posting_date": row.get('posting_date'),
+			"posting_date": row.get("posting_date"),
 			"opening_balance_qty": opening_balance_qty,
 			"opening_balance_value": opening_balance_value,
 			"production_qty": production_qty,
 			"production_value": production_value,
 			"total_produced_qty": total_produced_qty,
 			"total_produced_value": total_produced_value,
-			"buyer_name": row.get('buyer_name'),
+			"buyer_name": row.get("buyer_name"),
 			"buyer_address": buyer_address,
-			"buyer_id": row.get('buyer_id'),
-			"challan_no": row.get('challan_no'),
-			"challan_date": row.get('challan_date'),
-			"item_description": row.get('item_name'),
-			"qty": row.get('qty'),
-			"taxable_value": row.get('amount'),
+			"buyer_id": row.get("buyer_id"),
+			"challan_no": row.get("challan_no"),
+			"challan_date": row.get("challan_date"),
+			"item_description": row.get("item_name"),
+			"qty": row.get("qty"),
+			"taxable_value": row.get("amount"),
 			"supplementary_duty": 0,
 			"vat_amount": vat_amount,
 			"closing_balance_qty": closing_balance_qty,
 			"closing_balance_value": closing_balance_value,
-			"remarks": row.get('remarks') or "",
-			"item_type": item_type
+			"remarks": row.get("remarks") or "",
+			"item_type": item_type,
 		}
 
 		data.append(data_row)
@@ -203,7 +234,8 @@ def get_opening_balances(filters):
 		return opening_balances
 
 	# Get stock ledger entries for opening balance
-	sle_data = frappe.db.sql("""
+	sle_data = frappe.db.sql(
+		"""
 							 SELECT item_code,
 									SUM(actual_qty) as qty,
 									SUM(stock_value_difference) as value
@@ -212,20 +244,21 @@ def get_opening_balances(filters):
 								 < %(from_date)s
 							   AND company = %(company)s
 							 GROUP BY item_code
-							 """, filters, as_dict=True)
+							 """,
+		filters,
+		as_dict=True,
+	)
 
 	for entry in sle_data:
-		opening_balances[entry.item_code] = {
-			'qty': entry.qty,
-			'value': entry.value
-		}
+		opening_balances[entry.item_code] = {"qty": entry.qty, "value": entry.value}
 
 	return opening_balances
 
 
 def get_production_qty(item_code, filters):
 	"""Get production quantity for stock items within date range"""
-	production_qty = frappe.db.sql("""
+	production_qty = frappe.db.sql(
+		"""
 								   SELECT SUM(sed.qty) as total_qty
 								   FROM `tabStock Entry Detail` sed
 											INNER JOIN `tabStock Entry` se ON sed.parent = se.name
@@ -234,14 +267,16 @@ def get_production_qty(item_code, filters):
 									 AND se.docstatus = 1
 									 AND sed.s_warehouse IS NULL
 								   """,
-								   (item_code, filters.get('from_date'), filters.get('to_date')))
+		(item_code, filters.get("from_date"), filters.get("to_date")),
+	)
 
 	return flt(production_qty[0][0]) if production_qty else 0
 
 
 def get_production_value(item_code, filters):
 	"""Get production value for stock items within date range"""
-	production_value = frappe.db.sql("""
+	production_value = frappe.db.sql(
+		"""
 									 SELECT SUM(sed.amount) as total_value
 									 FROM `tabStock Entry Detail` sed
 											  INNER JOIN `tabStock Entry` se ON sed.parent = se.name
@@ -250,7 +285,8 @@ def get_production_value(item_code, filters):
 									   AND se.docstatus = 1
 									   AND sed.s_warehouse IS NULL
 									 """,
-									 (item_code, filters.get('from_date'), filters.get('to_date')))
+		(item_code, filters.get("from_date"), filters.get("to_date")),
+	)
 
 	return flt(production_value[0][0]) if production_value else 0
 
@@ -268,14 +304,19 @@ def get_formatted_address(address_name, address_cache):
 			as_dict=True,
 		)
 		if address_doc:
-			address_display = ", ".join(filter(None, [
-				address_doc.address_line1,
-				address_doc.address_line2,
-				address_doc.city,
-				address_doc.state,
-				address_doc.country,
-				address_doc.pincode
-			]))
+			address_display = ", ".join(
+				filter(
+					None,
+					[
+						address_doc.address_line1,
+						address_doc.address_line2,
+						address_doc.city,
+						address_doc.state,
+						address_doc.country,
+						address_doc.pincode,
+					],
+				)
+			)
 			address_cache[address_name] = address_display
 	return address_cache.get(address_name, "")
 
@@ -286,12 +327,15 @@ def calculate_vat_amount(item_tax_template, net_amount, company):
 		return 0
 
 	try:
-		tax_rate = frappe.db.sql("""
+		tax_rate = frappe.db.sql(
+			"""
 								 SELECT tax_rate
 								 FROM `tabItem Tax Template Detail`
 								 WHERE parent = %s
 								   AND parenttype = 'Item Tax Template' LIMIT 1
-								 """, item_tax_template)
+								 """,
+			item_tax_template,
+		)
 
 		if tax_rate and tax_rate[0][0]:
 			return net_amount * (tax_rate[0][0] / 100)

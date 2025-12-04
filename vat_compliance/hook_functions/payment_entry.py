@@ -1,9 +1,9 @@
 import json
+
 import frappe
-from frappe.utils import flt
-from erpnext.accounts.doctype.tax_withholding_category.tax_withholding_category import \
-	get_cost_center
 from erpnext.accounts.doctype.payment_entry.payment_entry import PaymentEntry
+from erpnext.accounts.doctype.tax_withholding_category.tax_withholding_category import get_cost_center
+from frappe.utils import flt
 
 
 @frappe.whitelist()
@@ -52,7 +52,7 @@ def calculate_tax_rows(doc: dict | str) -> list:
 			continue
 		invoice_name = ref.reference_name
 		vds = ref.get("custom_vdsvcs")
-		if not vds == 'Withheld':
+		if not vds == "Withheld":
 			continue
 		try:
 			inv_doc = frappe.get_doc(ref.reference_doctype, invoice_name)
@@ -66,10 +66,9 @@ def calculate_tax_rows(doc: dict | str) -> list:
 		items = inv_doc.get("items", [])
 
 		taxable_items = [
-			item for item in items
-			if item.get('item_tax_template') and flt(item.get('net_amount')) > 0
+			item for item in items if item.get("item_tax_template") and flt(item.get("net_amount")) > 0
 		]
-		total_net_amount = sum(flt(item.get('net_amount', 0)) for item in taxable_items)
+		total_net_amount = sum(flt(item.get("net_amount", 0)) for item in taxable_items)
 
 		if not total_net_amount:
 			continue
@@ -77,24 +76,26 @@ def calculate_tax_rows(doc: dict | str) -> list:
 		allocation_ratio = min(flt(ref.allocated_amount) / total_net_amount, 1.0)
 
 		for item in taxable_items:
-			item_net_amount = flt(item.get('net_amount'))
+			item_net_amount = flt(item.get("net_amount"))
 			allocated_amount = item_net_amount * allocation_ratio
-			item_tax_map = json.loads(item.get('item_tax_rate', '{}'))
+			item_tax_map = json.loads(item.get("item_tax_rate", "{}"))
 
 			for account, rate in item_tax_map.items():
 				vat_rate = flt(rate) / 100
 				vat_amount = allocated_amount * vat_rate
 
-				deductions.append({
-					'custom_reference_doctype': inv_doc.doctype,
-					'custom_reference_name': inv_doc.name,
-					'account': account,
-					'cost_center': cost_center,
-					'amount': vat_amount if doc.payment_type == 'Receive' else -vat_amount,
-					'custom_item_code': item.get('item_code'),
-					'custom_item_name': item.get('item_name'),
-					'custom_allocated_amount': allocated_amount
-				})
+				deductions.append(
+					{
+						"custom_reference_doctype": inv_doc.doctype,
+						"custom_reference_name": inv_doc.name,
+						"account": account,
+						"cost_center": cost_center,
+						"amount": vat_amount if doc.payment_type == "Receive" else -vat_amount,
+						"custom_item_code": item.get("item_code"),
+						"custom_item_name": item.get("item_name"),
+						"custom_allocated_amount": allocated_amount,
+					}
+				)
 
 	return deductions
 
@@ -107,8 +108,7 @@ class CustomPaymentEntry(PaymentEntry):
 		super().__init__(*args, **kwargs)
 
 	@frappe.whitelist()
-	def allocate_amount_to_references(self, paid_amount, paid_amount_change,
-									  allocate_payment_amount):
+	def allocate_amount_to_references(self, paid_amount, paid_amount_change, allocate_payment_amount):
 		"""
 		Allocate amounts to references based on paid amount and outstanding values.
 

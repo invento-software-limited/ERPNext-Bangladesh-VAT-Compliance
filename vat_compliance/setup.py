@@ -1,939 +1,939 @@
 import frappe
 
 ITEM_TAX_TEMPLATE = [
-    {
-        "service_code": "S001.10",
-        "service_provider": "A/C hotel",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 41-LAW/2025/277-Mushak dated 22 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S001.10",
-        "service_provider": "Non – A/C hotel",
-        "rate": 10.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 41-LAW/2025/277-Mushak dated 22 January 2025",
-        "remarks": "As per SRO No-137-Law/2024/243-Mushak dated 27 May 2024, exemption is available for temporary hotels (without fence, electric fan, and have less than two electric bulbs)."
-    },
-    {
-        "service_code": "S001.20",
-        "service_provider": "Restaurant (Except restaurants in hotel with 3 or more star and restaurants where alcohol is served)",
-        "rate": 5.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 41-LAW/2025/277-Mushak dated 22 January 2025",
-        "remarks": "As per SRO No-137-Law/2024/243-Mushak dated 27 May 2024, exemption is available for temporary hotels (without fence, electric fan, and have less than two electric bulbs)."
-    },
-    {
-        "service_code": "S002.00",
-        "service_provider": "Decorators & caterers",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S003.10",
-        "service_provider": "Motor garage & workshop",
-        "rate": 10.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 41-LAW/2025/277-Mushak dated 22 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S003.20",
-        "service_provider": "Dockyard",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S004.00",
-        "service_provider": "Construction works/firms (Builders)",
-        "rate": 7.5,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": "As per SRO No-137-Law/2024/243-Mushak dated 27 May 2024, VAT is exempted for -\n i) Signed agreement till 30 June, 1991\n ii) Signed agreement till 30 June, 1993 against issued tender up to 30 June, 1991"
-    },
-    {
-        "service_code": "S005.10",
-        "service_provider": "Warehouse",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S005.20",
-        "service_provider": "Port for export & import",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S006.00",
-        "service_provider": "Cold storage",
-        "rate": 0.0,
-        "deduction_applicability": 0,
-        "sec_ref": "SRO No-137-Law/2024/243-Mushak dated 27 May 2024",
-        "remarks": "The service is exempted from VAT"
-    },
-    {
-        "service_code": "S007.00",
-        "service_provider": "Advertisement organizations",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": "As per SRO No-137-Law/2024/243-Mushak dated 27 May 2024, VAT is exempted for death news"
-    },
-    {
-        "service_code": "S008.10",
-        "service_provider": "Printing press",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": "As per SRO No-137-Law/2024/243-Mushak dated 27 May 2024, VAT is exempted for books, periodicals or any printing of good for students"
-    },
-    {
-        "service_code": "S008.20",
-        "service_provider": "Binding agency",
-        "rate": 0.0,
-        "deduction_applicability": 0,
-        "sec_ref": "SRO No-137-Law/2024/243-Mushak dated 27 May 2024",
-        "remarks": "The service is exempted from VAT"
-    },
-    {
-        "service_code": "S009.00",
-        "service_provider": "Auction house",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S010.10",
-        "service_provider": "Land development agency",
-        "rate": 2.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S010.20",
-        "service_provider": "Building construction company (Up to 1-1600 square feet)",
-        "rate": 2.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S010.20",
-        "service_provider": "Building construction company (More than  1600 square feet)",
-        "rate": 4.5,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S010.20",
-        "service_provider": "Building construction company (In case of re-registration of any size)",
-        "rate": 2.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S011.10",
-        "service_provider": "Video cassette shop",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S011.20",
-        "service_provider": "Video game shop",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S011.30",
-        "service_provider": "Audio/video recording studio",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S011.40",
-        "service_provider": "Audio/video CD or DVD rental shop",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S012.10",
-        "service_provider": "Telephone",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S012.11",
-        "service_provider": "Teleprinter",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S012.12",
-        "service_provider": "Telex",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S012.13",
-        "service_provider": "Fax",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S012.14",
-        "service_provider": "Internet service provider",
-        "rate": 5.0,
-        "deduction_applicability": 0,
-        "sec_ref": "3rd schedule of VAT & SD Act 2012",
-        "remarks": "As per SRO No-137-Law/2024/243-Mushak dated 27 May 2024, VAT is exempted only for providing internet service to educational institute"
-    },
-    {
-        "service_code": "S012.20",
-        "service_provider": "SIM card or e-SIM provider company",
-        "rate": 0.0,
-        "deduction_applicability": 0,
-        "sec_ref": "3rd schedule of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S013.00",
-        "service_provider": "Automated laundry",
-        "rate": 10.0,
-        "deduction_applicability": 0,
-        "sec_ref": "3rd schedule of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S014.00",
-        "service_provider": "Indenting service",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S015.10",
-        "service_provider": "Freight forwarders",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S015.20",
-        "service_provider": "C&F agent",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S016.00",
-        "service_provider": "Travel agencies",
-        "rate": 0.0,
-        "deduction_applicability": 0,
-        "sec_ref": "SRO No-137-Law/2024/243-Mushak dated 27 May 2024",
-        "remarks": "The service is exempted from VAT"
-    },
-    {
-        "service_code": "S017.00",
-        "service_provider": "Community center",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S018.00",
-        "service_provider": "Film studio",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 4 of VAT and SD (Amendment) Ordinance, 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S019.00",
-        "service_provider": "Photo studio",
-        "rate": 0.0,
-        "deduction_applicability": 0,
-        "sec_ref": "SRO No-137-Law/2024/243-Mushak dated 27 May 2024",
-        "remarks": "The service is exempted from VAT"
-    },
-    {
-        "service_code": "S020.00",
-        "service_provider": "Survey firm",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S021.00",
-        "service_provider": "Plant or capital machinery rental firm",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S022.00",
-        "service_provider": "Confectionery",
-        "rate": 10.0,
-        "deduction_applicability": 0,
-        "sec_ref": "SRO No. 39-AIN/2025/275-Mushak dated 22 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S023.10",
-        "service_provider": "Cinema hall",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 4 of VAT and SD (Amendment) Ordinance, 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S023.20",
-        "service_provider": "Cinema distributor",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 4 of VAT and SD (Amendment) Ordinance, 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S024.00",
-        "service_provider": "Furniture (At the production stage)",
-        "rate": 7.5,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": "VDS is not applicable when manufacturers provide Mushak 6.3 at 15% rate attested by VAT officials."
-    },
-
-    {
-        "service_code": "S024.00",
-        "service_provider": "Furniture (At the marketing stage – Showroom)",
-        "rate": 7.5,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": "VDS is not applicable when manufacturers provide Mushak 6.3 at 15% rate attested by VAT officials."
-    },
-    {
-        "service_code": "S025.00",
-        "service_provider": "WASA",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S026.00",
-        "service_provider": "Goldsmith, silversmith and gold or silver trader",
-        "rate": 5.0,
-        "deduction_applicability": 0,
-        "sec_ref": "3rd schedule of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S027.00",
-        "service_provider": "Insurance company",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": "As per SRO No-137-Law/2024/243-Mushak dated 27 May 2024, VAT is exempted for -\n i) Overseas insurance of sea going ships in Bangladesh\n ii) Insurance premium paid by private sector power generation company\n iii) Aviation insurance reinsurance premium paid in foreign currency\n iv) Insurance agent commission"
-    },
-    {
-        "service_code": "S028.00",
-        "service_provider": "Courier & express mail service",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S029.00",
-        "service_provider": "Astrologer",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S030.00",
-        "service_provider": "Beauty salon",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S031.00",
-        "service_provider": "Repair & maintenance servicing",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S032.00",
-        "service_provider": "Consultancy or supervisory firm",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S033.00",
-        "service_provider": "Lessee (Leaseholder)",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S034.00",
-        "service_provider": "Audit & accounting firm",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S035.00",
-        "service_provider": "Shipping agent",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S036.10",
-        "service_provider": "Air-conditioned Bus Service",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S036.20",
-        "service_provider": "Air-conditioned water vessel service",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 4 of VAT and SD (Amendment) Ordinance, 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S036.30",
-        "service_provider": "Air-conditioned railway service",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S037.00",
-        "service_provider": "Procurement provider",
-        "rate": 10.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": "As per SRO No-137-Law/2024/243-Mushak dated 27 May 2024, VAT is exempted for -\n i) Tiffin supply to school\n ii) Books by NCTB supply for primary, secondary or equivalent\n iii) Cotton supply\n iv) Waste & scrape supply\n v) Cullet supply\n vi) Plastic waste supply\n vii) Cow and buffalo bones used as ingredients in gelatin capsules\n viii) Supply of locally collected scrap to steel mills and foundry\n ix) Supply of jute products\n x) supply of old batteries"
-    },
-    {
-        "service_code": "S038.00",
-        "service_provider": "Organizer of cultural program with foreign artists",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S039.10",
-        "service_provider": "Satellite cable operator & channel distributor",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S039.20",
-        "service_provider": "Satellite channel distributor",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S040.00",
-        "service_provider": "Security service",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S041.00",
-        "service_provider": "Marriage media",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S042.00",
-        "service_provider": "Automated or mechanical saw machine",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 4 of VAT and SD (Amendment) Ordinance, 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S043.00",
-        "service_provider": "Television & online broadcasting program provider",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": "VDS is not applicable when vendors provide Mushak 6.3 at 15% rate attested by VAT officials."
-    },
-    {
-        "service_code": "S044.00",
-        "service_provider": "BRTA services",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S045.00",
-        "service_provider": "Legal advisors",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S046.00",
-        "service_provider": "Health club & fitness center",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S047.00",
-        "service_provider": "Sports organizer",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 4 of VAT and SD (Amendment) Ordinance, 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S048.00",
-        "service_provider": "Transport contractor (for carrying petrol & related goods) Transport contractor (other goods)",
-        "rate": 5.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": "As per SRO No-137-Law/2024/243-Mushak dated 27 May 2024, VAT exempted only in transport of grain"
-    },
-    {
-        "service_code": "S049.00",
-        "service_provider": "Transport fare or rent a car",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S050.10",
-        "service_provider": "Architect, interior designer or decorator",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S050.20",
-        "service_provider": "Graphics designer",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S051.00",
-        "service_provider": "Engineering firm",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S052.00",
-        "service_provider": "Sound & light equipment rental service",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S053.00",
-        "service_provider": "Board Meeting fees",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S054.00",
-        "service_provider": "Advertisement with satellite channel",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": "VDS is not applicable when vendors provide Mushak 6.3 at 15% rate attested by VAT officials."
-    },
-    {
-        "service_code": "S055.00",
-        "service_provider": "Land seller",
-        "rate": 0.0,
-        "deduction_applicability": 0,
-        "sec_ref": "SRO No-137-Law/2024/243-Mushak dated 27 May 2024",
-        "remarks": "The service is exempted from VAT"
-    },
-    {
-        "service_code": "S056.00",
-        "service_provider": "Banking & non-banking service provider",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S056.10",
-        "service_provider": "Mobile financial service provider",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S057.00",
-        "service_provider": "Electricity distributor",
-        "rate": 5.0,
-        "deduction_applicability": 0,
-        "sec_ref": "3rd schedule of VAT & SD Act 2012",
-        "remarks": "As per SRO No-137-Law/2024/243-Mushak dated 27 May 2024, VAT is exempted for irrigation and cold storage."
-    },
-    {
-        "service_code": "S058.00",
-        "service_provider": "Chartered airplane or helicopter rent service",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S059.00",
-        "service_provider": "Glass sheet coating service",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S060.00",
-        "service_provider": "Auction product buyer",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S061.00",
-        "service_provider": "Credit card issuers",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S062.00",
-        "service_provider": "Money exchange service",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S063.00",
-        "service_provider": "A/C tailoring shop & tailors",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 4 of VAT and SD (Amendment) Ordinance, 2025",
-        "remarks": "As per SRO No-137-Law/2024/243-Mushak dated 27 May 2024, VAT is exempted for non-a/c tailors."
-    },
-    {
-        "service_code": "S064.10",
-        "service_provider": "Amusement park & theme park",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "3rd schedule of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S064.20",
-        "service_provider": "Picnic spot, shooting studio & tourist corner",
-        "rate": 0.0,
-        "deduction_applicability": 0,
-        "sec_ref": "SRO No-137-Law/2024/243-Mushak dated 27 May 2024",
-        "remarks": "The service is exempted from VAT."
-    },
-    {
-        "service_code": "S065.00",
-        "service_provider": "Building, floor & premises cleaning & maintenance",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S066.00",
-        "service_provider": "Lottery ticket seller",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S067.00",
-        "service_provider": "Immigration advisor",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S068.00",
-        "service_provider": "Coaching center",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S069.00",
-        "service_provider": "English medium school",
-        "rate": 5.0,
-        "deduction_applicability": 0,
-        "sec_ref": "3rd schedule of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S070.10",
-        "service_provider": "Private university",
-        "rate": 0.0,
-        "deduction_applicability": 0,
-        "sec_ref": "SRO No-137-Law/2024/243-Mushak dated 27 May 2024",
-        "remarks": "The service is exempted from VAT."
-    },
-    {
-        "service_code": "S070.20",
-        "service_provider": "Private medical & Engineering college",
-        "rate": 0.0,
-        "deduction_applicability": 0,
-        "sec_ref": "SRO No-137-Law/2024/243-Mushak dated 27 May 2024",
-        "remarks": "The service is exempted from VAT."
-    },
-    {
-        "service_code": "S071.00",
-        "service_provider": "Event management firm",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S072.00",
-        "service_provider": "Human resource service provider",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S073.00",
-        "service_provider": "Manpower exporting service",
-        "rate": 0.0,
-        "deduction_applicability": 0,
-        "sec_ref": "SRO No-137-Law/2024/243-Mushak dated 27 May 2024",
-        "remarks": "The service is exempted from VAT."
-    },
-    {
-        "service_code": "S074.00",
-        "service_provider": "Rent of office space or building used for commercial purpose",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": "As per SRO No-137-Law/2024/243-Mushak dated 27 May 2024, VAT exempted for -\n i) Registered or listed manufacturer factory rent;\n ii) Rent for fully residential use;\n iii) Rent for commercial use (maximum 150 square feet);\n iv) Any ITES service institution (under S099.10) rent;\n v) Showroom rent for any women entrepreneur."
-    },
-    {
-        "service_code": "S075.00",
-        "service_provider": "Stock security broker",
-        "rate": 0.0,
-        "deduction_applicability": 0,
-        "sec_ref": "SRO No-137-Law/2024/243-Mushak dated 27 May 2024",
-        "remarks": "The service is exempted from VAT."
-    },
-    {
-        "service_code": "S076.00",
-        "service_provider": "Social & sports club",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 4 of VAT and SD (Amendment) Ordinance, 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S077.00",
-        "service_provider": "Tour operator",
-        "rate": 15.0,
-        "deduction_applicability": 0,
-        "sec_ref": "Section 15 of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S078.00",
-        "service_provider": "Sales center of RMG (Own Brand)",
-        "rate": 10.0,
-        "deduction_applicability": 0,
-        "sec_ref": "SRO No. 39-AIN/2025/275-Mushak dated 22 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S078.00",
-        "service_provider": "Sales center of RMG (Other brand)",
-        "rate": 7.5,
-        "deduction_applicability": 0,
-        "sec_ref": "SRO No. 39-AIN/2025/275-Mushak dated 22 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S080.00",
-        "service_provider": "Ride sharing service",
-        "rate": 5.0,
-        "deduction_applicability": 0,
-        "sec_ref": "3rd schedule of VAT & SD Act 2012",
-        "remarks": ""
-    },
-    {
-        "service_code": "S099.10",
-        "service_provider": "IT enable service (ITES)",
-        "rate": 5.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": "Software development & customization excluded."
-    },
-    {
-        "service_code": "S099.20",
-        "service_provider": "Other services",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": "As per SRO No-137-Law/2024/243-Mushak dated 27 May 2024, VAT is exempted for Dyeing, printing & finishing of gray fabrics and calendaring service."
-    },
-    {
-        "service_code": "S099.30",
-        "service_provider": "Sponsorship services",
-        "rate": 15.0,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S099.40",
-        "service_provider": "Meditation Services",
-        "rate": 5.0,
-        "deduction_applicability": 0,
-        "sec_ref": "SRO No. – 230-LAW/2022/202-Mushak dated 28 June 2022",
-        "remarks": ""
-    },
-    {
-        "service_code": "S099.50",
-        "service_provider": "Credit rating agency",
-        "rate": 7.5,
-        "deduction_applicability": 1,
-        "sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
-        "remarks": ""
-    },
-    {
-        "service_code": "S099.60",
-        "service_provider": "e-commerce service/Online goods selling",
-        "rate": 5.0,
-        "deduction_applicability": 0,
-        "sec_ref": "3rd schedule of VAT & SD Act 2012",
-        "remarks": ""
-    }
+	{
+		"service_code": "S001.10",
+		"service_provider": "A/C hotel",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 41-LAW/2025/277-Mushak dated 22 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S001.10",
+		"service_provider": "Non - A/C hotel",
+		"rate": 10.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 41-LAW/2025/277-Mushak dated 22 January 2025",
+		"remarks": "As per SRO No-137-Law/2024/243-Mushak dated 27 May 2024, exemption is available for temporary hotels (without fence, electric fan, and have less than two electric bulbs).",
+	},
+	{
+		"service_code": "S001.20",
+		"service_provider": "Restaurant (Except restaurants in hotel with 3 or more star and restaurants where alcohol is served)",
+		"rate": 5.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 41-LAW/2025/277-Mushak dated 22 January 2025",
+		"remarks": "As per SRO No-137-Law/2024/243-Mushak dated 27 May 2024, exemption is available for temporary hotels (without fence, electric fan, and have less than two electric bulbs).",
+	},
+	{
+		"service_code": "S002.00",
+		"service_provider": "Decorators & caterers",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S003.10",
+		"service_provider": "Motor garage & workshop",
+		"rate": 10.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 41-LAW/2025/277-Mushak dated 22 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S003.20",
+		"service_provider": "Dockyard",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S004.00",
+		"service_provider": "Construction works/firms (Builders)",
+		"rate": 7.5,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "As per SRO No-137-Law/2024/243-Mushak dated 27 May 2024, VAT is exempted for -\n i) Signed agreement till 30 June, 1991\n ii) Signed agreement till 30 June, 1993 against issued tender up to 30 June, 1991",
+	},
+	{
+		"service_code": "S005.10",
+		"service_provider": "Warehouse",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S005.20",
+		"service_provider": "Port for export & import",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S006.00",
+		"service_provider": "Cold storage",
+		"rate": 0.0,
+		"deduction_applicability": 0,
+		"sec_ref": "SRO No-137-Law/2024/243-Mushak dated 27 May 2024",
+		"remarks": "The service is exempted from VAT",
+	},
+	{
+		"service_code": "S007.00",
+		"service_provider": "Advertisement organizations",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "As per SRO No-137-Law/2024/243-Mushak dated 27 May 2024, VAT is exempted for death news",
+	},
+	{
+		"service_code": "S008.10",
+		"service_provider": "Printing press",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "As per SRO No-137-Law/2024/243-Mushak dated 27 May 2024, VAT is exempted for books, periodicals or any printing of good for students",
+	},
+	{
+		"service_code": "S008.20",
+		"service_provider": "Binding agency",
+		"rate": 0.0,
+		"deduction_applicability": 0,
+		"sec_ref": "SRO No-137-Law/2024/243-Mushak dated 27 May 2024",
+		"remarks": "The service is exempted from VAT",
+	},
+	{
+		"service_code": "S009.00",
+		"service_provider": "Auction house",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S010.10",
+		"service_provider": "Land development agency",
+		"rate": 2.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S010.20",
+		"service_provider": "Building construction company (Up to 1-1600 square feet)",
+		"rate": 2.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S010.20",
+		"service_provider": "Building construction company (More than  1600 square feet)",
+		"rate": 4.5,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S010.20",
+		"service_provider": "Building construction company (In case of re-registration of any size)",
+		"rate": 2.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S011.10",
+		"service_provider": "Video cassette shop",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S011.20",
+		"service_provider": "Video game shop",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S011.30",
+		"service_provider": "Audio/video recording studio",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S011.40",
+		"service_provider": "Audio/video CD or DVD rental shop",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S012.10",
+		"service_provider": "Telephone",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S012.11",
+		"service_provider": "Teleprinter",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S012.12",
+		"service_provider": "Telex",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S012.13",
+		"service_provider": "Fax",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S012.14",
+		"service_provider": "Internet service provider",
+		"rate": 5.0,
+		"deduction_applicability": 0,
+		"sec_ref": "3rd schedule of VAT & SD Act 2012",
+		"remarks": "As per SRO No-137-Law/2024/243-Mushak dated 27 May 2024, VAT is exempted only for providing internet service to educational institute",
+	},
+	{
+		"service_code": "S012.20",
+		"service_provider": "SIM card or e-SIM provider company",
+		"rate": 0.0,
+		"deduction_applicability": 0,
+		"sec_ref": "3rd schedule of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S013.00",
+		"service_provider": "Automated laundry",
+		"rate": 10.0,
+		"deduction_applicability": 0,
+		"sec_ref": "3rd schedule of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S014.00",
+		"service_provider": "Indenting service",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S015.10",
+		"service_provider": "Freight forwarders",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S015.20",
+		"service_provider": "C&F agent",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S016.00",
+		"service_provider": "Travel agencies",
+		"rate": 0.0,
+		"deduction_applicability": 0,
+		"sec_ref": "SRO No-137-Law/2024/243-Mushak dated 27 May 2024",
+		"remarks": "The service is exempted from VAT",
+	},
+	{
+		"service_code": "S017.00",
+		"service_provider": "Community center",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S018.00",
+		"service_provider": "Film studio",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 4 of VAT and SD (Amendment) Ordinance, 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S019.00",
+		"service_provider": "Photo studio",
+		"rate": 0.0,
+		"deduction_applicability": 0,
+		"sec_ref": "SRO No-137-Law/2024/243-Mushak dated 27 May 2024",
+		"remarks": "The service is exempted from VAT",
+	},
+	{
+		"service_code": "S020.00",
+		"service_provider": "Survey firm",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S021.00",
+		"service_provider": "Plant or capital machinery rental firm",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S022.00",
+		"service_provider": "Confectionery",
+		"rate": 10.0,
+		"deduction_applicability": 0,
+		"sec_ref": "SRO No. 39-AIN/2025/275-Mushak dated 22 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S023.10",
+		"service_provider": "Cinema hall",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 4 of VAT and SD (Amendment) Ordinance, 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S023.20",
+		"service_provider": "Cinema distributor",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 4 of VAT and SD (Amendment) Ordinance, 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S024.00",
+		"service_provider": "Furniture (At the production stage)",
+		"rate": 7.5,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "VDS is not applicable when manufacturers provide Mushak 6.3 at 15% rate attested by VAT officials.",
+	},
+	{
+		"service_code": "S024.00",
+		"service_provider": "Furniture (At the marketing stage - Showroom)",
+		"rate": 7.5,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "VDS is not applicable when manufacturers provide Mushak 6.3 at 15% rate attested by VAT officials.",
+	},
+	{
+		"service_code": "S025.00",
+		"service_provider": "WASA",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S026.00",
+		"service_provider": "Goldsmith, silversmith and gold or silver trader",
+		"rate": 5.0,
+		"deduction_applicability": 0,
+		"sec_ref": "3rd schedule of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S027.00",
+		"service_provider": "Insurance company",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "As per SRO No-137-Law/2024/243-Mushak dated 27 May 2024, VAT is exempted for -\n i) Overseas insurance of sea going ships in Bangladesh\n ii) Insurance premium paid by private sector power generation company\n iii) Aviation insurance reinsurance premium paid in foreign currency\n iv) Insurance agent commission",
+	},
+	{
+		"service_code": "S028.00",
+		"service_provider": "Courier & express mail service",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S029.00",
+		"service_provider": "Astrologer",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S030.00",
+		"service_provider": "Beauty salon",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S031.00",
+		"service_provider": "Repair & maintenance servicing",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S032.00",
+		"service_provider": "Consultancy or supervisory firm",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S033.00",
+		"service_provider": "Lessee (Leaseholder)",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S034.00",
+		"service_provider": "Audit & accounting firm",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S035.00",
+		"service_provider": "Shipping agent",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S036.10",
+		"service_provider": "Air-conditioned Bus Service",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S036.20",
+		"service_provider": "Air-conditioned water vessel service",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 4 of VAT and SD (Amendment) Ordinance, 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S036.30",
+		"service_provider": "Air-conditioned railway service",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S037.00",
+		"service_provider": "Procurement provider",
+		"rate": 10.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "As per SRO No-137-Law/2024/243-Mushak dated 27 May 2024, VAT is exempted for -\n i) Tiffin supply to school\n ii) Books by NCTB supply for primary, secondary or equivalent\n iii) Cotton supply\n iv) Waste & scrape supply\n v) Cullet supply\n vi) Plastic waste supply\n vii) Cow and buffalo bones used as ingredients in gelatin capsules\n viii) Supply of locally collected scrap to steel mills and foundry\n ix) Supply of jute products\n x) supply of old batteries",
+	},
+	{
+		"service_code": "S038.00",
+		"service_provider": "Organizer of cultural program with foreign artists",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S039.10",
+		"service_provider": "Satellite cable operator & channel distributor",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S039.20",
+		"service_provider": "Satellite channel distributor",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S040.00",
+		"service_provider": "Security service",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S041.00",
+		"service_provider": "Marriage media",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S042.00",
+		"service_provider": "Automated or mechanical saw machine",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 4 of VAT and SD (Amendment) Ordinance, 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S043.00",
+		"service_provider": "Television & online broadcasting program provider",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "VDS is not applicable when vendors provide Mushak 6.3 at 15% rate attested by VAT officials.",
+	},
+	{
+		"service_code": "S044.00",
+		"service_provider": "BRTA services",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S045.00",
+		"service_provider": "Legal advisors",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S046.00",
+		"service_provider": "Health club & fitness center",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S047.00",
+		"service_provider": "Sports organizer",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 4 of VAT and SD (Amendment) Ordinance, 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S048.00",
+		"service_provider": "Transport contractor (for carrying petrol & related goods) Transport contractor (other goods)",
+		"rate": 5.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "As per SRO No-137-Law/2024/243-Mushak dated 27 May 2024, VAT exempted only in transport of grain",
+	},
+	{
+		"service_code": "S049.00",
+		"service_provider": "Transport fare or rent a car",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S050.10",
+		"service_provider": "Architect, interior designer or decorator",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S050.20",
+		"service_provider": "Graphics designer",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S051.00",
+		"service_provider": "Engineering firm",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S052.00",
+		"service_provider": "Sound & light equipment rental service",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S053.00",
+		"service_provider": "Board Meeting fees",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S054.00",
+		"service_provider": "Advertisement with satellite channel",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "VDS is not applicable when vendors provide Mushak 6.3 at 15% rate attested by VAT officials.",
+	},
+	{
+		"service_code": "S055.00",
+		"service_provider": "Land seller",
+		"rate": 0.0,
+		"deduction_applicability": 0,
+		"sec_ref": "SRO No-137-Law/2024/243-Mushak dated 27 May 2024",
+		"remarks": "The service is exempted from VAT",
+	},
+	{
+		"service_code": "S056.00",
+		"service_provider": "Banking & non-banking service provider",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S056.10",
+		"service_provider": "Mobile financial service provider",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S057.00",
+		"service_provider": "Electricity distributor",
+		"rate": 5.0,
+		"deduction_applicability": 0,
+		"sec_ref": "3rd schedule of VAT & SD Act 2012",
+		"remarks": "As per SRO No-137-Law/2024/243-Mushak dated 27 May 2024, VAT is exempted for irrigation and cold storage.",
+	},
+	{
+		"service_code": "S058.00",
+		"service_provider": "Chartered airplane or helicopter rent service",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S059.00",
+		"service_provider": "Glass sheet coating service",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S060.00",
+		"service_provider": "Auction product buyer",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S061.00",
+		"service_provider": "Credit card issuers",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S062.00",
+		"service_provider": "Money exchange service",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S063.00",
+		"service_provider": "A/C tailoring shop & tailors",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 4 of VAT and SD (Amendment) Ordinance, 2025",
+		"remarks": "As per SRO No-137-Law/2024/243-Mushak dated 27 May 2024, VAT is exempted for non-a/c tailors.",
+	},
+	{
+		"service_code": "S064.10",
+		"service_provider": "Amusement park & theme park",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "3rd schedule of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S064.20",
+		"service_provider": "Picnic spot, shooting studio & tourist corner",
+		"rate": 0.0,
+		"deduction_applicability": 0,
+		"sec_ref": "SRO No-137-Law/2024/243-Mushak dated 27 May 2024",
+		"remarks": "The service is exempted from VAT.",
+	},
+	{
+		"service_code": "S065.00",
+		"service_provider": "Building, floor & premises cleaning & maintenance",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S066.00",
+		"service_provider": "Lottery ticket seller",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S067.00",
+		"service_provider": "Immigration advisor",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S068.00",
+		"service_provider": "Coaching center",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S069.00",
+		"service_provider": "English medium school",
+		"rate": 5.0,
+		"deduction_applicability": 0,
+		"sec_ref": "3rd schedule of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S070.10",
+		"service_provider": "Private university",
+		"rate": 0.0,
+		"deduction_applicability": 0,
+		"sec_ref": "SRO No-137-Law/2024/243-Mushak dated 27 May 2024",
+		"remarks": "The service is exempted from VAT.",
+	},
+	{
+		"service_code": "S070.20",
+		"service_provider": "Private medical & Engineering college",
+		"rate": 0.0,
+		"deduction_applicability": 0,
+		"sec_ref": "SRO No-137-Law/2024/243-Mushak dated 27 May 2024",
+		"remarks": "The service is exempted from VAT.",
+	},
+	{
+		"service_code": "S071.00",
+		"service_provider": "Event management firm",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S072.00",
+		"service_provider": "Human resource service provider",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S073.00",
+		"service_provider": "Manpower exporting service",
+		"rate": 0.0,
+		"deduction_applicability": 0,
+		"sec_ref": "SRO No-137-Law/2024/243-Mushak dated 27 May 2024",
+		"remarks": "The service is exempted from VAT.",
+	},
+	{
+		"service_code": "S074.00",
+		"service_provider": "Rent of office space or building used for commercial purpose",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "As per SRO No-137-Law/2024/243-Mushak dated 27 May 2024, VAT exempted for -\n i) Registered or listed manufacturer factory rent;\n ii) Rent for fully residential use;\n iii) Rent for commercial use (maximum 150 square feet);\n iv) Any ITES service institution (under S099.10) rent;\n v) Showroom rent for any women entrepreneur.",
+	},
+	{
+		"service_code": "S075.00",
+		"service_provider": "Stock security broker",
+		"rate": 0.0,
+		"deduction_applicability": 0,
+		"sec_ref": "SRO No-137-Law/2024/243-Mushak dated 27 May 2024",
+		"remarks": "The service is exempted from VAT.",
+	},
+	{
+		"service_code": "S076.00",
+		"service_provider": "Social & sports club",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 4 of VAT and SD (Amendment) Ordinance, 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S077.00",
+		"service_provider": "Tour operator",
+		"rate": 15.0,
+		"deduction_applicability": 0,
+		"sec_ref": "Section 15 of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S078.00",
+		"service_provider": "Sales center of RMG (Own Brand)",
+		"rate": 10.0,
+		"deduction_applicability": 0,
+		"sec_ref": "SRO No. 39-AIN/2025/275-Mushak dated 22 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S078.00",
+		"service_provider": "Sales center of RMG (Other brand)",
+		"rate": 7.5,
+		"deduction_applicability": 0,
+		"sec_ref": "SRO No. 39-AIN/2025/275-Mushak dated 22 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S080.00",
+		"service_provider": "Ride sharing service",
+		"rate": 5.0,
+		"deduction_applicability": 0,
+		"sec_ref": "3rd schedule of VAT & SD Act 2012",
+		"remarks": "",
+	},
+	{
+		"service_code": "S099.10",
+		"service_provider": "IT enable service (ITES)",
+		"rate": 5.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "Software development & customization excluded.",
+	},
+	{
+		"service_code": "S099.20",
+		"service_provider": "Other services",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "As per SRO No-137-Law/2024/243-Mushak dated 27 May 2024, VAT is exempted for Dyeing, printing & finishing of gray fabrics and calendaring service.",
+	},
+	{
+		"service_code": "S099.30",
+		"service_provider": "Sponsorship services",
+		"rate": 15.0,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S099.40",
+		"service_provider": "Meditation Services",
+		"rate": 5.0,
+		"deduction_applicability": 0,
+		"sec_ref": "SRO No. - 230-LAW/2022/202-Mushak dated 28 June 2022",
+		"remarks": "",
+	},
+	{
+		"service_code": "S099.50",
+		"service_provider": "Credit rating agency",
+		"rate": 7.5,
+		"deduction_applicability": 1,
+		"sec_ref": "SRO No. 19-LAW/2025/273-Mushak dated 09 January 2025",
+		"remarks": "",
+	},
+	{
+		"service_code": "S099.60",
+		"service_provider": "e-commerce service/Online goods selling",
+		"rate": 5.0,
+		"deduction_applicability": 0,
+		"sec_ref": "3rd schedule of VAT & SD Act 2012",
+		"remarks": "",
+	},
 ]
 
+
 def setup_item_tax_templates():
-    tax_account = frappe.db.get_value("Account", {"account_type": "Tax", "is_group": 0}, "name")
-    
-    if not tax_account:
-        print("No Tax Account found. Skipping Item Tax Template creation.")
-        return
+	tax_account = frappe.db.get_value("Account", {"account_type": "Tax", "is_group": 0}, "name")
 
-    for item in ITEM_TAX_TEMPLATE:
-        # Check if template exists based on service code and provider
-        existing = frappe.db.exists("Item Tax Template", {
-            "custom_service_code": item["service_code"],
-            "custom_service_provider": item["service_provider"]
-        })
-        
-        if existing:
-            doc = frappe.get_doc("Item Tax Template", existing)
-        else:
-            doc = frappe.new_doc("Item Tax Template")
-            doc.custom_service_code = item["service_code"]
-            doc.custom_service_provider = item["service_provider"]
-        
-        doc.title = item["service_code"] + " - " + item["service_provider"]
-        doc.custom_section_reference = item["sec_ref"]
-        doc.custom_deduction_applicability = item["deduction_applicability"]
-        doc.custom_remarks = item["remarks"]
-        
-        # Set Taxes
-        doc.taxes = []
-        doc.append("taxes", {
-            "tax_type": tax_account,
-            "tax_rate": item["rate"]
-        })
-        
-        doc.save(ignore_permissions=True)
-        print(f"Processed Item Tax Template: {doc.name}")
+	if not tax_account:
+		print("No Tax Account found. Skipping Item Tax Template creation.")
+		return
 
-    frappe.db.commit()
+	for item in ITEM_TAX_TEMPLATE:
+		# Check if template exists based on service code and provider
+		existing = frappe.db.exists(
+			"Item Tax Template",
+			{
+				"custom_service_code": item["service_code"],
+				"custom_service_provider": item["service_provider"],
+			},
+		)
+
+		if existing:
+			doc = frappe.get_doc("Item Tax Template", existing)
+		else:
+			doc = frappe.new_doc("Item Tax Template")
+			doc.custom_service_code = item["service_code"]
+			doc.custom_service_provider = item["service_provider"]
+
+		doc.title = item["service_code"] + " - " + item["service_provider"]
+		doc.custom_section_reference = item["sec_ref"]
+		doc.custom_deduction_applicability = item["deduction_applicability"]
+		doc.custom_remarks = item["remarks"]
+
+		# Set Taxes
+		doc.taxes = []
+		doc.append("taxes", {"tax_type": tax_account, "tax_rate": item["rate"]})
+
+		doc.save(ignore_permissions=True)
+		print(f"Processed Item Tax Template: {doc.name}")
+
+	frappe.db.commit()

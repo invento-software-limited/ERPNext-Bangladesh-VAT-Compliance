@@ -1,8 +1,9 @@
 # Copyright (c) 2025, na and contributors
 # For license information, please see license.txt
 
-import frappe
 import json
+
+import frappe
 from frappe.utils import flt
 
 
@@ -36,69 +37,39 @@ def get_message():
 
 def get_columns():
 	return [
-		{
-			"fieldname": "payment_date",
-			"label": "Payment Date",
-			"fieldtype": "Date",
-			"width": 120
-		},
+		{"fieldname": "payment_date", "label": "Payment Date", "fieldtype": "Date", "width": 120},
 		{
 			"fieldname": "invoice_id",
 			"label": "Invoice Number",
 			"fieldtype": "Link",
 			"options": "Sales Invoice",
-			"width": 200
+			"width": 200,
 		},
-		{
-			"fieldname": "invoice_status",
-			"label": "Invoice Status",
-			"fieldtype": "Data",
-			"width": 120
-		},
-		{
-			"fieldname": "customer_name",
-			"label": "Customer Name",
-			"fieldtype": "Data",
-			"width": 150
-		},
-		{
-			"fieldname": "status",
-			"label": "Status",
-			"fieldtype": "Data",
-			"width": 120
-		},
+		{"fieldname": "invoice_status", "label": "Invoice Status", "fieldtype": "Data", "width": 120},
+		{"fieldname": "customer_name", "label": "Customer Name", "fieldtype": "Data", "width": 150},
+		{"fieldname": "status", "label": "Status", "fieldtype": "Data", "width": 120},
 		{
 			"fieldname": "account_credit",
 			"label": "Account head",
 			"fieldtype": "Link",
 			"options": "Account",
-			"width": 240
+			"width": 240,
 		},
 		{
 			"fieldname": "payment_entry_id",
 			"label": "Payment Entry",
 			"fieldtype": "Link",
 			"options": "Payment Entry",
-			"width": 200
+			"width": 200,
 		},
-		{
-			"fieldname": "invoice_amount",
-			"label": "Invoice Amount",
-			"fieldtype": "Currency",
-			"width": 120
-		},
-		{
-			"fieldname": "vds_amount",
-			"label": "VAT on Sales Amount",
-			"fieldtype": "Currency",
-			"width": 120
-		},
+		{"fieldname": "invoice_amount", "label": "Invoice Amount", "fieldtype": "Currency", "width": 120},
+		{"fieldname": "vds_amount", "label": "VAT on Sales Amount", "fieldtype": "Currency", "width": 120},
 		{
 			"fieldname": "fiscal_year",
 			"label": "Fiscal Year",
 			"fieldtype": "Link",
 			"options": "Fiscal Year",
-			"width": 120
+			"width": 120,
 		},
 	]
 
@@ -120,7 +91,7 @@ def _get_payment_data(filters):
 		"per.reference_doctype = 'Sales Invoice'",
 		"per.custom_vdsvcs IN ('Collected', 'Withheld')",
 		"pe.payment_type = 'Receive'",
-		"pe.docstatus = 1"
+		"pe.docstatus = 1",
 	]
 
 	filter_mapping = [
@@ -130,7 +101,7 @@ def _get_payment_data(filters):
 		("customer", "pe.party = %(customer)s"),
 		("company", "pe.company = %(company)s"),
 		("sales_invoice", "si.name = %(sales_invoice)s"),
-		("payment_entry", "pe.name = %(payment_entry)s")
+		("payment_entry", "pe.name = %(payment_entry)s"),
 	]
 
 	conditions = _build_filter_conditions(base_conditions, filter_mapping, filters)
@@ -169,7 +140,7 @@ def _get_no_payment_data(filters):
 		("invoice_status", "si.status = %(invoice_status)s"),
 		("customer", "si.customer = %(customer)s"),
 		("company", "si.company = %(company)s"),
-		("sales_invoice", "si.name = %(sales_invoice)s")
+		("sales_invoice", "si.name = %(sales_invoice)s"),
 	]
 
 	conditions = _build_filter_conditions(base_conditions, filter_mapping, filters)
@@ -205,15 +176,19 @@ def _get_attachments_map(payment_entry_ids):
 	if not payment_entry_ids:
 		return {}
 
-	placeholders = ','.join(['%s'] * len(payment_entry_ids))
-	attachments = frappe.db.sql(f"""
+	placeholders = ",".join(["%s"] * len(payment_entry_ids))
+	attachments = frappe.db.sql(
+		f"""
         SELECT parent, document_type, file, inv_numbers
         FROM `tabDocument Attachment`
         WHERE parent IN ({placeholders})
             AND document_type = 'Challan'
             AND tax_type = 'VAT'
             AND file IS NOT NULL
-    """, payment_entry_ids, as_dict=True)
+    """,
+		payment_entry_ids,
+		as_dict=True,
+	)
 
 	attachments_map = {}
 	for att in attachments:
@@ -234,13 +209,13 @@ def _calculate_vat_amount_and_accounts(inv_doc, row_data):
 			continue
 
 		# Parse item_tax_rate
-		tax_rows = json.loads(item.get('item_tax_rate', '{}'))
+		tax_rows = json.loads(item.get("item_tax_rate", "{}"))
 		if not tax_rows:
 			continue
 
 		first_key = next(iter(tax_rows))
 		tax_value = tax_rows[first_key]
-		
+
 		if isinstance(tax_value, dict):
 			tax_rate = tax_value.get("tax_rate", 0)
 		else:
@@ -248,14 +223,14 @@ def _calculate_vat_amount_and_accounts(inv_doc, row_data):
 
 		if tax_rate > 0:
 			account_heads.add(first_key)
-			
+
 			if row_data.get("payment_entry_id"):
 				if row_data.get("vds") == "Collected":
 					row_data["status"] = "Collected"
 					je_status = _get_journal_entry_status(row_data.get("child_name"))
 					if je_status:
 						row_data["status"] = je_status
-				
+
 				vat_amount += flt(item.get("net_amount", 0.0)) * (tax_rate / 100)
 			else:
 				vat_amount += flt(item.get("net_amount", 0.0)) * (tax_rate / 100)
@@ -266,7 +241,7 @@ def _calculate_vat_amount_and_accounts(inv_doc, row_data):
 def _process_invoice_status(row_data, attachments_map):
 	"""Process and set invoice status based on attachments"""
 	row_data["check"] = 0
-	row_data["status"] = "IPNR" 
+	row_data["status"] = "IPNR"
 
 	if row_data["payment_entry_id"]:
 		row_data["status"] = "DVCNR"
@@ -333,8 +308,9 @@ def get_data(filters):
 
 		# Set account credit
 		if account_heads:
-			row["account_credit"] = list(account_heads)[0] if len(
-				account_heads) == 1 else ", ".join(account_heads)
+			row["account_credit"] = (
+				next(iter(account_heads)) if len(account_heads) == 1 else ", ".join(account_heads)
+			)
 			result_data.append(row)
 
 	return result_data
@@ -345,7 +321,7 @@ def upload_challan(rows, challan_data):
 	"""Upload challan for selected rows"""
 	if isinstance(rows, str):
 		rows = json.loads(rows)
-	
+
 	if isinstance(challan_data, str):
 		challan_data = json.loads(challan_data)
 
@@ -358,28 +334,30 @@ def upload_challan(rows, challan_data):
 		pe_id = row.get("payment_entry_id")
 		if not pe_id:
 			continue
-		
+
 		if pe_id not in pe_map:
 			pe_map[pe_id] = []
 		pe_map[pe_id].append(row.get("invoice_id"))
 
 	# Create attachments
 	for pe_id, invoice_ids in pe_map.items():
-		doc = frappe.get_doc({
-			"doctype": "Document Attachment",
-			"parent": pe_id,
-			"parenttype": "Payment Entry",
-			"parentfield": "custom_documents",
-			"document_type": "Challan",
-			"tax_type": "VAT",
-			"inv_numbers": ", ".join(invoice_ids),
-			"challan_no": challan_data.get("challan_no"),
-			"challan_date": challan_data.get("challan_date"),
-			"challan_amount": challan_data.get("challan_amount"),
-			"branch_and_bank_name": challan_data.get("branch_and_bank_name"),
-			"file": challan_data.get("file"),
-			"remarks": challan_data.get("remarks")
-		})
+		doc = frappe.get_doc(
+			{
+				"doctype": "Document Attachment",
+				"parent": pe_id,
+				"parenttype": "Payment Entry",
+				"parentfield": "custom_documents",
+				"document_type": "Challan",
+				"tax_type": "VAT",
+				"inv_numbers": ", ".join(invoice_ids),
+				"challan_no": challan_data.get("challan_no"),
+				"challan_date": challan_data.get("challan_date"),
+				"challan_amount": challan_data.get("challan_amount"),
+				"branch_and_bank_name": challan_data.get("branch_and_bank_name"),
+				"file": challan_data.get("file"),
+				"remarks": challan_data.get("remarks"),
+			}
+		)
 		doc.insert(ignore_permissions=True)
 
 	return True
@@ -392,10 +370,7 @@ def _get_journal_entry_status(child_name):
 
 	je_account = frappe.db.get_all(
 		"Journal Entry Account",
-		filters={
-			"reference_detail_no": ["like", f"%{child_name}%"],
-			"custom_tax_type": "VAT"
-		},
+		filters={"reference_detail_no": ["like", f"%{child_name}%"], "custom_tax_type": "VAT"},
 		fields=["parent"],
 	)
 

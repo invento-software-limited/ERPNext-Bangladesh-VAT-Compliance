@@ -15,50 +15,90 @@ def execute(filters=None):
 def get_columns():
 	return [
 		{"label": _("Date"), "fieldname": "posting_date", "fieldtype": "Date", "width": 120},
-		{"label": _("Opening Balance Qty"), "fieldname": "opening_balance_qty",
-		 "fieldtype": "Float", "width": 180},
-		{"label": _("Opening Balance Value"), "fieldname": "opening_balance_value",
-		 "fieldtype": "Currency", "width": 180},
-		{"label": _("Purchase Qty"), "fieldname": "purchase_qty", "fieldtype": "Float",
-		 "width": 120},
-		{"label": _("Purchase Value"), "fieldname": "purchase_value", "fieldtype": "Currency",
-		 "width": 150},
-		{"label": _("Total Stock Qty"), "fieldname": "total_stock_qty", "fieldtype": "Float",
-		 "width": 120},
-		{"label": _("Total Stock Value"), "fieldname": "total_stock_value",
-		 "fieldtype": "Currency", "width": 150},
+		{
+			"label": _("Opening Balance Qty"),
+			"fieldname": "opening_balance_qty",
+			"fieldtype": "Float",
+			"width": 180,
+		},
+		{
+			"label": _("Opening Balance Value"),
+			"fieldname": "opening_balance_value",
+			"fieldtype": "Currency",
+			"width": 180,
+		},
+		{"label": _("Purchase Qty"), "fieldname": "purchase_qty", "fieldtype": "Float", "width": 120},
+		{"label": _("Purchase Value"), "fieldname": "purchase_value", "fieldtype": "Currency", "width": 150},
+		{"label": _("Total Stock Qty"), "fieldname": "total_stock_qty", "fieldtype": "Float", "width": 120},
+		{
+			"label": _("Total Stock Value"),
+			"fieldname": "total_stock_value",
+			"fieldtype": "Currency",
+			"width": 150,
+		},
 		{"label": _("Seller Name"), "fieldname": "seller_name", "fieldtype": "Data", "width": 150},
-		{"label": _("Seller Address"), "fieldname": "seller_address", "fieldtype": "Data",
-		 "width": 200},
-		{"label": _("Seller Registration/NID"), "fieldname": "seller_id", "fieldtype": "Data",
-		 "width": 130},
-		{"label": _("Purchase Challan No"), "fieldname": "purchase_challan_no",
-		 "fieldtype": "Data", "width": 120},
-		{"label": _("Purchase Challan Date"), "fieldname": "purchase_challan_date",
-		 "fieldtype": "Date", "width": 120},
-		{"label": _("Goods Description"), "fieldname": "item_description", "fieldtype": "Data",
-		 "width": 160},
-		{"label": _("Quantity Sold/Supplied"), "fieldname": "qty", "fieldtype": "Float",
-		 "width": 120},
-		{"label": _("Taxable Value"), "fieldname": "taxable_value", "fieldtype": "Currency",
-		 "width": 150},
-		{"label": _("Supplementary Duty"), "fieldname": "supplementary_duty",
-		 "fieldtype": "Currency", "width": 180},
+		{"label": _("Seller Address"), "fieldname": "seller_address", "fieldtype": "Data", "width": 200},
+		{"label": _("Seller Registration/NID"), "fieldname": "seller_id", "fieldtype": "Data", "width": 130},
+		{
+			"label": _("Purchase Challan No"),
+			"fieldname": "purchase_challan_no",
+			"fieldtype": "Data",
+			"width": 120,
+		},
+		{
+			"label": _("Purchase Challan Date"),
+			"fieldname": "purchase_challan_date",
+			"fieldtype": "Date",
+			"width": 120,
+		},
+		{"label": _("Goods Description"), "fieldname": "item_description", "fieldtype": "Data", "width": 160},
+		{"label": _("Quantity Sold/Supplied"), "fieldname": "qty", "fieldtype": "Float", "width": 120},
+		{"label": _("Taxable Value"), "fieldname": "taxable_value", "fieldtype": "Currency", "width": 150},
+		{
+			"label": _("Supplementary Duty"),
+			"fieldname": "supplementary_duty",
+			"fieldtype": "Currency",
+			"width": 180,
+		},
 		{"label": _("VAT"), "fieldname": "vat_amount", "fieldtype": "Currency", "width": 100},
-		{"label": _("Purchaser Name"), "fieldname": "purchaser_name", "fieldtype": "Data",
-		 "width": 150},
-		{"label": _("Purchaser Address"), "fieldname": "purchaser_address", "fieldtype": "Data",
-		 "width": 200},
-		{"label": _("Purchaser Registration/NID"), "fieldname": "purchaser_id",
-		 "fieldtype": "Data", "width": 140},
-		{"label": _("Sales Invoice No"), "fieldname": "sales_invoice_no", "fieldtype": "Link",
-		 "options": "Sales Invoice", "width": 200},
-		{"label": _("Sales Invoice Date"), "fieldname": "sales_invoice_date", "fieldtype": "Date",
-		 "width": 120},
-		{"label": _("Closing Balance Qty"), "fieldname": "closing_balance_qty",
-		 "fieldtype": "Float", "width": 180},
-		{"label": _("Closing Balance Value"), "fieldname": "closing_balance_value",
-		 "fieldtype": "Currency", "width": 180},
+		{"label": _("Purchaser Name"), "fieldname": "purchaser_name", "fieldtype": "Data", "width": 150},
+		{
+			"label": _("Purchaser Address"),
+			"fieldname": "purchaser_address",
+			"fieldtype": "Data",
+			"width": 200,
+		},
+		{
+			"label": _("Purchaser Registration/NID"),
+			"fieldname": "purchaser_id",
+			"fieldtype": "Data",
+			"width": 140,
+		},
+		{
+			"label": _("Sales Invoice No"),
+			"fieldname": "sales_invoice_no",
+			"fieldtype": "Link",
+			"options": "Sales Invoice",
+			"width": 200,
+		},
+		{
+			"label": _("Sales Invoice Date"),
+			"fieldname": "sales_invoice_date",
+			"fieldtype": "Date",
+			"width": 120,
+		},
+		{
+			"label": _("Closing Balance Qty"),
+			"fieldname": "closing_balance_qty",
+			"fieldtype": "Float",
+			"width": 180,
+		},
+		{
+			"label": _("Closing Balance Value"),
+			"fieldname": "closing_balance_value",
+			"fieldtype": "Currency",
+			"width": 180,
+		},
 		{"label": _("Comments"), "fieldname": "remarks", "fieldtype": "Data", "width": 130},
 		{"label": _("Item Type"), "fieldname": "item_type", "fieldtype": "Data", "width": 100},
 	]
@@ -82,7 +122,8 @@ def get_data(filters):
 def get_purchase_data(filters):
 	conditions = get_purchase_conditions(filters)
 
-	purchase_invoices = frappe.db.sql(f"""
+	purchase_invoices = frappe.db.sql(
+		f"""
 		SELECT
 			pi.name as purchase_invoice_no,
 			pi.posting_date,
@@ -108,19 +149,18 @@ def get_purchase_data(filters):
 		INNER JOIN `tabItem` it ON pii.item_code = it.name
 		WHERE pi.docstatus = 1 {conditions}
 		ORDER BY pi.posting_date, pi.name
-	""", filters, as_dict=1)
+	""",
+		filters,
+		as_dict=1,
+	)
 
 	# Calculate taxes for each purchase item
 	for invoice in purchase_invoices:
 		invoice.vat_amount = calculate_purchase_vat(
-			invoice.item_tax_template,
-			invoice.taxable_value,
-			invoice.company
+			invoice.item_tax_template, invoice.taxable_value, invoice.company
 		)
 		invoice.supplementary_duty = calculate_supplementary_duty(
-			invoice.item_tax_template,
-			invoice.taxable_value,
-			invoice.company
+			invoice.item_tax_template, invoice.taxable_value, invoice.company
 		)
 
 		# Get formatted address
@@ -135,7 +175,8 @@ def get_purchase_data(filters):
 def get_sales_data(filters):
 	conditions = get_sales_conditions(filters)
 
-	sales_invoices = frappe.db.sql(f"""
+	sales_invoices = frappe.db.sql(
+		f"""
 		SELECT
 			si.name as sales_invoice_no,
 			si.posting_date as sales_invoice_date,
@@ -159,19 +200,18 @@ def get_sales_data(filters):
 		INNER JOIN `tabItem` it ON sii.item_code = it.name
 		WHERE si.docstatus = 1 {conditions}
 		ORDER BY si.posting_date, si.name
-	""", filters, as_dict=1)
+	""",
+		filters,
+		as_dict=1,
+	)
 
 	# Calculate taxes for each sales item
 	for invoice in sales_invoices:
 		invoice.vat_amount = calculate_sales_vat(
-			invoice.item_tax_template,
-			invoice.taxable_value,
-			invoice.company
+			invoice.item_tax_template, invoice.taxable_value, invoice.company
 		)
 		invoice.supplementary_duty = calculate_supplementary_duty(
-			invoice.item_tax_template,
-			invoice.taxable_value,
-			invoice.company
+			invoice.item_tax_template, invoice.taxable_value, invoice.company
 		)
 
 		# Get formatted address
@@ -195,10 +235,7 @@ def combine_purchase_sales_data(purchase_data, sales_data, filters):
 
 	# Initialize item balances from opening balances
 	for item_code, balance in opening_balances.items():
-		item_balances[item_code] = {
-			'qty': balance.get('qty', 0),
-			'value': balance.get('value', 0)
-		}
+		item_balances[item_code] = {"qty": balance.get("qty", 0), "value": balance.get("value", 0)}
 
 	# Process purchase transactions first
 	for purchase in purchase_data:
@@ -207,22 +244,22 @@ def combine_purchase_sales_data(purchase_data, sales_data, filters):
 
 		if is_stock_item:
 			# Stock item calculations
-			opening_balance_qty = opening_balances.get(item_code, {}).get('qty', 0)
-			opening_balance_value = opening_balances.get(item_code, {}).get('value', 0)
+			opening_balance_qty = opening_balances.get(item_code, {}).get("qty", 0)
+			opening_balance_value = opening_balances.get(item_code, {}).get("value", 0)
 
 			# Update running balance for the item
 			if item_code not in item_balances:
-				item_balances[item_code] = {'qty': 0, 'value': 0}
+				item_balances[item_code] = {"qty": 0, "value": 0}
 
 			current_balance = item_balances[item_code]
 
 			# Total stock after this purchase
-			total_stock_qty = current_balance['qty'] + purchase.purchase_qty
-			total_stock_value = current_balance['value'] + purchase.purchase_value
+			total_stock_qty = current_balance["qty"] + purchase.purchase_qty
+			total_stock_value = current_balance["value"] + purchase.purchase_value
 
 			# Update running balance
-			item_balances[item_code]['qty'] = total_stock_qty
-			item_balances[item_code]['value'] = total_stock_value
+			item_balances[item_code]["qty"] = total_stock_qty
+			item_balances[item_code]["value"] = total_stock_value
 
 			# Closing balance (same as total stock after purchase)
 			closing_balance_qty = total_stock_qty
@@ -264,8 +301,7 @@ def combine_purchase_sales_data(purchase_data, sales_data, filters):
 			"closing_balance_value": closing_balance_value,
 			"remarks": purchase.remarks,
 			"item_type": purchase.item_type,
-			"currency": frappe.get_cached_value('Company', filters.get('company'),
-												'default_currency')
+			"currency": frappe.get_cached_value("Company", filters.get("company"), "default_currency"),
 		}
 
 		combined_data.append(row)
@@ -280,11 +316,11 @@ def combine_purchase_sales_data(purchase_data, sales_data, filters):
 			# Stock item calculations
 			if item_code in item_balances:
 				current_balance = item_balances[item_code]
-				opening_balance_qty = current_balance['qty']
-				opening_balance_value = current_balance['value']
+				opening_balance_qty = current_balance["qty"]
+				opening_balance_value = current_balance["value"]
 			else:
-				opening_balance_qty = opening_balances.get(item_code, {}).get('qty', 0)
-				opening_balance_value = opening_balances.get(item_code, {}).get('value', 0)
+				opening_balance_qty = opening_balances.get(item_code, {}).get("qty", 0)
+				opening_balance_value = opening_balances.get(item_code, {}).get("value", 0)
 
 			# Total stock before sales (same as opening for this transaction)
 			total_stock_qty = opening_balance_qty
@@ -296,10 +332,10 @@ def combine_purchase_sales_data(purchase_data, sales_data, filters):
 
 			# Update running balance
 			if item_code not in item_balances:
-				item_balances[item_code] = {'qty': 0, 'value': 0}
+				item_balances[item_code] = {"qty": 0, "value": 0}
 
-			item_balances[item_code]['qty'] = closing_balance_qty
-			item_balances[item_code]['value'] = closing_balance_value
+			item_balances[item_code]["qty"] = closing_balance_qty
+			item_balances[item_code]["value"] = closing_balance_value
 		else:
 			# Service item calculations (original logic)
 			opening_balance_qty = 0
@@ -337,19 +373,18 @@ def combine_purchase_sales_data(purchase_data, sales_data, filters):
 			"closing_balance_value": closing_balance_value,
 			"remarks": sales.remarks,
 			"item_type": sales.item_type,
-			"currency": frappe.get_cached_value('Company', filters.get('company'),
-												'default_currency')
+			"currency": frappe.get_cached_value("Company", filters.get("company"), "default_currency"),
 		}
 
 		combined_data.append(row)
 		sl_no += 1
 
 	# Sort by date for final output
-	combined_data.sort(key=lambda x: x['posting_date'])
+	combined_data.sort(key=lambda x: x["posting_date"])
 
 	# Reassign serial numbers after sorting
 	for i, row in enumerate(combined_data, 1):
-		row['sl_no'] = i
+		row["sl_no"] = i
 
 	return combined_data
 
@@ -362,7 +397,8 @@ def get_opening_balances(filters):
 		return opening_balances
 
 	# Get stock ledger entries for opening balance
-	sle_data = frappe.db.sql("""
+	sle_data = frappe.db.sql(
+		"""
 							 SELECT item_code,
 									SUM(actual_qty) as qty,
 									SUM(stock_value_difference) as value
@@ -372,13 +408,13 @@ def get_opening_balances(filters):
 							   AND company = %(company)s
 							   AND is_cancelled = 0
 							 GROUP BY item_code
-							 """, filters, as_dict=True)
+							 """,
+		filters,
+		as_dict=True,
+	)
 
 	for entry in sle_data:
-		opening_balances[entry.item_code] = {
-			'qty': entry.qty,
-			'value': entry.value
-		}
+		opening_balances[entry.item_code] = {"qty": entry.qty, "value": entry.value}
 
 	return opening_balances
 
@@ -425,16 +461,19 @@ def calculate_purchase_vat(item_tax_template, taxable_value, company):
 		return 0
 
 	try:
-		tax_rate = frappe.db.sql("""
+		tax_rate = frappe.db.sql(
+			"""
 								 SELECT tax_rate
 								 FROM `tabItem Tax Template Detail`
 								 WHERE parent = %s
 								   AND parenttype = 'Item Tax Template'
-								 """, item_tax_template)
+								 """,
+			item_tax_template,
+		)
 
 		if tax_rate and tax_rate[0][0]:
 			return taxable_value * (tax_rate[0][0] / 100)
-	except:
+	except Exception:
 		pass
 
 	return 0
@@ -459,5 +498,5 @@ def get_address_display(address_name):
 	try:
 		address = frappe.get_doc("Address", address_name)
 		return address.get_display()
-	except:
+	except Exception:
 		return ""

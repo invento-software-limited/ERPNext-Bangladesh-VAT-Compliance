@@ -44,10 +44,10 @@ app_license = "mit"
 
 # include js in doctype views
 doctype_js = {
-	"Payment Entry" : "public/js/payment_entry.js",
-	"Customer" : "public/js/customer.js",
-	"Supplier" : "public/js/supplier.js"
-	}
+	"Payment Entry": "public/js/payment_entry.js",
+	"Customer": "public/js/customer.js",
+	"Supplier": "public/js/supplier.js",
+}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -132,9 +132,7 @@ after_install = "vat_compliance.setup.setup_item_tax_templates"
 # ---------------
 # Override standard doctype classes
 
-override_doctype_class = {
-	"Payment Entry": "vat_compliance.hook_functions.payment_entry.CustomPaymentEntry"
-}
+override_doctype_class = {"Payment Entry": "vat_compliance.hook_functions.payment_entry.CustomPaymentEntry"}
 
 # Document Events
 # ---------------
@@ -249,10 +247,13 @@ fixtures = [
 	{
 		"dt": "Address Template",
 		"filters": [
-			["name", "in", [
-				"Bangladesh",
+			[
+				"name",
+				"in",
+				[
+					"Bangladesh",
+				],
 			]
-			 ]
-		]
+		],
 	}
 ]

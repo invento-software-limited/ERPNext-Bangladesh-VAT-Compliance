@@ -2,14 +2,16 @@
 # For license information, please see license.txt
 
 import json
-from bs4 import BeautifulSoup
 from datetime import timedelta
+
 import frappe
+from bs4 import BeautifulSoup
 from frappe import _
+from frappe.contacts.doctype.address.address import get_company_address
+from frappe.model.document import Document
 from frappe.utils import getdate
 from frappe.utils.print_format import download_pdf
-from frappe.model.document import Document
-from frappe.contacts.doctype.address.address import get_company_address
+
 from vat_compliance.vat_compliance.report.vds_management.vds_management import get_data
 
 
@@ -40,7 +42,8 @@ class VATDeductionCertificate(Document):
 		if not self.from_date or not self.to_date or not self.vendor or not self.company:
 			return
 
-		conflict = frappe.db.sql("""
+		conflict = frappe.db.sql(
+			"""
 								 SELECT name, from_date, to_date
 								 FROM `tabVAT Deduction Certificate`
 								 WHERE name != %(name)s
@@ -60,31 +63,36 @@ class VATDeductionCertificate(Document):
 								   AND %(to_date)s)
 									 )
 									 LIMIT 1
-								 """, {
-									 "name": self.name or "",
-									 "vendor": self.vendor,
-									 "company": self.company,
-									 "from_date": self.from_date,
-									 "to_date": self.to_date
-								 }, as_dict=True)
+								 """,
+			{
+				"name": self.name or "",
+				"vendor": self.vendor,
+				"company": self.company,
+				"from_date": self.from_date,
+				"to_date": self.to_date,
+			},
+			as_dict=True,
+		)
 
 		if conflict:
 			link = f"/app/vat-deduction-certificate/{conflict[0].name}"
-			frappe.throw(_(
-				f"Date range conflicts with existing VAT Deduction Certificate "
-				f"<a href='{link}' target='_blank'>{conflict[0].name}</a> "
-				f"({conflict[0].from_date} to {conflict[0].to_date})"
-			))
+			frappe.throw(
+				_(
+					f"Date range conflicts with existing VAT Deduction Certificate "
+					f"<a href='{link}' target='_blank'>{conflict[0].name}</a> "
+					f"({conflict[0].from_date} to {conflict[0].to_date})"
+				)
+			)
 
 	def update_references_and_context(self):
 		data = self.get_vds_withheld_data()
 		context = self.prepare_context(data)
 
-		self.db_set('context', json.dumps(context))
+		self.db_set("context", json.dumps(context))
 		self.prepare_references(data)
 
 		print_html = self.get_print_html()
-		self.db_set('certificate_html', print_html)
+		self.db_set("certificate_html", print_html)
 		frappe.db.commit()
 
 	def prepare_references(self, data):
@@ -92,11 +100,14 @@ class VATDeductionCertificate(Document):
 		Populate the references child table with payment_entry and purchase_invoice,
 		skipping duplicates where both fields match an existing row, using db_set
 		"""
-		frappe.db.sql("""
+		frappe.db.sql(
+			"""
 					  DELETE
 					  FROM `tabVAT Deduction Certificate References`
 					  WHERE parent = %s
-					  """, (self.name,))
+					  """,
+			(self.name,),
+		)
 
 		existing_rows = set()
 
@@ -108,14 +119,16 @@ class VATDeductionCertificate(Document):
 			if key in existing_rows:
 				continue
 
-			frappe.get_doc({
-				"doctype": "VAT Deduction Certificate References",
-				"parent": self.name,
-				"parentfield": "references",
-				"parenttype": self.doctype,
-				"payment_entry": pe,
-				"purchase_invoice": pi
-			}).insert(ignore_permissions=True)
+			frappe.get_doc(
+				{
+					"doctype": "VAT Deduction Certificate References",
+					"parent": self.name,
+					"parentfield": "references",
+					"parenttype": self.doctype,
+					"payment_entry": pe,
+					"purchase_invoice": pi,
+				}
+			).insert(ignore_permissions=True)
 
 			existing_rows.add(key)
 
@@ -126,17 +139,20 @@ class VATDeductionCertificate(Document):
 		for index, row in enumerate(data):
 			invoice = frappe.get_doc("Purchase Invoice", row.get("invoice_id"))
 
-			withheld_data.append({
-				'sl_no': index + 1,
-				'supplier_name': row.get('vendor_name'),
-				'supplier_bin': supplier.get("custom_bin_no"),
-				'inv_number': row.get('invoice_id'),
-				'inv_posting_date': invoice.get("posting_date").strftime(
-					"%Y-%m-%d") if invoice.get("posting_date") else None,
-				'total_value_of_supply': row.get('invoice_amount'),
-				'amount_of_vat': invoice.get("total_taxes_and_charges"),
-				'amount_of_vat_withheld': row.get('vds_amount'),
-			})
+			withheld_data.append(
+				{
+					"sl_no": index + 1,
+					"supplier_name": row.get("vendor_name"),
+					"supplier_bin": supplier.get("custom_bin_no"),
+					"inv_number": row.get("invoice_id"),
+					"inv_posting_date": invoice.get("posting_date").strftime("%Y-%m-%d")
+					if invoice.get("posting_date")
+					else None,
+					"total_value_of_supply": row.get("invoice_amount"),
+					"amount_of_vat": invoice.get("total_taxes_and_charges"),
+					"amount_of_vat_withheld": row.get("vds_amount"),
+				}
+			)
 
 		company = frappe.get_doc("Company", self.company)
 
@@ -144,18 +160,18 @@ class VATDeductionCertificate(Document):
 
 		if address_obj and address_obj.company_address_display:
 			address = ", ".join(
-				[line.strip() for line in address_obj.company_address_display.split("<br>") if
-				 line.strip()])
+				[line.strip() for line in address_obj.company_address_display.split("<br>") if line.strip()]
+			)
 		else:
 			address = ""
 
 		context = {
-			'name_of_withholding_entity': self.company,
-			'address_of_withholding_entity': address,
-			'bin_of_withholding_entity': company.get("custom_bin_no"),
-			'certificate_no': self.name,
-			'date_of_issue': self.posting_date.strftime("%Y-%m-%d") if self.posting_date else None,
-			'withheld_data': withheld_data
+			"name_of_withholding_entity": self.company,
+			"address_of_withholding_entity": address,
+			"bin_of_withholding_entity": company.get("custom_bin_no"),
+			"certificate_no": self.name,
+			"date_of_issue": self.posting_date.strftime("%Y-%m-%d") if self.posting_date else None,
+			"withheld_data": withheld_data,
 		}
 
 		return context
@@ -167,7 +183,7 @@ class VATDeductionCertificate(Document):
 			"to_date": self.to_date,
 			"status": "DDGT",
 			"company": self.company,
-			"vendor": self.vendor
+			"vendor": self.vendor,
 		}
 		return get_data(filters)
 

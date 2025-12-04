@@ -4,45 +4,45 @@
 frappe.query_reports["VDS Management"] = {
 	filters: [
 		{
-			"fieldname": "from_date",
-			"label": "From Date",
-			"fieldtype": "Date",
-			"default": frappe.datetime.get_today(),
-			"reqd": 1
+			fieldname: "from_date",
+			label: "From Date",
+			fieldtype: "Date",
+			default: frappe.datetime.get_today(),
+			reqd: 1,
 		},
 		{
-			"fieldname": "to_date",
-			"label": "To Date",
-			"fieldtype": "Date",
-			"default": frappe.datetime.get_today(),
-			"reqd": 1
+			fieldname: "to_date",
+			label: "To Date",
+			fieldtype: "Date",
+			default: frappe.datetime.get_today(),
+			reqd: 1,
 		},
 		{
-			"fieldname": "invoice_status",
-			"label": "Invoice Status",
-			"fieldtype": "Select",
-			"options": "\nPaid\nPartly Paid\nOverdue",
+			fieldname: "invoice_status",
+			label: "Invoice Status",
+			fieldtype: "Select",
+			options: "\nPaid\nPartly Paid\nOverdue",
 		},
 		{
-			"fieldname": "status",
-			"label": "Challan Status",
-			"fieldtype": "Select",
-			"options": "\nDNGT\nDDGT",
+			fieldname: "status",
+			label: "Challan Status",
+			fieldtype: "Select",
+			options: "\nDNGT\nDDGT",
 		},
 		{
-			"fieldname": "supplier",
-			"label": "Supplier",
-			"fieldtype": "Link",
-			"options": "Supplier"
+			fieldname: "supplier",
+			label: "Supplier",
+			fieldtype: "Link",
+			options: "Supplier",
 		},
 		{
-			"fieldname": "company",
-			"label": "Company",
-			"fieldtype": "Link",
-			"options": "Company",
-			"default": frappe.defaults.get_user_default("Company"),
-			"read_only": 1
-		}
+			fieldname: "company",
+			label: "Company",
+			fieldtype: "Link",
+			options: "Company",
+			default: frappe.defaults.get_user_default("Company"),
+			read_only: 1,
+		},
 	],
 	get_datatable_options(options) {
 		return Object.assign(options, {
@@ -67,11 +67,13 @@ frappe.query_reports["VDS Management"] = {
 			console.log(selected_rows);
 
 			// Filter out rows that are already paid (DDGT)
-			let valid_rows = selected_rows.filter(row => row.status !== "DDGT");
+			let valid_rows = selected_rows.filter((row) => row.status !== "DDGT");
 
 			if (valid_rows.length === 0) {
 				if (selected_rows.length > 0) {
-					frappe.msgprint(__("Selected rows are already paid (DDGT). Please select unpaid rows."));
+					frappe.msgprint(
+						__("Selected rows are already paid (DDGT). Please select unpaid rows.")
+					);
 				} else {
 					frappe.msgprint(__("Please select at least one row to make payment."));
 				}
@@ -81,14 +83,14 @@ frappe.query_reports["VDS Management"] = {
 			frappe.call({
 				method: "vat_compliance.vat_compliance.report.vds_management.vds_management.make_journal_entry",
 				args: {
-					rows: valid_rows
+					rows: valid_rows,
 				},
 				callback: function (r) {
 					if (r.message) {
 						frappe.set_route("Form", "Journal Entry", r.message);
 					}
-				}
+				},
 			});
 		});
-	}
+	},
 };
