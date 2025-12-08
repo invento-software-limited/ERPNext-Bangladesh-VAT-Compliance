@@ -1,9 +1,25 @@
 frappe.ui.form.on("Compliance Settings", {
+	setup: function (frm) {
+		frm.set_query("default_account", function () {
+			return {
+				filters: {
+					account_type: "Tax",
+					is_group: 0,
+					company: frm.doc.company,
+				},
+			};
+		});
+	},
+
 	refresh: function (frm) {
 		frm.trigger("render_tax_template_table");
 		frm.add_custom_button(__("Create Selected Templates"), () => {
 			frm.trigger("create_templates");
 		});
+	},
+
+	company: function (frm) {
+		frm.set_value("default_account", "");
 	},
 
 	create_templates: function (frm) {
