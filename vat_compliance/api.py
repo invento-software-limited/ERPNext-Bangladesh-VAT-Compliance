@@ -18,7 +18,13 @@ def _get_acs_session():
 		}
 	)
 
-	response = session.get(csrf_url, timeout=10)
+	proxy = "socks5://115.127.110.98:1080"
+	session.proxies = {
+		"http": proxy,
+		"https": proxy,
+	}
+
+	response = session.get(csrf_url, timeout=30)
 	response.raise_for_status()
 
 	html_content = response.text
@@ -51,10 +57,10 @@ def validate_bin(bin_no):
 		return api_response.json()
 
 	except requests.exceptions.RequestException as e:
-		frappe.log_error(f"BIN Validation Error: {e!s}", "BIN Validation")
+		frappe.log_error(f"BIN Validation Error: {e!s}", frappe.get_traceback())
 		frappe.throw(f"Error connecting to validation service: {e!s}")
 	except Exception as e:
-		frappe.log_error(f"BIN Validation Error: {e!s}", "BIN Validation")
+		frappe.log_error(f"BIN Validation Error: {e!s}", frappe.get_traceback())
 		frappe.throw(f"An unexpected error occurred: {e!s}")
 
 
@@ -76,8 +82,8 @@ def validate_tin(tin_no):
 		return api_response.json()
 
 	except requests.exceptions.RequestException as e:
-		frappe.log_error(f"TIN Validation Error: {e!s}", "TIN Validation")
+		frappe.log_error(f"TIN Validation Error: {e!s}", frappe.get_traceback())
 		frappe.throw(f"Error connecting to validation service: {e!s}")
 	except Exception as e:
-		frappe.log_error(f"TIN Validation Error: {e!s}", "TIN Validation")
+		frappe.log_error(f"TIN Validation Error: {e!s}", frappe.get_traceback())
 		frappe.throw(f"An unexpected error occurred: {e!s}")
