@@ -1,14 +1,14 @@
 frappe.ui.form.on("Compliance Settings", {
 	refresh: function (frm) {
 		frm.trigger("render_tax_template_table");
-		frm.add_custom_button("Create Selected Templates", () => {
+		frm.add_custom_button(__("Create Selected Templates"), () => {
 			frm.trigger("create_templates");
 		});
 	},
 
 	create_templates: function (frm) {
 		if (!frm.doc.default_account || !frm.doc.company) {
-			frappe.msgprint("Please select Default Tax Account and Company first.");
+			frappe.msgprint(__("Please select Default Tax Account and Company first."));
 			return;
 		}
 
@@ -20,12 +20,12 @@ frappe.ui.form.on("Compliance Settings", {
 			});
 
 		if (selected_indices.length === 0) {
-			frappe.msgprint("Please select at least one template.");
+			frappe.msgprint(__("Please select at least one template."));
 			return;
 		}
 
 		if (!frm.tax_templates) {
-			frappe.msgprint("Templates not loaded yet. Please refresh.");
+			frappe.msgprint(__("Templates not loaded yet. Please refresh."));
 			return;
 		}
 
@@ -42,9 +42,13 @@ frappe.ui.form.on("Compliance Settings", {
 			freeze: true,
 			callback: function (r) {
 				if (r.message) {
-					frappe.msgprint(`Successfully created ${r.message} Item Tax Templates.`);
+					frappe.msgprint(
+						__("Successfully created {0} Item Tax Templates.", [r.message])
+					);
 				} else {
-					frappe.msgprint("No new templates were created (they might already exist).");
+					frappe.msgprint(
+						__("No new templates were created (they might already exist).")
+					);
 				}
 			},
 		});
