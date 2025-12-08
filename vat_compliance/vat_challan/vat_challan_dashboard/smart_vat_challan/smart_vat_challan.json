@@ -1,0 +1,58 @@
+{
+ "cards": [
+  {
+   "card": "Monthly Sales"
+  },
+  {
+   "card": "Monthly Sales Without VAT"
+  },
+  {
+   "card": "Monthly VAT"
+  },
+  {
+   "card": "Monthly Invoice"
+  },
+  {
+   "card": "Total Retailer"
+  },
+  {
+   "card": "Total Registered Branch"
+  },
+  {
+   "card": "Failed Sync"
+  },
+  {
+   "card": "Return Invoice"
+  }
+ ],
+ "charts": [
+  {
+   "chart": "VAT Invoice Trends",
+   "width": "Half"
+  },
+  {
+   "chart": "Synced Comparision",
+   "width": "Half"
+  },
+  {
+   "chart": "Branch Wise Monthly Sales",
+   "width": "Half"
+  },
+  {
+   "chart": "Service Type wise Sales",
+   "width": "Half"
+  }
+ ],
+ "creation": "2025-09-04 10:12:14.227863",
+ "dashboard_name": "Smart Vat Challan",
+ "docstatus": 0,
+ "doctype": "Dashboard",
+ "idx": 1,
+ "is_default": 1,
+ "is_standard": 1,
+ "modified": "2025-11-09 16:04:18.129450",
+ "modified_by": "Administrator",
+ "module": "Vat Challan",
+ "name": "Smart Vat Challan",
+ "owner": "Administrator"
+}

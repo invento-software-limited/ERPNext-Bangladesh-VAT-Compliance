@@ -1,0 +1,376 @@
+{
+ "actions": [],
+ "autoname": "field:company",
+ "beta": 1,
+ "creation": "2025-09-03 09:52:03.965639",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_kiy9",
+  "company",
+  "column_break_remo",
+  "amended_from",
+  "owner_info_section",
+  "owner_full_name",
+  "owner_nid",
+  "owner_email",
+  "column_break_muqm",
+  "owner_cc",
+  "owner_mobile",
+  "business_info_section",
+  "business_name",
+  "business_website",
+  "business_ecom",
+  "business_app",
+  "zone",
+  "zone_id",
+  "vat_commission_rate",
+  "vat_commissionrate_id",
+  "division",
+  "division_id",
+  "circle",
+  "circle_id",
+  "column_break_uvnv",
+  "business_address",
+  "address_display",
+  "bin",
+  "trade_license_number",
+  "tin",
+  "service_types",
+  "server_response_section",
+  "status_code",
+  "column_break_idiv",
+  "retailer_id",
+  "section_break_dqgr",
+  "server_response",
+  "files_tab",
+  "business_logo",
+  "logo_preview",
+  "column_break_hwul",
+  "nid_document",
+  "column_break_xxnm",
+  "bin_document",
+  "column_break_saig",
+  "trade_document",
+  "column_break_tdmb",
+  "tin_document"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_kiy9",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Retailer Registration",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "owner_info_section",
+   "fieldtype": "Section Break",
+   "label": "Owner Info"
+  },
+  {
+   "fieldname": "column_break_muqm",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "business_info_section",
+   "fieldtype": "Section Break",
+   "label": "Business Info"
+  },
+  {
+   "fieldname": "business_name",
+   "fieldtype": "Data",
+   "label": "Business Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_uvnv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "business_address",
+   "fieldtype": "Link",
+   "label": "Business Address",
+   "options": "Address"
+  },
+  {
+   "depends_on": "eval:doc.business_address",
+   "fieldname": "address_display",
+   "fieldtype": "Small Text",
+   "label": "Address"
+  },
+  {
+   "fieldname": "business_website",
+   "fieldtype": "Data",
+   "label": "Website URL"
+  },
+  {
+   "fieldname": "owner_mobile",
+   "fieldtype": "Data",
+   "label": "Phone Number",
+   "reqd": 1
+  },
+  {
+   "fieldname": "owner_full_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Full Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "owner_cc",
+   "fieldtype": "Data",
+   "label": "Dialing Code",
+   "reqd": 1
+  },
+  {
+   "fieldname": "owner_email",
+   "fieldtype": "Data",
+   "label": "Email"
+  },
+  {
+   "fieldname": "owner_nid",
+   "fieldtype": "Data",
+   "label": "NID No",
+   "reqd": 1
+  },
+  {
+   "fieldname": "business_ecom",
+   "fieldtype": "Data",
+   "label": "E-Commerce Portal"
+  },
+  {
+   "fieldname": "business_app",
+   "fieldtype": "Data",
+   "label": "App Download URL"
+  },
+  {
+   "description": "e.g: 123456789-1234",
+   "fieldname": "bin",
+   "fieldtype": "Data",
+   "label": "Business Identification Number",
+   "reqd": 1
+  },
+  {
+   "fieldname": "trade_license_number",
+   "fieldtype": "Data",
+   "label": "Trade license number"
+  },
+  {
+   "fieldname": "tin",
+   "fieldtype": "Data",
+   "label": "Tax Identification Number (TIN)"
+  },
+  {
+   "fieldname": "service_types",
+   "fieldtype": "Table",
+   "label": "Service Types",
+   "options": "Retailer Service Type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "zone",
+   "fieldtype": "Link",
+   "label": "Zone",
+   "options": "VC Zone",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "zone.zone_id",
+   "fetch_if_empty": 1,
+   "fieldname": "zone_id",
+   "fieldtype": "Data",
+   "label": "Zone ID",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.zone",
+   "fieldname": "vat_commission_rate",
+   "fieldtype": "Link",
+   "label": "Vat Commission Rate",
+   "options": "VC VAT Commission Rate",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "vat_commission_rate.vat_commission_rate_id",
+   "fieldname": "vat_commissionrate_id",
+   "fieldtype": "Data",
+   "label": "Vat Commission Rate ID",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.vat_commission_rate",
+   "fieldname": "division",
+   "fieldtype": "Link",
+   "label": "Division",
+   "options": "VC Division",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "division.division_id",
+   "fieldname": "division_id",
+   "fieldtype": "Data",
+   "label": "Division ID",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.division",
+   "fieldname": "circle",
+   "fieldtype": "Link",
+   "label": "Circle",
+   "options": "VC Circle",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "circle.circle_id",
+   "fieldname": "circle_id",
+   "fieldtype": "Data",
+   "label": "Circle ID",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "description": "Retailer must be register against a company.",
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "column_break_remo",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "files_tab",
+   "fieldtype": "Tab Break",
+   "label": "Files"
+  },
+  {
+   "fieldname": "business_logo",
+   "fieldtype": "Attach Image",
+   "label": "Business Logo"
+  },
+  {
+   "fieldname": "column_break_hwul",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "eval:doc.docstatus==1",
+   "fieldname": "nid_document",
+   "fieldtype": "Attach",
+   "label": "NID"
+  },
+  {
+   "fieldname": "column_break_xxnm",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "eval:doc.docstatus==1",
+   "fieldname": "bin_document",
+   "fieldtype": "Attach",
+   "label": "BIN"
+  },
+  {
+   "fieldname": "column_break_saig",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "eval:doc.docstatus==1",
+   "fieldname": "trade_document",
+   "fieldtype": "Attach",
+   "label": "Trade License"
+  },
+  {
+   "fieldname": "column_break_tdmb",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "eval:doc.docstatus==1",
+   "fieldname": "tin_document",
+   "fieldtype": "Attach",
+   "label": "TIN"
+  },
+  {
+   "depends_on": "eval:doc.business_logo",
+   "fieldname": "logo_preview",
+   "fieldtype": "Image",
+   "label": "Logo Preview",
+   "options": "business_logo",
+   "read_only": 1
+  },
+  {
+   "fieldname": "server_response_section",
+   "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "Server Response"
+  },
+  {
+   "fieldname": "status_code",
+   "fieldtype": "Data",
+   "label": "Status Code"
+  },
+  {
+   "fieldname": "column_break_idiv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_dqgr",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "server_response",
+   "fieldtype": "JSON",
+   "label": "Server Response"
+  },
+  {
+   "fieldname": "retailer_id",
+   "fieldtype": "Data",
+   "label": "Retailer ID"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2025-12-08 14:44:00.903185",
+ "modified_by": "Administrator",
+ "module": "Vat Challan",
+ "name": "Retailer Registration",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,0 +1,348 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "creation": "2025-09-02 12:17:02.100271",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "invoice_information",
+  "column_break_fgah",
+  "invoice_number",
+  "invoice_date",
+  "customer_id",
+  "column_break_xies",
+  "retailer_id",
+  "retailer_transaction_ref",
+  "bank_transaction_id",
+  "branch",
+  "section_break_ztqm",
+  "buyer_info",
+  "transaction_information",
+  "txn_amount",
+  "total_sd_percentage",
+  "total_sd_amount",
+  "total_amount",
+  "total_discount_amount",
+  "column_break_eels",
+  "payment_method",
+  "terminal_number",
+  "retailer_branch_id",
+  "total_service_charges_percentage",
+  "total_service_charges_amount",
+  "section_break_kohb",
+  "retailer_branch_info",
+  "meta_data",
+  "order_id",
+  "vat_invoice_details",
+  "vat_invoice_detail",
+  "server_response_section",
+  "status",
+  "vat_invoice_id",
+  "s_challan_number",
+  "requested_payloads",
+  "response",
+  "get_invoice_response_section",
+  "get_response",
+  "return_server_response_section",
+  "is_return",
+  "return_payload",
+  "return_response",
+  "return_invoice_no"
+ ],
+ "fields": [
+  {
+   "fieldname": "invoice_information",
+   "fieldtype": "Section Break",
+   "label": "Invoice Information",
+   "read_only": 1
+  },
+  {
+   "fieldname": "invoice_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Invoice Number",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "invoice_date",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Invoice Date",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "customer_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Customer ID",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "retailer_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Retailer ID",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "retailer_transaction_ref",
+   "fieldtype": "Data",
+   "label": "Retailer Transaction Reference",
+   "read_only": 1
+  },
+  {
+   "fieldname": "bank_transaction_id",
+   "fieldtype": "Data",
+   "label": "Bank Transaction ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "buyer_info",
+   "fieldtype": "JSON",
+   "label": "Buyer Info",
+   "read_only": 1
+  },
+  {
+   "fieldname": "transaction_information",
+   "fieldtype": "Section Break",
+   "label": "Transaction Information",
+   "read_only": 1
+  },
+  {
+   "fieldname": "txn_amount",
+   "fieldtype": "Currency",
+   "label": "Transaction Amount",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "total_sd_percentage",
+   "fieldtype": "Percent",
+   "label": "Total SD Percentage",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_sd_amount",
+   "fieldtype": "Currency",
+   "label": "Total SD Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_amount",
+   "fieldtype": "Currency",
+   "label": "Total Amount",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "payment_method",
+   "fieldtype": "Link",
+   "label": "Payment Method",
+   "options": "Mode of Payment",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_discount_amount",
+   "fieldtype": "Currency",
+   "label": "Total Discount Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "terminal_number",
+   "fieldtype": "Data",
+   "label": "Terminal Number",
+   "read_only": 1
+  },
+  {
+   "fieldname": "retailer_branch_id",
+   "fieldtype": "Data",
+   "label": "Retailer Branch ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "retailer_branch_info",
+   "fieldtype": "JSON",
+   "label": "Retailer Branch Info",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_service_charges_percentage",
+   "fieldtype": "Percent",
+   "label": "Total Service Charges Percentage",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_service_charges_amount",
+   "fieldtype": "Currency",
+   "label": "Total Service Charges Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "meta_data",
+   "fieldtype": "Section Break",
+   "label": "Meta Data",
+   "read_only": 1
+  },
+  {
+   "fieldname": "order_id",
+   "fieldtype": "Data",
+   "label": "Order ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "vat_invoice_details",
+   "fieldtype": "Section Break",
+   "label": "VAT Invoice Details",
+   "read_only": 1
+  },
+  {
+   "fieldname": "vat_invoice_detail",
+   "fieldtype": "JSON",
+   "label": "VAT Invoice Detail",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_xies",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_ztqm",
+   "fieldtype": "Section Break",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_eels",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_kohb",
+   "fieldtype": "Section Break",
+   "read_only": 1
+  },
+  {
+   "fieldname": "server_response_section",
+   "fieldtype": "Section Break",
+   "label": "Server Response",
+   "read_only": 1
+  },
+  {
+   "default": "Pending",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Pending\nSynced\nFailed\nPartly Return\nReturn",
+   "read_only": 1
+  },
+  {
+   "fieldname": "requested_payloads",
+   "fieldtype": "JSON",
+   "label": "Requested Payloads",
+   "read_only": 1
+  },
+  {
+   "fieldname": "response",
+   "fieldtype": "JSON",
+   "label": "Response",
+   "read_only": 1
+  },
+  {
+   "fieldname": "branch",
+   "fieldtype": "Link",
+   "label": "Branch",
+   "options": "Retailer Branch Registration",
+   "read_only": 1
+  },
+  {
+   "fieldname": "vat_invoice_id",
+   "fieldtype": "Data",
+   "label": "VAT Invoice ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "s_challan_number",
+   "fieldtype": "Data",
+   "label": "S Challan Number",
+   "read_only": 1
+  },
+  {
+   "fieldname": "get_invoice_response_section",
+   "fieldtype": "Section Break",
+   "label": "Get Invoice Response",
+   "read_only": 1
+  },
+  {
+   "fieldname": "get_response",
+   "fieldtype": "JSON",
+   "label": "Get Response",
+   "read_only": 1
+  },
+  {
+   "fieldname": "return_server_response_section",
+   "fieldtype": "Section Break",
+   "label": "Return Server Response",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_return",
+   "fieldtype": "Check",
+   "label": "Is Return",
+   "read_only": 1
+  },
+  {
+   "fieldname": "return_payload",
+   "fieldtype": "JSON",
+   "label": "Return Payload",
+   "read_only": 1
+  },
+  {
+   "fieldname": "return_response",
+   "fieldtype": "JSON",
+   "label": "Return Response",
+   "read_only": 1
+  },
+  {
+   "fieldname": "return_invoice_no",
+   "fieldtype": "Data",
+   "label": "Return Invoice No",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_fgah",
+   "fieldtype": "Column Break",
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "in_create": 1,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-11-09 14:36:43.476469",
+ "modified_by": "Administrator",
+ "module": "Vat Challan",
+ "name": "VAT Invoice",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

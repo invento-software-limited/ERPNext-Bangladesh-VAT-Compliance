@@ -1,0 +1,84 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:vat_commission_rate_name",
+ "beta": 1,
+ "creation": "2025-09-04 13:14:52.362516",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "vat_commission_rate_name",
+  "zone",
+  "column_break_umhm",
+  "vat_commission_rate_id",
+  "zone_id"
+ ],
+ "fields": [
+  {
+   "fieldname": "vat_commission_rate_name",
+   "fieldtype": "Data",
+   "label": "VAT Commission Rate Name",
+   "read_only": 1,
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "column_break_umhm",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "vat_commission_rate_id",
+   "fieldtype": "Data",
+   "label": "VAT Commission Rate ID",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "zone",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Zone",
+   "options": "VC Zone",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fetch_from": "zone.zone_id",
+   "fetch_if_empty": 1,
+   "fieldname": "zone_id",
+   "fieldtype": "Data",
+   "label": "Zone ID",
+   "read_only": 1,
+   "reqd": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "in_create": 1,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-12-08 14:47:16.030296",
+ "modified_by": "Administrator",
+ "module": "Vat Challan",
+ "name": "VC VAT Commission Rate",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "read_only": 1,
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -238,7 +238,7 @@
    "type": "Link"
   }
  ],
- "modified": "2025-12-01 15:36:54.504766",
+ "modified": "2025-12-08 14:34:11.940529",
  "modified_by": "Administrator",
  "module": "Vat Compliance",
  "name": "BD VAT Compliance",
@@ -248,7 +248,7 @@
  "public": 1,
  "quick_lists": [],
  "roles": [],
- "sequence_id": 28.0,
+ "sequence_id": 22.0,
  "shortcuts": [],
  "title": "BD VAT Compliance"
 }

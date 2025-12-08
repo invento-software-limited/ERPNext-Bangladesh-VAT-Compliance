@@ -1,0 +1,223 @@
+{
+ "actions": [],
+ "autoname": "field:branch_name",
+ "creation": "2025-09-03 11:14:48.403743",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_lsgb",
+  "retailer",
+  "branch_name",
+  "branch_dial_code",
+  "branch_phone_number",
+  "branch_address",
+  "address_display",
+  "zone",
+  "zone_id",
+  "column_break_lwxv",
+  "amended_from",
+  "retailer_id",
+  "branch_type",
+  "vat_commission_rate",
+  "vat_commissionrate_id",
+  "division",
+  "division_id",
+  "circle",
+  "circle_id",
+  "disabled",
+  "section_break_eozm",
+  "branch_id",
+  "branch_number",
+  "server_response"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_lsgb",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Retailer Branch Registration",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "retailer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Retailer",
+   "options": "Retailer Registration",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_lwxv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "retailer.retailer_id",
+   "fieldname": "retailer_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Retailer ID",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "branch_name",
+   "fieldtype": "Data",
+   "label": "Branch Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "branch_type",
+   "fieldtype": "Select",
+   "label": "Branch Type",
+   "options": "Main Branch\nSub Branch",
+   "reqd": 1
+  },
+  {
+   "fieldname": "branch_address",
+   "fieldtype": "Link",
+   "label": "Branch Address",
+   "options": "Address"
+  },
+  {
+   "depends_on": "eval:doc.branch_address",
+   "fieldname": "address_display",
+   "fieldtype": "Small Text",
+   "label": "Address Display",
+   "read_only": 1
+  },
+  {
+   "fieldname": "zone",
+   "fieldtype": "Link",
+   "label": "Zone",
+   "options": "VC Zone",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "zone.zone_id",
+   "fieldname": "zone_id",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Zone ID"
+  },
+  {
+   "fieldname": "vat_commission_rate",
+   "fieldtype": "Link",
+   "label": "VAT Commission Rate",
+   "options": "VC VAT Commission Rate",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "vat_commission_rate.vat_commission_rate_id",
+   "fieldname": "vat_commissionrate_id",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "VAT Commission Rate ID"
+  },
+  {
+   "fieldname": "division",
+   "fieldtype": "Link",
+   "label": "Division",
+   "options": "VC Division",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "division.division_id",
+   "fieldname": "division_id",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Division ID"
+  },
+  {
+   "fieldname": "circle",
+   "fieldtype": "Link",
+   "label": "Circle",
+   "options": "VC Circle",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "circle.circle_id",
+   "fieldname": "circle_id",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Circle ID"
+  },
+  {
+   "fieldname": "branch_dial_code",
+   "fieldtype": "Data",
+   "label": "Branch Dialing Code",
+   "reqd": 1
+  },
+  {
+   "fieldname": "branch_phone_number",
+   "fieldtype": "Data",
+   "label": "Branch Phone Number",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_eozm",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "server_response",
+   "fieldtype": "JSON",
+   "label": "Server Response",
+   "read_only": 1
+  },
+  {
+   "fieldname": "branch_id",
+   "fieldtype": "Data",
+   "label": "Branch ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "branch_number",
+   "fieldtype": "Data",
+   "label": "Branch Number",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2025-11-06 15:51:31.154878",
+ "modified_by": "Administrator",
+ "module": "Vat Challan",
+ "name": "Retailer Branch Registration",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

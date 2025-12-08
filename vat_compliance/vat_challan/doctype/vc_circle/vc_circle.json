@@ -1,0 +1,119 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "CIRCLE-.###",
+ "beta": 1,
+ "creation": "2025-09-04 13:50:29.035128",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "circle_name",
+  "zone",
+  "vat_commission_rate",
+  "division",
+  "column_break_nwsb",
+  "circle_id",
+  "zone_id",
+  "vat_commission_rate_id",
+  "division_id"
+ ],
+ "fields": [
+  {
+   "fieldname": "circle_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Circle Name",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_nwsb",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "circle_id",
+   "fieldtype": "Data",
+   "label": "Circle ID",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "zone",
+   "fieldtype": "Link",
+   "label": "Zone",
+   "options": "VC Zone",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fetch_from": "zone.zone_id",
+   "fieldname": "zone_id",
+   "fieldtype": "Data",
+   "label": "Zone ID",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "vat_commission_rate",
+   "fieldtype": "Link",
+   "label": "VAT Commission Rate",
+   "options": "VC VAT Commission Rate",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fetch_from": "vat_commission_rate.vat_commission_rate_id",
+   "fieldname": "vat_commission_rate_id",
+   "fieldtype": "Data",
+   "label": "VAT Commission Rate ID",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "division",
+   "fieldtype": "Link",
+   "label": "Division",
+   "options": "VC Division",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fetch_from": "division.division_id",
+   "fieldname": "division_id",
+   "fieldtype": "Data",
+   "label": "Division ID",
+   "read_only": 1,
+   "reqd": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "in_create": 1,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-12-08 14:47:44.455455",
+ "modified_by": "Administrator",
+ "module": "Vat Challan",
+ "name": "VC Circle",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "read_only": 1,
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "circle_name"
+}
