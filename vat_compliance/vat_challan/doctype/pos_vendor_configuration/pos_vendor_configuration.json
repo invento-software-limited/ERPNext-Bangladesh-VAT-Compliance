@@ -1,0 +1,134 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "beta": 1,
+ "creation": "2025-09-01 16:20:19.752670",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "disabled",
+  "base_url",
+  "client_id",
+  "client_secret",
+  "client_api_key",
+  "column_break_fqqv",
+  "company_id",
+  "access_token",
+  "expiry_date",
+  "sync_settings_section",
+  "sync_schedule",
+  "column_break_csds",
+  "last_sync_date"
+ ],
+ "fields": [
+  {
+   "default": "60af6d032d0d40db844abfa18d66ff62",
+   "fieldname": "client_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Client ID",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "default": "9aab8053b5163ebf",
+   "fieldname": "client_secret",
+   "fieldtype": "Password",
+   "in_list_view": 1,
+   "label": "Client Secret",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "default": "97a3715a3d8d4beaabda6cc523a9b4a4",
+   "fieldname": "client_api_key",
+   "fieldtype": "Password",
+   "label": "Client API Key",
+   "read_only": 1
+  },
+  {
+   "fieldname": "company_id",
+   "fieldtype": "Data",
+   "label": "Company ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_fqqv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "access_token",
+   "fieldtype": "Password",
+   "label": "Access Token",
+   "read_only": 1
+  },
+  {
+   "fieldname": "expiry_date",
+   "fieldtype": "Datetime",
+   "label": "Expiry Date",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled"
+  },
+  {
+   "default": "https://api-uat-nbr.dgepay.net/vschallan/v3",
+   "fieldname": "base_url",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Base Url",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "sync_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Sync Settings"
+  },
+  {
+   "fieldname": "sync_schedule",
+   "fieldtype": "Select",
+   "label": "Sync Schedule",
+   "options": "\nAfter Submit\nDaily\nWeekly\nMonthly"
+  },
+  {
+   "fieldname": "column_break_csds",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "last_sync_date",
+   "fieldtype": "Date",
+   "label": "Last Sync Date",
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2025-12-08 14:39:49.283623",
+ "modified_by": "Administrator",
+ "module": "Vat Challan",
+ "name": "POS Vendor Configuration",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -138,34 +138,16 @@ override_doctype_class = {"Payment Entry": "vat_compliance.hook_functions.paymen
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+doc_events = {
+	"POS Invoice": {"on_submit": "vat_compliance.vat_challan.hook_functions.vat_invoice.create_vat_invoice"}
+}
 
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"all": [
-# 		"vat_compliance.tasks.all"
-# 	],
-# 	"daily": [
-# 		"vat_compliance.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"vat_compliance.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"vat_compliance.tasks.weekly"
-# 	],
-# 	"monthly": [
-# 		"vat_compliance.tasks.monthly"
-# 	],
-# }
+scheduler_events = {
+	"daily": ["vat_compliance.vschallan.auto_sync_vat_invoices"],
+}
 
 # Testing
 # -------

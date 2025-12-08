@@ -1,0 +1,197 @@
+{
+ "charts": [
+  {
+   "chart_name": "VAT Invoice Trends",
+   "label": "VAT Invoice Trends"
+  },
+  {
+   "chart_name": "Synced Comparision",
+   "label": "Synced Comparision"
+  }
+ ],
+ "content": "[{\"id\":\"KaApvYkFr5\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Smart Vat Challan (Beta)</span>\",\"col\":12}},{\"id\":\"q5P9msZpZo\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Monthly Sales\",\"col\":4}},{\"id\":\"bsYZVkGjmX\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Monthly Sales Without VAT\",\"col\":4}},{\"id\":\"j_qvWHuepc\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Monthly VAT\",\"col\":4}},{\"id\":\"y2WnHOVbsg\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"CnadE3eo--\",\"type\":\"chart\",\"data\":{\"chart_name\":\"VAT Invoice Trends\",\"col\":6}},{\"id\":\"yjTUO_w6CB\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Synced Comparision\",\"col\":6}},{\"id\":\"2OAr_sw8nE\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"EGznu9R8HF\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Dashboard\",\"col\":3}},{\"id\":\"E8fAPlEF5C\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Vat Invoice\",\"col\":3}},{\"id\":\"6ep157OPtJ\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"UC0b-qYWPg\",\"type\":\"card\",\"data\":{\"card_name\":\"Configurations\",\"col\":5}},{\"id\":\"ECtqCa5aGR\",\"type\":\"card\",\"data\":{\"card_name\":\"Reports\",\"col\":5}}]",
+ "creation": "2025-09-04 09:45:43.882183",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "month-view",
+ "idx": 0,
+ "indicator_color": "",
+ "is_hidden": 0,
+ "label": "Smart Vat Challan (Beta)",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Configurations",
+   "link_count": 8,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "POS Vendor Configuration",
+   "link_count": 0,
+   "link_to": "POS Vendor Configuration",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Retailer Registration",
+   "link_count": 0,
+   "link_to": "Retailer Registration",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Retailer Branch Registration",
+   "link_count": 0,
+   "link_to": "Retailer Branch Registration",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "VC Zone",
+   "link_count": 0,
+   "link_to": "VC Zone",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "VC VAT Commission Rate",
+   "link_count": 0,
+   "link_to": "VC VAT Commission Rate",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "VC Division",
+   "link_count": 0,
+   "link_to": "VC Division",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "VC Circle",
+   "link_count": 0,
+   "link_to": "VC Circle",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "VC Service Type",
+   "link_count": 0,
+   "link_to": "VC Service Type",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Reports",
+   "link_count": 3,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Sales Report Trends",
+   "link_count": 0,
+   "link_to": "VAT Invoice",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Branch-wise Sales",
+   "link_count": 0,
+   "link_to": "Branch-wise Sales",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Service Type wise Sales",
+   "link_count": 0,
+   "link_to": "Service Type wise Sales",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2025-12-08 14:37:17.919636",
+ "modified_by": "Administrator",
+ "module": "Vat Challan",
+ "name": "Smart Vat Challan (Beta)",
+ "number_cards": [
+  {
+   "label": "Monthly Sales",
+   "number_card_name": "Monthly Sales"
+  },
+  {
+   "label": "Monthly VAT",
+   "number_card_name": "Monthly VAT"
+  },
+  {
+   "label": "Monthly Sales Without VAT",
+   "number_card_name": "Monthly Sales Without VAT"
+  }
+ ],
+ "owner": "Administrator",
+ "parent_page": "BD VAT Compliance",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 23.0,
+ "shortcuts": [
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Dashboard",
+   "link_to": "Smart Vat Challan",
+   "type": "Dashboard"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "format": "{} Created",
+   "label": "Vat Invoice",
+   "link_to": "VAT Invoice",
+   "stats_filter": "[]",
+   "type": "DocType"
+  }
+ ],
+ "title": "Smart Vat Challan (Beta)"
+}
