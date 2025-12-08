@@ -3,13 +3,15 @@ import re
 import frappe
 import requests
 
+BASE_URL = "https://www.achallan.gov.bd/acs/v2"
+
 
 def _get_acs_session():
 	"""
 	Helper to get a session with CSRF token and cookies from achallan.gov.bd
 	"""
-	base_url = "https://www.achallan.gov.bd/acs/v2"
-	csrf_url = f"{base_url}/general/challan-payment?id=2"
+
+	csrf_url = f"{BASE_URL}/general/challan-payment?id=2"
 
 	session = requests.Session()
 	session.headers.update(
@@ -17,14 +19,17 @@ def _get_acs_session():
 			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
 		}
 	)
+	settings = frappe.get_single("Compliance Settings")
+	if settings.enable_proxy:
+		proxy = settings.upstream_proxy
+		if proxy:
+			session.proxies = {
+				"http": proxy,
+				"https": proxy,
+			}
 
-	proxy = "socks5://115.127.110.98:1080"
-	session.proxies = {
-		"http": proxy,
-		"https": proxy,
-	}
-
-	response = session.get(csrf_url, timeout=30)
+	timeout = settings.request_timeout or 30
+	response = session.get(csrf_url, timeout=timeout)
 	response.raise_for_status()
 
 	html_content = response.text
@@ -44,14 +49,16 @@ def validate_bin(bin_no):
 	"""
 	Validate BIN number using the external API from achallan.gov.bd.
 	"""
-	validate_url = "https://www.achallan.gov.bd/acs/v2/api/remote/binValidate"
+	validate_url = f"{BASE_URL}/api/remote/binValidate"
 
 	try:
 		session = _get_acs_session()
+		settings = frappe.get_single("Compliance Settings")
+		timeout = settings.request_timeout or 30
 
 		params = {"binNo": bin_no}
 
-		api_response = session.get(validate_url, params=params, timeout=10)
+		api_response = session.get(validate_url, params=params, timeout=timeout)
 		api_response.raise_for_status()
 
 		return api_response.json()
@@ -69,14 +76,16 @@ def validate_tin(tin_no):
 	"""
 	Validate TIN number using the external API from achallan.gov.bd.
 	"""
-	validate_url = "https://www.achallan.gov.bd/acs/v2/api/remote/tinValidate"
+	validate_url = f"{BASE_URL}/api/remote/tinValidate"
 
 	try:
 		session = _get_acs_session()
+		settings = frappe.get_single("Compliance Settings")
+		timeout = settings.request_timeout or 30
 
 		params = {"tinNo": tin_no}
 
-		api_response = session.get(validate_url, params=params, timeout=10)
+		api_response = session.get(validate_url, params=params, timeout=timeout)
 		api_response.raise_for_status()
 
 		return api_response.json()
