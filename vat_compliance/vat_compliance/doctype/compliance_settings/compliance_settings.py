@@ -1,4 +1,5 @@
 import frappe
+from frappe.model.document import Document
 
 ITEM_TAX_TEMPLATE = [
 	{
@@ -900,40 +901,46 @@ ITEM_TAX_TEMPLATE = [
 ]
 
 
-def setup_item_tax_templates():
-	tax_account = frappe.db.get_value("Account", {"account_type": "Tax", "is_group": 0}, "name")
+class ComplianceSettings(Document):
+	@frappe.whitelist()
+	def get_tax_templates(self):
+		return ITEM_TAX_TEMPLATE
 
-	if not tax_account:
-		print("No Tax Account found. Skipping Item Tax Template creation.")
-		return
+	@frappe.whitelist()
+	def create_tax_templates(self, templates, default_account, company):
+		import json
 
-	for item in ITEM_TAX_TEMPLATE:
-		# Check if template exists based on service code and provider
-		existing = frappe.db.exists(
-			"Item Tax Template",
-			{
-				"custom_service_code": item["service_code"],
-				"custom_service_provider": item["service_provider"],
-			},
-		)
+		templates = json.loads(templates)
 
-		if existing:
-			doc = frappe.get_doc("Item Tax Template", existing)
-		else:
+		created_count = 0
+		for item in templates:
+			# Check if template exists based on service code and provider
+			existing = frappe.db.exists(
+				"Item Tax Template",
+				{
+					"custom_service_code": item["service_code"],
+					"custom_service_provider": item["service_provider"],
+					"company": company,
+				},
+			)
+
+			if existing:
+				continue
+
 			doc = frappe.new_doc("Item Tax Template")
 			doc.custom_service_code = item["service_code"]
 			doc.custom_service_provider = item["service_provider"]
+			doc.title = item["service_code"] + " - " + item["service_provider"]
+			doc.custom_section_reference = item["sec_ref"]
+			doc.custom_deduction_applicability = item["deduction_applicability"]
+			doc.custom_remarks = item["remarks"]
+			doc.company = company
 
-		doc.title = item["service_code"] + " - " + item["service_provider"]
-		doc.custom_section_reference = item["sec_ref"]
-		doc.custom_deduction_applicability = item["deduction_applicability"]
-		doc.custom_remarks = item["remarks"]
+			# Set Taxes
+			doc.taxes = []
+			doc.append("taxes", {"tax_type": default_account, "tax_rate": item["rate"]})
 
-		# Set Taxes
-		doc.taxes = []
-		doc.append("taxes", {"tax_type": tax_account, "tax_rate": item["rate"]})
+			doc.save(ignore_permissions=True)
+			created_count += 1
 
-		doc.save(ignore_permissions=True)
-		print(f"Processed Item Tax Template: {doc.name}")
-
-	frappe.db.commit()
+		return created_count
