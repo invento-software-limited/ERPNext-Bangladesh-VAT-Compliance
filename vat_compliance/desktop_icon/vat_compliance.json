@@ -1,0 +1,20 @@
+{
+ "app": "vat_compliance",
+ "creation": "2025-12-11 10:37:12.035667",
+ "docstatus": 0,
+ "doctype": "Desktop Icon",
+ "hidden": 0,
+ "icon": "notebook-text",
+ "icon_type": "Link",
+ "idx": 0,
+ "label": "VAT Compliance",
+ "link_to": "BD VAT Compliance",
+ "link_type": "Workspace",
+ "modified": "2025-12-11 10:54:56.024584",
+ "modified_by": "Administrator",
+ "name": "VAT Compliance",
+ "owner": "Administrator",
+ "parent_icon": "BD Compliance",
+ "roles": [],
+ "standard": 1
+}

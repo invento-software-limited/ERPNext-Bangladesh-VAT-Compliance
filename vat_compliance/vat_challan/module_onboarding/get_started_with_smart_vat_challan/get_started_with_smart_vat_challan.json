@@ -1,0 +1,59 @@
+{
+ "allow_roles": [
+  {
+   "role": "Accounts Manager"
+  },
+  {
+   "role": "Accounts User"
+  },
+  {
+   "role": "Sales Master Manager"
+  },
+  {
+   "role": "Sales Manager"
+  }
+ ],
+ "creation": "2025-12-11 11:27:40.133872",
+ "docstatus": 0,
+ "doctype": "Module Onboarding",
+ "documentation_url": "https://github.com/invento-software-limited/VAT-Compliance/blob/develop/docs/user_guide.md",
+ "idx": 0,
+ "is_complete": 0,
+ "modified": "2025-12-11 11:30:15.109038",
+ "modified_by": "Administrator",
+ "module": "Vat Challan",
+ "name": "Get Started With Smart Vat Challan",
+ "owner": "Administrator",
+ "steps": [
+  {
+   "step": "Fetch Vendor Token"
+  },
+  {
+   "step": "Sync VAT Zones"
+  },
+  {
+   "step": "Sync VAT Commission Rate"
+  },
+  {
+   "step": "Sync VAT Division"
+  },
+  {
+   "step": "Sync VAT Circle"
+  },
+  {
+   "step": "Sync Service Type"
+  },
+  {
+   "step": "Register Retailer"
+  },
+  {
+   "step": "Register Retailer Branch"
+  },
+  {
+   "step": "Setup POS Profile"
+  }
+ ],
+ "subtitle": "Follow the guided setup to enable automated VAT Submission.",
+ "success_message": "Configuration saved \u2014 your Smart VAT workflows are ready to go.",
+ "title": "Get Started With Smart Vat Challan"
+}

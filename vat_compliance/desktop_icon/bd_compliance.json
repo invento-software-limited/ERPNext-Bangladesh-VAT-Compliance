@@ -1,0 +1,19 @@
+{
+ "app": "vat_compliance",
+ "creation": "2025-12-11 10:45:17.945108",
+ "docstatus": 0,
+ "doctype": "Desktop Icon",
+ "hidden": 0,
+ "icon_type": "App",
+ "idx": 0,
+ "label": "BD Compliance",
+ "link": "/desk/bd-vat-compliance",
+ "link_type": "External",
+ "logo_url": "/assets/vat_compliance/img/logo.webp",
+ "modified": "2025-12-11 10:58:14.689187",
+ "modified_by": "Administrator",
+ "name": "BD Compliance",
+ "owner": "Administrator",
+ "roles": [],
+ "standard": 1
+}

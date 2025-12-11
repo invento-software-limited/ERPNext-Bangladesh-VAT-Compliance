@@ -1,4 +1,5 @@
 {
+ "app": "vat_compliance",
  "charts": [
   {
    "chart_name": "VAT Invoice Trends",
@@ -9,7 +10,7 @@
    "label": "Synced Comparision"
   }
  ],
- "content": "[{\"id\":\"KaApvYkFr5\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Smart Vat Challan (Beta)</span>\",\"col\":12}},{\"id\":\"q5P9msZpZo\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Monthly Sales\",\"col\":4}},{\"id\":\"bsYZVkGjmX\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Monthly Sales Without VAT\",\"col\":4}},{\"id\":\"j_qvWHuepc\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Monthly VAT\",\"col\":4}},{\"id\":\"y2WnHOVbsg\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"CnadE3eo--\",\"type\":\"chart\",\"data\":{\"chart_name\":\"VAT Invoice Trends\",\"col\":6}},{\"id\":\"yjTUO_w6CB\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Synced Comparision\",\"col\":6}},{\"id\":\"2OAr_sw8nE\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"EGznu9R8HF\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Dashboard\",\"col\":3}},{\"id\":\"E8fAPlEF5C\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Vat Invoice\",\"col\":3}},{\"id\":\"6ep157OPtJ\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"UC0b-qYWPg\",\"type\":\"card\",\"data\":{\"card_name\":\"Configurations\",\"col\":5}},{\"id\":\"ECtqCa5aGR\",\"type\":\"card\",\"data\":{\"card_name\":\"Reports\",\"col\":5}}]",
+ "content": "[{\"id\":\"KaApvYkFr5\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Smart Vat Challan (Beta)</span>\",\"col\":12}},{\"id\":\"neBjBT2RKe\",\"type\":\"onboarding\",\"data\":{\"onboarding_name\":\"Get Started With Smart Vat Challan\",\"col\":12}},{\"id\":\"q5P9msZpZo\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Monthly Sales\",\"col\":4}},{\"id\":\"bsYZVkGjmX\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Monthly Sales Without VAT\",\"col\":4}},{\"id\":\"j_qvWHuepc\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Monthly VAT\",\"col\":4}},{\"id\":\"y2WnHOVbsg\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"CnadE3eo--\",\"type\":\"chart\",\"data\":{\"chart_name\":\"VAT Invoice Trends\",\"col\":6}},{\"id\":\"yjTUO_w6CB\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Synced Comparision\",\"col\":6}},{\"id\":\"2OAr_sw8nE\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"EGznu9R8HF\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Dashboard\",\"col\":3}},{\"id\":\"E8fAPlEF5C\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Vat Invoice\",\"col\":3}},{\"id\":\"6ep157OPtJ\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"UC0b-qYWPg\",\"type\":\"card\",\"data\":{\"card_name\":\"Configurations\",\"col\":5}},{\"id\":\"ECtqCa5aGR\",\"type\":\"card\",\"data\":{\"card_name\":\"Reports\",\"col\":5}}]",
  "creation": "2025-09-04 09:45:43.882183",
  "custom_blocks": [],
  "docstatus": 0,
@@ -151,7 +152,7 @@
    "type": "Link"
   }
  ],
- "modified": "2025-12-08 14:37:17.919636",
+ "modified": "2025-12-11 11:38:04.565450",
  "modified_by": "Administrator",
  "module": "Vat Challan",
  "name": "Smart Vat Challan (Beta)",
@@ -193,5 +194,6 @@
    "type": "DocType"
   }
  ],
- "title": "Smart Vat Challan (Beta)"
+ "title": "Smart Vat Challan (Beta)",
+ "type": "Workspace"
 }

@@ -1,0 +1,18 @@
+{
+ "action": "Create Entry",
+ "creation": "2025-12-11 11:29:44.803110",
+ "docstatus": 0,
+ "doctype": "Onboarding Step",
+ "idx": 0,
+ "is_complete": 0,
+ "is_single": 0,
+ "is_skipped": 0,
+ "modified": "2025-12-11 11:29:44.803110",
+ "modified_by": "Administrator",
+ "name": "Register Retailer Branch",
+ "owner": "Administrator",
+ "show_form_tour": 0,
+ "show_full_form": 0,
+ "title": "Register Retailer Branch",
+ "validate_action": 1
+}

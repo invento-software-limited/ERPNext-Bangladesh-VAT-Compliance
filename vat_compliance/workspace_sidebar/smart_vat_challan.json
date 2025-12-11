@@ -1,0 +1,14 @@
+{
+ "app": "vat_compliance",
+ "creation": "2025-12-11 11:16:28.758780",
+ "docstatus": 0,
+ "doctype": "Workspace Sidebar",
+ "header_icon": "dashboard-list",
+ "idx": 0,
+ "items": [],
+ "modified": "2025-12-11 11:16:28.758780",
+ "modified_by": "Administrator",
+ "name": "Smart Vat Challan",
+ "owner": "Administrator",
+ "title": "Smart Vat Challan"
+}

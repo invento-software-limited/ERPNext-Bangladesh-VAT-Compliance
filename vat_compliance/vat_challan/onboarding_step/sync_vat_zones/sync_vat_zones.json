@@ -1,0 +1,18 @@
+{
+ "action": "Go to Page",
+ "creation": "2025-12-11 11:27:10.147445",
+ "docstatus": 0,
+ "doctype": "Onboarding Step",
+ "idx": 0,
+ "is_complete": 0,
+ "is_single": 0,
+ "is_skipped": 0,
+ "modified": "2025-12-11 11:27:10.147445",
+ "modified_by": "Administrator",
+ "name": "Sync VAT Zones",
+ "owner": "Administrator",
+ "show_form_tour": 0,
+ "show_full_form": 0,
+ "title": "Sync VAT Zones",
+ "validate_action": 1
+}
