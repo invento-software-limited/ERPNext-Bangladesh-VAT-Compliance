@@ -1,0 +1,20 @@
+{
+ "app": "vat_compliance",
+ "creation": "2025-12-11 10:32:54.861407",
+ "docstatus": 0,
+ "doctype": "Desktop Icon",
+ "hidden": 0,
+ "icon": "month-view",
+ "icon_type": "Link",
+ "idx": 0,
+ "label": "Smart Vat Challan (Beta)",
+ "link_to": "Smart Vat Challan (Beta)",
+ "link_type": "Workspace",
+ "modified": "2025-12-11 10:55:02.296090",
+ "modified_by": "Administrator",
+ "name": "Smart Vat Challan (Beta)",
+ "owner": "Administrator",
+ "parent_icon": "BD Compliance",
+ "roles": [],
+ "standard": 1
+}

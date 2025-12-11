@@ -14,10 +14,10 @@ app_license = "mit"
 # add_to_apps_screen = [
 # 	{
 # 		"name": "vat_compliance",
-# 		"logo": "/assets/vat_compliance/logo.png",
+# 		"logo": "/assets/vat_compliance/img/logo.webp",
 # 		"title": "Vat Compliance",
-# 		"route": "/vat_compliance",
-# 		"has_permission": "vat_compliance.api.permission.has_app_permission"
+# 		"route": "/desk/bd-vat-compliance",
+# 		# "has_permission": "vat_compliance.api.permission.has_app_permission"
 # 	}
 # ]
 

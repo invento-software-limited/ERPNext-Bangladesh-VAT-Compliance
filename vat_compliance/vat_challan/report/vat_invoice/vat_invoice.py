@@ -3,6 +3,7 @@
 
 import frappe
 from frappe import _
+from frappe.query_builder.functions import Date, Sum
 from frappe.utils import flt
 
 
@@ -106,17 +107,32 @@ def get_report_summary(filters):
 	unique_customers_count = len(unique_customers)
 
 	# Aggregates (SUM)
-	totals = frappe.db.get_value(
-		"VAT Invoice",
-		valid_filters,
-		[
-			"sum(txn_amount) as total_txn_amount",
-			"sum(total_amount) as total_sales",
-			"sum(total_amount - txn_amount) as total_vat_amount",
-			"sum(total_discount_amount) as total_discount_amount",
-		],
-		as_dict=True,
+	# Aggregates (SUM)
+	table = frappe.qb.DocType("VAT Invoice")
+	query = frappe.qb.from_(table).select(
+		Sum(table.txn_amount).as_("total_txn_amount"),
+		Sum(table.total_amount).as_("total_sales"),
+		Sum(table.total_amount - table.txn_amount).as_("total_vat_amount"),
+		Sum(table.total_discount_amount).as_("total_discount_amount"),
 	)
+
+	for field, condition in valid_filters.items():
+		if isinstance(condition, list):
+			operator = condition[0].lower()
+			val = condition[1]
+			if operator == "like":
+				query = query.where(table[field].like(val))
+			elif operator == "between":
+				query = query.where(table[field].between(val[0], val[1]))
+			elif operator == ">=":
+				query = query.where(table[field] >= val)
+			elif operator == "<=":
+				query = query.where(table[field] <= val)
+		else:
+			query = query.where(table[field] == condition)
+
+	totals = query.run(as_dict=True)
+	totals = totals[0] if totals else {}
 
 	return [
 		{"value": total_invoices, "label": _("Total Invoices"), "datatype": "Int", "indicator": "blue"},
@@ -160,14 +176,31 @@ def get_sales_trends_chart(filters):
 	valid_filters = build_vat_invoice_filters(filters)
 
 	# Get sales per day
-	sales_data = frappe.get_all(
-		"VAT Invoice",
-		filters=valid_filters,
-		fields=["invoice_date", "sum(total_amount) as total_sales"],
-		group_by="DATE(invoice_date)",
-		order_by="invoice_date asc",
-		as_list=True,
+	table = frappe.qb.DocType("VAT Invoice")
+	query = (
+		frappe.qb.from_(table)
+		.select(Date(table.invoice_date), Sum(table.total_amount).as_("total_sales"))
+		.groupby(Date(table.invoice_date))
+		.orderby(Date(table.invoice_date), order=frappe.qb.asc)
 	)
+
+	# Apply filters
+	for field, condition in valid_filters.items():
+		if isinstance(condition, list):
+			operator = condition[0].lower()
+			val = condition[1]
+			if operator == "like":
+				query = query.where(table[field].like(val))
+			elif operator == "between":
+				query = query.where(table[field].between(val[0], val[1]))
+			elif operator == ">=":
+				query = query.where(table[field] >= val)
+			elif operator == "<=":
+				query = query.where(table[field] <= val)
+		else:
+			query = query.where(table[field] == condition)
+
+	sales_data = query.run(as_list=True)
 
 	# Format for chart
 	labels = [str(row[0].date()) if hasattr(row[0], "date") else str(row[0]) for row in sales_data]

@@ -1,4 +1,5 @@
 {
+ "app": "vat_comliance",
  "charts": [],
  "content": "[{\"id\":\"iczLt2RscK\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Bangladesh VAT Compliance</span>\",\"col\":12}},{\"id\":\"VS8abb4QsI\",\"type\":\"onboarding\",\"data\":{\"onboarding_name\":\"Get Started with Bangladesh VAT Compliance\",\"col\":12}},{\"id\":\"g174-nYh_7\",\"type\":\"card\",\"data\":{\"card_name\":\"Masters\",\"col\":3}},{\"id\":\"Z6LUHGcQ37\",\"type\":\"card\",\"data\":{\"card_name\":\"Sales\",\"col\":4}},{\"id\":\"crlyoU8hR2\",\"type\":\"card\",\"data\":{\"card_name\":\"Purchase \",\"col\":4}},{\"id\":\"CRu6eQqA-K\",\"type\":\"card\",\"data\":{\"card_name\":\"Doctypes\",\"col\":3}},{\"id\":\"THUj3AI4n2\",\"type\":\"card\",\"data\":{\"card_name\":\"Other Management\",\"col\":3}},{\"id\":\"xxVIz_bqEJ\",\"type\":\"card\",\"data\":{\"card_name\":\"Mushak\",\"col\":6}}]",
  "creation": "2025-11-30 12:08:47.703736",
@@ -212,10 +213,20 @@
    "hidden": 0,
    "is_query_report": 0,
    "label": "Other Management",
-   "link_count": 2,
+   "link_count": 3,
    "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Compliance Settings",
+   "link_count": 0,
+   "link_to": "Compliance Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
   },
   {
    "hidden": 0,
@@ -238,7 +249,7 @@
    "type": "Link"
   }
  ],
- "modified": "2025-12-08 14:34:11.940529",
+ "modified": "2025-12-11 11:01:38.596982",
  "modified_by": "Administrator",
  "module": "Vat Compliance",
  "name": "BD VAT Compliance",
@@ -250,5 +261,6 @@
  "roles": [],
  "sequence_id": 22.0,
  "shortcuts": [],
- "title": "BD VAT Compliance"
+ "title": "BD VAT Compliance",
+ "type": "Workspace"
 }
