@@ -17,9 +17,35 @@ A Frappe app for managing VAT compliance in Bangladesh.
 - **VAT Deduction Certificate**: Manage VAT deduction certificates.
 - **Document Attachment**: Attach documents for compliance.
 
+### 🎥 Video Tutorial
+
+Check out our tutorial video to get started:
+[Watch Tutorial](https://youtu.be/gw2UJtEmlkE?si=ALzICQIHz4wyzuKi)
+
 ### 📚 Documentation
 
-For detailed instructions on how to use the app, including setup, sales and purchase workflows, and report generation, please refer to the **[User Guide](docs/user_guide.md)**.
+Detailed documentation is available in the `docs` folder:
+
+- **[Product Overview](docs/product_overview.md)**:
+    - **Target Audience**: Traders, Retailers, Manufacturers, and Service Providers.
+    - **Key Features**:
+        - **Statutory Forms**: Mushak 6.3 (Tax Invoice), 6.1 (Purchase Register), 6.2 (Sales Register), 6.2.1 (Purchase-Sales Ledger), 6.6 (VDS Certificate).
+        - **Compliance Management**: VDS Management, Sales VAT Management, Treasury Deposits, TIN & BIN Verification.
+
+- **[User Guide](docs/user_guide.md)**:
+    - **Getting Started**: Setup Item Tax Templates and Items.
+    - **Sales Workflow**: Create compliant Sales Invoices with vehicle details and manage VAT collection.
+    - **Purchase Workflow**: Record purchases and manage VAT Deduction at Source (VDS).
+    - **Compliance Reports**:
+        - **Sales VAT Management**: Monitor Sales VAT liability and upload VDS certificates.
+        - **VDS Management**: Manage VDS from purchases and treasury deposits.
+        - **VAT Payment Page**: Consolidate and pay outstanding VAT liabilities.
+        - **Registers & Ledgers**: Access Mushak 6.1, 6.2, and 6.2.1 reports.
+
+- **[Smart VAT Challan](docs/smart_vat_challan.md)**:
+    - **Integration**: Secure integration with NBR Smart VAT APIs.
+    - **Features**: Automated challan generation, retailer & branch registration, and advanced analytics.
+    - **Reports**: VAT Invoice Monitor, Branch-wise Sales, and Service-type Sales.
 
 ### 🔄 Workflows
 

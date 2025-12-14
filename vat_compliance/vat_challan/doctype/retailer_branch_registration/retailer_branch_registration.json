@@ -1,5 +1,6 @@
 {
  "actions": [],
+ "allow_rename": 1,
  "autoname": "field:branch_name",
  "creation": "2025-09-03 11:14:48.403743",
  "doctype": "DocType",
@@ -195,7 +196,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-11-06 15:51:31.154878",
+ "modified": "2025-12-14 11:49:32.519097",
  "modified_by": "Administrator",
  "module": "Vat Challan",
  "name": "Retailer Branch Registration",
