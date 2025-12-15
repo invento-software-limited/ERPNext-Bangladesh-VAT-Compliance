@@ -1,5 +1,5 @@
 app_name = "vat_compliance"
-app_title = "Vat Compliance"
+app_title = "Bangladesh VAT Compliance"
 app_publisher = "Invento Software Limited"
 app_description = "NA"
 app_email = "munim@invento.com.bd"
