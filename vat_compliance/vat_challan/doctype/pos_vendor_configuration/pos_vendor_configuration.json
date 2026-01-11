@@ -15,6 +15,7 @@
   "company_id",
   "access_token",
   "expiry_date",
+  "html_eoct",
   "sync_settings_section",
   "sync_schedule",
   "column_break_csds",
@@ -22,29 +23,23 @@
  ],
  "fields": [
   {
-   "default": "60af6d032d0d40db844abfa18d66ff62",
    "fieldname": "client_id",
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Client ID",
-   "read_only": 1,
    "reqd": 1
   },
   {
-   "default": "9aab8053b5163ebf",
    "fieldname": "client_secret",
    "fieldtype": "Password",
    "in_list_view": 1,
    "label": "Client Secret",
-   "read_only": 1,
    "reqd": 1
   },
   {
-   "default": "97a3715a3d8d4beaabda6cc523a9b4a4",
    "fieldname": "client_api_key",
    "fieldtype": "Password",
-   "label": "Client API Key",
-   "read_only": 1
+   "label": "Client API Key"
   },
   {
    "fieldname": "company_id",
@@ -75,12 +70,10 @@
    "label": "Disabled"
   },
   {
-   "default": "https://api-uat-nbr.dgepay.net/vschallan/v3",
    "fieldname": "base_url",
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Base Url",
-   "read_only": 1,
    "reqd": 1
   },
   {
@@ -90,10 +83,11 @@
    "label": "Sync Settings"
   },
   {
+   "default": "After Submit",
    "fieldname": "sync_schedule",
    "fieldtype": "Select",
    "label": "Sync Schedule",
-   "options": "\nAfter Submit\nDaily\nWeekly\nMonthly"
+   "options": "After Submit\nDaily\nWeekly\nMonthly"
   },
   {
    "fieldname": "column_break_csds",
@@ -104,13 +98,17 @@
    "fieldtype": "Date",
    "label": "Last Sync Date",
    "read_only": 1
+  },
+  {
+   "fieldname": "html_eoct",
+   "fieldtype": "HTML"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-12-08 14:39:49.283623",
+ "modified": "2026-01-11 17:21:22.930445",
  "modified_by": "Administrator",
  "module": "Vat Challan",
  "name": "POS Vendor Configuration",

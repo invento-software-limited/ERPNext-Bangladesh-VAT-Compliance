@@ -139,7 +139,8 @@ override_doctype_class = {"Payment Entry": "vat_compliance.hook_functions.paymen
 # Hook on document methods and events
 
 doc_events = {
-	"POS Invoice": {"on_submit": "vat_compliance.vat_challan.hook_functions.vat_invoice.create_vat_invoice"}
+	"POS Invoice": {"on_submit": "vat_compliance.vat_challan.hook_functions.vat_invoice.create_vat_invoice"},
+	"Item": {"validate": "vat_compliance.vat_challan.hook_functions.item.validate_vat_rate"},
 }
 
 # Scheduled Tasks
