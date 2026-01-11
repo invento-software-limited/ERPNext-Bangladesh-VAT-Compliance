@@ -28,6 +28,25 @@ def _get_acs_session():
 				"https": proxy,
 			}
 
+	try:
+		ip_response = session.get("https://ipapi.co/json/", timeout=5)
+		if ip_response.ok:
+			ip_data = ip_response.json()
+			if ip_data.get("country_code") != "BD":
+				error_msg = "Access denied: Your server"
+				if settings.enable_proxy:
+					error_msg += " (via Proxy)"
+				error_msg += " appears to be outside Bangladesh."
+				frappe.throw(error_msg)
+		else:
+			frappe.log_error("Failed to verify server location", "Geolocation Check Failed")
+
+	except requests.exceptions.RequestException as e:
+		if settings.enable_proxy:
+			frappe.throw(f"Unable to connect to Proxy Server: {e!s}")
+		else:
+			frappe.log_error(f"Geolocation check exception: {e!s}", "Geolocation Check Error")
+
 	timeout = settings.request_timeout or 30
 	response = session.get(csrf_url, timeout=timeout)
 	response.raise_for_status()
