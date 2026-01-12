@@ -837,6 +837,7 @@ class VATSmartChallan:
 				if doc.is_return and not doc.return_response:
 					self.sync_return_vat_invoice(doc)
 			elif str(parsed_data.get("success")) == "0":
+				doc.db_set("status", "Pending")
 				self.get_vat_invoice_details(doc)
 				if doc.is_return:
 					self.sync_return_vat_invoice(doc)
