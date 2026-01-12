@@ -40,7 +40,7 @@ frappe.query_reports["VAT Invoice"] = {
 	onload: function (report) {
 		report.page.add_inner_button("Sync All", function () {
 			frappe.call({
-				method: "vat_compliance.vat_challan.auto_sync_vat_invoices",
+				method: "vat_compliance.vschallan.auto_sync_vat_invoices",
 				callback: function (r) {
 					if (r.exc) {
 						frappe.msgprint({
