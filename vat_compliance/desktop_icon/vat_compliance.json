@@ -8,13 +8,15 @@
  "icon_type": "Link",
  "idx": 0,
  "label": "VAT Compliance",
- "link_to": "BD VAT Compliance",
- "link_type": "Workspace",
- "modified": "2025-12-11 10:54:56.024584",
+ "link_to": "VAT Compliance",
+ "link_type": "Workspace Sidebar",
+ "modified": "2026-04-18 17:51:58.107864",
  "modified_by": "Administrator",
  "name": "VAT Compliance",
  "owner": "Administrator",
  "parent_icon": "BD Compliance",
+ "restrict_removal": 0,
  "roles": [],
+ "sidebar": "",
  "standard": 1
 }
