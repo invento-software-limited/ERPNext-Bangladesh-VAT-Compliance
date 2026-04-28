@@ -2,8 +2,19 @@ import json
 
 import frappe
 from erpnext.accounts.doctype.payment_entry.payment_entry import PaymentEntry
-from erpnext.accounts.doctype.tax_withholding_category.tax_withholding_category import get_cost_center
 from frappe.utils import flt
+
+
+def get_cost_center(doc):
+	"""
+	Get the cost center from a document.
+	It first checks for a 'cost_center' field in the document itself.
+	If not found, it checks the first item in the 'items' table.
+	"""
+	cost_center = doc.get("cost_center")
+	if not cost_center and doc.get("items"):
+		cost_center = doc.items[0].get("cost_center")
+	return cost_center
 
 
 @frappe.whitelist()
