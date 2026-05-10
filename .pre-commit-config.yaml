@@ -67,7 +67,7 @@ repos:
     hooks:
       - id: semgrep
         name: semgrep
-        entry: bash -c 'export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python && /home/frappe/frappe-bench/env/bin/semgrep --config=semgrep-rules/rules "$@"' --
+        entry: bash -c 'export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python && semgrep --config=https://github.com/frappe/semgrep-rules --config r/python.lang.correctness "$@"' --
         language: system
         types: [python]
 
