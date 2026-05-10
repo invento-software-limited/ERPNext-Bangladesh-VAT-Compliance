@@ -93,7 +93,6 @@ class VATDeductionCertificate(Document):
 
 		print_html = self.get_print_html()
 		self.db_set("certificate_html", print_html)
-		frappe.db.commit()
 
 	def prepare_references(self, data):
 		"""
@@ -206,7 +205,7 @@ class VATDeductionCertificate(Document):
 
 
 @frappe.whitelist()
-def generate_mushak_6_6(name):
+def generate_mushak_6_6(name: str):
 	vat_deduction_certificate = frappe.get_doc("VAT Deduction Certificate", name)
 	vat_deduction_certificate.update_references_and_context()
 	return vat_deduction_certificate

@@ -4,6 +4,7 @@
 import json
 
 import frappe
+from frappe import _
 from frappe.utils import flt
 
 
@@ -18,58 +19,58 @@ def execute(filters=None):
 def get_columns():
 	"""Return columns for the report."""
 	return [
-		{"fieldname": "payment_date", "label": "Payment Date", "fieldtype": "Date", "width": 120},
-		{"fieldname": "payment_month", "label": "Payment Month", "fieldtype": "Data", "width": 120},
+		{"fieldname": "payment_date", "label": _("Payment Date"), "fieldtype": "Date", "width": 120},
+		{"fieldname": "payment_month", "label": _("Payment Month"), "fieldtype": "Data", "width": 120},
 		{
 			"fieldname": "invoice_id",
-			"label": "Invoice Number",
+			"label": _("Invoice Number"),
 			"fieldtype": "Link",
 			"options": "Purchase Invoice",
 			"width": 200,
 		},
-		{"fieldname": "invoice_status", "label": "Invoice Status", "fieldtype": "Data", "width": 120},
+		{"fieldname": "invoice_status", "label": _("Invoice Status"), "fieldtype": "Data", "width": 120},
 		{
 			"fieldname": "supplier_name",
-			"label": "Supplier Name",
+			"label": _("Supplier Name"),
 			"fieldtype": "Link",
 			"options": "Supplier",
 			"width": 150,
 		},
-		{"fieldname": "invoice_amount", "label": "Invoice Amount", "fieldtype": "Currency", "width": 120},
-		{"fieldname": "status", "label": "Status", "fieldtype": "Data", "width": 120},
+		{"fieldname": "invoice_amount", "label": _("Invoice Amount"), "fieldtype": "Currency", "width": 120},
+		{"fieldname": "status", "label": _("Status"), "fieldtype": "Data", "width": 120},
 		{
 			"fieldname": "payment_entry_id",
-			"label": "Payment Entry",
+			"label": _("Payment Entry"),
 			"fieldtype": "Link",
 			"options": "Payment Entry",
 			"width": 200,
 		},
 		{
 			"fieldname": "account_credit",
-			"label": "Account head",
+			"label": _("Account head"),
 			"fieldtype": "Link",
 			"options": "Account",
 			"width": 240,
 		},
 		{
 			"fieldname": "liability_head",
-			"label": "Liability head",
+			"label": _("Liability head"),
 			"fieldtype": "Link",
 			"options": "Account",
 			"width": 240,
 		},
-		{"fieldname": "vds_amount", "label": "VDS Amount", "fieldtype": "Currency", "width": 120},
+		{"fieldname": "vds_amount", "label": _("VDS Amount"), "fieldtype": "Currency", "width": 120},
 		{
 			"fieldname": "section_ref",
-			"label": "Section Ref",
+			"label": _("Section Ref"),
 			"fieldtype": "Link",
 			"options": "Item Tax Template",
 			"width": 120,
 		},
-		{"fieldname": "applied_rate", "label": "Applied Rate", "fieldtype": "Percent", "width": 120},
+		{"fieldname": "applied_rate", "label": _("Applied Rate"), "fieldtype": "Percent", "width": 120},
 		{
 			"fieldname": "fiscal_year",
-			"label": "Fiscal Year",
+			"label": _("Fiscal Year"),
 			"fieldtype": "Link",
 			"options": "Fiscal Year",
 			"width": 120,
@@ -123,7 +124,7 @@ def _get_payment_entry_data(filters):
 	all_conditions = base_conditions + filter_conditions
 	where_clause = " AND ".join(all_conditions)
 
-	query = f"""
+	query = """
 		SELECT
 			per.reference_name as invoice_id,
 			pe.posting_date as payment_date,
@@ -142,7 +143,7 @@ def _get_payment_entry_data(filters):
 		ORDER BY pe.posting_date DESC, pe.creation DESC
 	"""
 
-	return frappe.db.sql(query, filters, as_dict=True)
+	return frappe.db.sql(query.replace("{where_clause}", where_clause), filters, as_dict=True)
 
 
 def _get_journal_entry_status(child_name):
@@ -251,13 +252,13 @@ def _get_tax_template_groups(invoice_doc, allocated_amount):
 
 
 @frappe.whitelist()
-def make_journal_entry(rows):
+def make_journal_entry(rows: str | list):
 	"""Create a Journal Entry for the selected rows."""
 	if isinstance(rows, str):
 		rows = json.loads(rows)
 
 	if not rows:
-		frappe.throw("No rows selected")
+		frappe.throw(_("No rows selected"))
 
 	je = frappe.new_doc("Journal Entry")
 	je.voucher_type = "VAT Payment Entry"

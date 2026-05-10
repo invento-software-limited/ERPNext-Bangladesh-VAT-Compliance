@@ -119,7 +119,9 @@ class CustomPaymentEntry(PaymentEntry):
 		super().__init__(*args, **kwargs)
 
 	@frappe.whitelist()
-	def allocate_amount_to_references(self, paid_amount, paid_amount_change, allocate_payment_amount):
+	def allocate_amount_to_references(
+		self, paid_amount: float, paid_amount_change: bool, allocate_payment_amount: bool
+	):
 		"""
 		Allocate amounts to references based on paid amount and outstanding values.
 

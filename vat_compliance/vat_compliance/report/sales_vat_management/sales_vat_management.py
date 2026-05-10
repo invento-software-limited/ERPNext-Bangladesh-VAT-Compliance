@@ -4,6 +4,7 @@
 import json
 
 import frappe
+from frappe import _
 from frappe.utils import flt
 
 
@@ -37,36 +38,36 @@ def get_message():
 
 def get_columns():
 	return [
-		{"fieldname": "payment_date", "label": "Payment Date", "fieldtype": "Date", "width": 120},
+		{"fieldname": "payment_date", "label": _("Payment Date"), "fieldtype": "Date", "width": 120},
 		{
 			"fieldname": "invoice_id",
-			"label": "Invoice Number",
+			"label": _("Invoice Number"),
 			"fieldtype": "Link",
 			"options": "Sales Invoice",
 			"width": 200,
 		},
-		{"fieldname": "invoice_status", "label": "Invoice Status", "fieldtype": "Data", "width": 120},
-		{"fieldname": "customer_name", "label": "Customer Name", "fieldtype": "Data", "width": 150},
-		{"fieldname": "status", "label": "Status", "fieldtype": "Data", "width": 120},
+		{"fieldname": "invoice_status", "label": _("Invoice Status"), "fieldtype": "Data", "width": 120},
+		{"fieldname": "customer_name", "label": _("Customer Name"), "fieldtype": "Data", "width": 150},
+		{"fieldname": "status", "label": _("Status"), "fieldtype": "Data", "width": 120},
 		{
 			"fieldname": "account_credit",
-			"label": "Account head",
+			"label": _("Account head"),
 			"fieldtype": "Link",
 			"options": "Account",
 			"width": 240,
 		},
 		{
 			"fieldname": "payment_entry_id",
-			"label": "Payment Entry",
+			"label": _("Payment Entry"),
 			"fieldtype": "Link",
 			"options": "Payment Entry",
 			"width": 200,
 		},
-		{"fieldname": "invoice_amount", "label": "Invoice Amount", "fieldtype": "Currency", "width": 120},
-		{"fieldname": "vds_amount", "label": "VAT on Sales Amount", "fieldtype": "Currency", "width": 120},
+		{"fieldname": "invoice_amount", "label": _("Invoice Amount"), "fieldtype": "Currency", "width": 120},
+		{"fieldname": "vds_amount", "label": _("VAT on Sales Amount"), "fieldtype": "Currency", "width": 120},
 		{
 			"fieldname": "fiscal_year",
-			"label": "Fiscal Year",
+			"label": _("Fiscal Year"),
 			"fieldtype": "Link",
 			"options": "Fiscal Year",
 			"width": 120,
@@ -107,7 +108,7 @@ def _get_payment_data(filters):
 	conditions = _build_filter_conditions(base_conditions, filter_mapping, filters)
 	where_clause = " AND ".join(conditions)
 
-	query = f"""
+	query = """
         SELECT
             per.reference_name as invoice_id,
             pe.posting_date as payment_date,
@@ -127,7 +128,7 @@ def _get_payment_data(filters):
         ORDER BY pe.posting_date DESC
     """
 
-	return frappe.db.sql(query, filters, as_dict=True)
+	return frappe.db.sql(query.replace("{where_clause}", where_clause), filters, as_dict=True)
 
 
 def _get_no_payment_data(filters):
@@ -146,7 +147,7 @@ def _get_no_payment_data(filters):
 	conditions = _build_filter_conditions(base_conditions, filter_mapping, filters)
 	where_clause = " AND ".join(conditions)
 
-	query = f"""
+	query = """
         SELECT
             si.name as invoice_id,
             si.posting_date as payment_date,
@@ -168,7 +169,7 @@ def _get_no_payment_data(filters):
         ORDER BY si.posting_date DESC
     """
 
-	return frappe.db.sql(query, filters, as_dict=True)
+	return frappe.db.sql(query.replace("{where_clause}", where_clause), filters, as_dict=True)
 
 
 def _get_attachments_map(payment_entry_ids):
@@ -177,15 +178,17 @@ def _get_attachments_map(payment_entry_ids):
 		return {}
 
 	placeholders = ",".join(["%s"] * len(payment_entry_ids))
-	attachments = frappe.db.sql(
-		f"""
+	query = """
         SELECT parent, document_type, file, inv_numbers
         FROM `tabDocument Attachment`
         WHERE parent IN ({placeholders})
             AND document_type = 'Challan'
             AND tax_type = 'VAT'
             AND file IS NOT NULL
-    """,
+    """
+
+	attachments = frappe.db.sql(
+		query.replace("{placeholders}", placeholders),
 		payment_entry_ids,
 		as_dict=True,
 	)

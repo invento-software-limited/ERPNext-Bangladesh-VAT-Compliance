@@ -907,7 +907,7 @@ class ComplianceSettings(Document):
 		return ITEM_TAX_TEMPLATE
 
 	@frappe.whitelist()
-	def create_tax_templates(self, templates, default_account, company):
+	def create_tax_templates(self, templates: str, default_account: str, company: str):
 		import json
 
 		templates = json.loads(templates)

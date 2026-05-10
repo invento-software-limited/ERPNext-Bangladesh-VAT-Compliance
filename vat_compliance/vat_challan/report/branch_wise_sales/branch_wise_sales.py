@@ -96,26 +96,27 @@ def get_report_summary(filters):
 
 def get_branch_wise_chart(filters):
 	filters = frappe._dict(filters or {})
-	conditions = ["1=1"]
 
-	if filters.get("from_date"):
-		conditions.append(f"invoice_date >= '{filters.from_date}'")
-	if filters.get("to_date"):
-		conditions.append(f"invoice_date <= '{filters.to_date}'")
+	valid_filters = {}
+	if filters.get("from_date") and filters.get("to_date"):
+		valid_filters["invoice_date"] = ["between", [filters.from_date, filters.to_date]]
+	elif filters.get("from_date"):
+		valid_filters["invoice_date"] = [">=", filters.from_date]
+	elif filters.get("to_date"):
+		valid_filters["invoice_date"] = ["<=", filters.to_date]
+
 	if filters.get("status"):
-		conditions.append(f"status = '{filters.status}'")
-
-	where_clause = " AND ".join(conditions)
+		valid_filters["status"] = filters.status
+	if filters.get("branch"):
+		valid_filters["branch"] = filters.branch
 
 	# Get transaction amount per branch
-	sales_data = frappe.db.sql(
-		f"""
-        SELECT branch, SUM(txn_amount) as total_txn
-        FROM `tabVAT Invoice`
-        WHERE {where_clause}
-        GROUP BY branch
-        ORDER BY total_txn DESC
-    """,
+	sales_data = frappe.get_all(
+		"VAT Invoice",
+		filters=valid_filters,
+		fields=["branch", "SUM(txn_amount) as total_txn"],
+		group_by="branch",
+		order_by="total_txn DESC",
 		as_list=True,
 	)
 

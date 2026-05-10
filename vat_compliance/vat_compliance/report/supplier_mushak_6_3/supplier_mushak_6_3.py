@@ -38,8 +38,7 @@ def get_columns():
 def get_data(filters):
 	conditions = get_conditions(filters)
 
-	data = frappe.db.sql(
-		f"""
+	query = """
 		SELECT
 			name as invoice,
 			posting_date,
@@ -53,7 +52,10 @@ def get_data(filters):
 			{conditions}
 		ORDER BY
 			posting_date DESC
-	""",
+	"""
+
+	data = frappe.db.sql(
+		query.replace("{conditions}", conditions),
 		filters,
 		as_dict=1,
 	)
@@ -91,7 +93,7 @@ def get_conditions(filters):
 
 
 @frappe.whitelist()
-def upload_mushak_63(invoice_id, file_url):
+def upload_mushak_63(invoice_id: str, file_url: str):
 	if not invoice_id or not file_url:
 		frappe.throw(_("Missing invoice or file"))
 

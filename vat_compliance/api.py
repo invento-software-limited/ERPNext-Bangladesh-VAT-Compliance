@@ -2,6 +2,7 @@ import re
 
 import frappe
 import requests
+from frappe import _
 
 BASE_URL = "https://www.achallan.gov.bd/acs/v2"
 
@@ -36,7 +37,7 @@ def _get_acs_session():
 	match = re.search(r'name="__RequestVerificationToken" type="hidden" value="([^"]+)"', html_content)
 
 	if not match:
-		frappe.throw("Failed to retrieve CSRF token from external service.")
+		frappe.throw(_("Failed to retrieve CSRF token from external service."))
 
 	csrf_token = match.group(1)
 	session.headers.update({"X-Xsrf-Token": csrf_token})
@@ -45,7 +46,7 @@ def _get_acs_session():
 
 
 @frappe.whitelist()
-def validate_bin(bin_no):
+def validate_bin(bin_no: str):
 	"""
 	Validate BIN number using the external API from achallan.gov.bd.
 	"""
@@ -72,7 +73,7 @@ def validate_bin(bin_no):
 
 
 @frappe.whitelist()
-def validate_tin(tin_no):
+def validate_tin(tin_no: str):
 	"""
 	Validate TIN number using the external API from achallan.gov.bd.
 	"""

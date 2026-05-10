@@ -84,24 +84,21 @@ def get_data(filters):
 	else:
 		conditions.append("docstatus = 1")
 
-	where_clause = " AND ".join(conditions)
-
-	query = f"""
-        SELECT
-            name,
-            posting_date,
-            customer,
-            company,
-            net_total,
-            total_taxes_and_charges,
-            grand_total,
-            status
-        FROM `tabSales Invoice`
-        WHERE {where_clause}
-        ORDER BY posting_date DESC
-    """
-
-	invoices = frappe.db.sql(query, values, as_dict=True)
+	invoices = frappe.get_all(
+		"Sales Invoice",
+		filters=values,
+		fields=[
+			"name",
+			"posting_date",
+			"customer",
+			"company",
+			"net_total",
+			"total_taxes_and_charges",
+			"grand_total",
+			"status",
+		],
+		order_by="posting_date DESC",
+	)
 
 	for inv in invoices:
 		inv["download"] = (
