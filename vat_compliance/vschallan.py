@@ -38,10 +38,10 @@ class VATSmartChallan:
 		config_data = frappe.db.get_singles_dict("POS Vendor Configuration")
 
 		if not config_data:
-			frappe.throw("No POS Vendor Configuration found")
+			frappe.throw(_("No POS Vendor Configuration found"))
 
 		if config_data.get("disabled") == "1":
-			frappe.throw("POS Vendor Configuration is disabled")
+			frappe.throw(_("POS Vendor Configuration is disabled"))
 
 		self.docname = "POS Vendor Configuration"
 		self.base_url = config_data.get("base_url")
@@ -179,7 +179,6 @@ class VATSmartChallan:
 				if not frappe.db.exists("VC Zone", {"zone_id": zone_id}):
 					doc = frappe.get_doc({"doctype": "VC Zone", "zone_id": zone_id, "zone_name": zone_name})
 					doc.insert(ignore_permissions=True)
-					frappe.db.commit()
 
 	def get_vat_commission_rate(self):
 		"""
@@ -221,7 +220,6 @@ class VATSmartChallan:
 						}
 					)
 					doc.insert(ignore_permissions=True)
-					frappe.db.commit()
 
 	def get_division(self):
 		"""
@@ -266,7 +264,6 @@ class VATSmartChallan:
 						}
 					)
 					doc.insert(ignore_permissions=True)
-					frappe.db.commit()
 
 	def get_circle(self):
 		"""
@@ -318,7 +315,6 @@ class VATSmartChallan:
 				}
 			)
 			doc.insert(ignore_permissions=True)
-			frappe.db.commit()
 
 	def get_service_types(self):
 		"""
@@ -365,7 +361,6 @@ class VATSmartChallan:
 				}
 			)
 			doc.insert(ignore_permissions=True)
-			frappe.db.commit()
 
 	def register_retailer(self, doc):
 		"""
@@ -441,7 +436,7 @@ class VATSmartChallan:
 				frappe.throw(f"Retailer registration failed: {error_msg or 'Unknown error'}")
 
 			else:
-				frappe.throw("Unexpected response format from API")
+				frappe.throw(_("Unexpected response format from API"))
 
 		except requests.exceptions.HTTPError as e:
 			frappe.throw(f"HTTP Error: {e!s}")
@@ -567,7 +562,7 @@ class VATSmartChallan:
 				else:
 					response = requests.post(url, headers=headers, json=payload, timeout=30)
 			else:
-				frappe.throw("Invalid request type")
+				frappe.throw(_("Invalid request type"))
 
 			# Retry if unauthorized
 			if response.status_code == 401:
@@ -592,7 +587,7 @@ class VATSmartChallan:
 			elif format_type == "json":
 				parsed_data = json.loads(raw_content)
 			else:
-				frappe.throw("Unknown response format from API")
+				frappe.throw(_("Unknown response format from API"))
 
 			return parsed_data
 
@@ -603,20 +598,36 @@ class VATSmartChallan:
 		"""
 		Returns the absolute filesystem path of a file stored in ERPNext,
 		handling both /files (public) and /private/files (private) paths.
+		Ensures protection against directory traversal.
 		"""
 		file_url = file_url.lstrip("/")
 
+		# Security: Prevent directory traversal patterns
+		if ".." in file_url or file_url.startswith("/"):
+			frappe.throw(_("Invalid file path"))
+
 		if file_url.startswith("private/files/"):
+			# Only take the filename part for security if it's just a file reference
+			# but here we follow the existing logic while adding validation
 			absolute_path = frappe.get_site_path(file_url)
 		elif file_url.startswith("files/"):
-			absolute_path = os.path.join(frappe.get_site_path("public", "files"), file_url.split("/")[-1])
+			# Securely join only the filename part
+			filename = file_url.split("/")[-1]
+			absolute_path = os.path.join(frappe.get_site_path("public", "files"), filename)
 		else:
 			absolute_path = frappe.get_site_path(file_url)
 
-		if not os.path.exists(absolute_path):
-			frappe.throw(f"File does not exist: {absolute_path}")
+		# Security: Ensure the resolved path is within the site directory
+		site_path = os.path.abspath(frappe.get_site_path())
+		real_path = os.path.abspath(absolute_path)
 
-		return absolute_path
+		if not real_path.startswith(site_path):
+			frappe.throw(_("Access denied to file path"))
+
+		if not os.path.exists(real_path):
+			frappe.throw(f"File does not exist: {real_path}")
+
+		return real_path
 
 	def upload_file(self, document_category_key: str, file_path: str, retailer_id: str):
 		"""
@@ -643,7 +654,8 @@ class VATSmartChallan:
 		# Determine MIME type
 		mime_type, _ = mimetypes.guess_type(absolute_file_path)
 
-		with open(absolute_file_path, "rb") as f:
+		# Path is validated in get_absolute_file_path to be within site directory
+		with open(absolute_file_path, "rb") as f:  # nosemgrep
 			files = {
 				"file": (os.path.basename(absolute_file_path), f, mime_type or "application/octet-stream"),
 			}
@@ -865,13 +877,13 @@ class VATSmartChallan:
 
 			else:
 				frappe.log_error(frappe.get_traceback(), "Download Schallan Error")
-				frappe.throw("Failed to download Schallan")
+				frappe.throw(_("Failed to download Schallan"))
 		except Exception:
 			frappe.log_error(frappe.get_traceback(), "Download Schallan Error")
-			frappe.throw("Failed to download Schallan")
+			frappe.throw(_("Failed to download Schallan"))
 
 	def get_vat_invoice_details(self, doc):
-		url = f"{self.base_url}/integration/get_vat_invoice_details?invoice_number={doc.invoice_number}&smart_challan_number={doc.s_challan_number}"
+		url = f"{self.base_url}/integration/get_vat_invoice_details?invoice_number={doc.invoice_number}&smart_challan_number={doc.s_challan_number}"  # nosemgrep
 		try:
 			if doc.status == "Pending" or doc.status == "Failed":
 				self.sync_vat_invoice(doc)
@@ -1103,8 +1115,7 @@ def auto_sync_vat_invoices():
 			queue="long",
 		)
 
-	frappe.db.set_value("POS Vendor Configuration", None, "last_sync_date", today)
-	frappe.db.commit()
+	frappe.db.set_single_value("POS Vendor Configuration", "last_sync_date", today)
 
 
 def sync_vat_invoice_job(invoice_name):

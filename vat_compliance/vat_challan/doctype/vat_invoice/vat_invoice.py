@@ -20,7 +20,7 @@ class VATInvoice(Document):
 
 
 @frappe.whitelist()
-def sync_vat_invoice(vat_invoice_name):
+def sync_vat_invoice(vat_invoice_name: str):
 	"""API method to sync VAT Invoice"""
 	vat_invoice = frappe.get_doc("VAT Invoice", vat_invoice_name)
 	vat_invoice.sync_vat_invoice()
@@ -28,7 +28,7 @@ def sync_vat_invoice(vat_invoice_name):
 
 
 @frappe.whitelist()
-def download_schallan(vat_invoice_name):
+def download_schallan(vat_invoice_name: str):
 	"""API method to download VAT Invoice"""
 	vat_invoice = frappe.get_doc("VAT Invoice", vat_invoice_name)
 	return vat_invoice.download_schallan()

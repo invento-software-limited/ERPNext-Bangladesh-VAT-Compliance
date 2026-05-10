@@ -1,6 +1,7 @@
 import json
 
 import frappe
+from frappe import _
 from frappe.utils import flt
 
 from vat_compliance.vat_compliance.report.sales_vat_management.sales_vat_management import (
@@ -10,7 +11,7 @@ from vat_compliance.vat_compliance.report.vds_management.vds_management import e
 
 
 @frappe.whitelist()
-def get_vat_payment_data(from_date, to_date, company):
+def get_vat_payment_data(from_date: str, to_date: str, company: str):
 	filters = {"from_date": from_date, "to_date": to_date, "company": company}
 
 	data = []
@@ -44,12 +45,12 @@ def get_vat_payment_data(from_date, to_date, company):
 
 
 @frappe.whitelist()
-def make_journal_entry(rows):
+def make_journal_entry(rows: str | list):
 	if isinstance(rows, str):
 		rows = json.loads(rows)
 
 	if not rows:
-		frappe.throw("No rows selected")
+		frappe.throw(_("No rows selected"))
 
 	je = frappe.new_doc("Journal Entry")
 	je.voucher_type = "VAT Payment Entry"

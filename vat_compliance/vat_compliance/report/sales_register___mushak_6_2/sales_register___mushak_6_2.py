@@ -14,68 +14,73 @@ def execute(filters=None):
 
 def get_columns():
 	return [
-		{"label": "Date", "fieldname": "posting_date", "fieldtype": "Date", "width": 120},
+		{"label": _("Date"), "fieldname": "posting_date", "fieldtype": "Date", "width": 120},
 		{
-			"label": "Opening Balance Qty",
+			"label": _("Opening Balance Qty"),
 			"fieldname": "opening_balance_qty",
 			"fieldtype": "Float",
 			"width": 180,
 		},
 		{
-			"label": "Opening Balance Value",
+			"label": _("Opening Balance Value"),
 			"fieldname": "opening_balance_value",
 			"fieldtype": "Currency",
 			"width": 180,
 		},
-		{"label": "Production Qty", "fieldname": "production_qty", "fieldtype": "Float", "width": 120},
-		{"label": "Production Value", "fieldname": "production_value", "fieldtype": "Currency", "width": 150},
+		{"label": _("Production Qty"), "fieldname": "production_qty", "fieldtype": "Float", "width": 120},
 		{
-			"label": "Total Produced Qty",
+			"label": _("Production Value"),
+			"fieldname": "production_value",
+			"fieldtype": "Currency",
+			"width": 150,
+		},
+		{
+			"label": _("Total Produced Qty"),
 			"fieldname": "total_produced_qty",
 			"fieldtype": "Float",
 			"width": 120,
 		},
 		{
-			"label": "Total Produced Value",
+			"label": _("Total Produced Value"),
 			"fieldname": "total_produced_value",
 			"fieldtype": "Currency",
 			"width": 150,
 		},
-		{"label": "Buyer Name", "fieldname": "buyer_name", "fieldtype": "Data", "width": 150},
-		{"label": "Buyer Address", "fieldname": "buyer_address", "fieldtype": "Data", "width": 200},
-		{"label": "BIN/NID", "fieldname": "buyer_id", "fieldtype": "Data", "width": 120},
+		{"label": _("Buyer Name"), "fieldname": "buyer_name", "fieldtype": "Data", "width": 150},
+		{"label": _("Buyer Address"), "fieldname": "buyer_address", "fieldtype": "Data", "width": 200},
+		{"label": _("BIN/NID"), "fieldname": "buyer_id", "fieldtype": "Data", "width": 120},
 		{
-			"label": "Challan No",
+			"label": _("Challan No"),
 			"fieldname": "challan_no",
 			"fieldtype": "Link",
 			"options": "Sales Invoice",
 			"width": 200,
 		},
-		{"label": "Challan Date", "fieldname": "challan_date", "fieldtype": "Date", "width": 120},
-		{"label": "Item Description", "fieldname": "item_description", "fieldtype": "Data", "width": 150},
-		{"label": "Quantity", "fieldname": "qty", "fieldtype": "Float", "width": 120},
-		{"label": "Taxable Value", "fieldname": "taxable_value", "fieldtype": "Currency", "width": 150},
+		{"label": _("Challan Date"), "fieldname": "challan_date", "fieldtype": "Date", "width": 120},
+		{"label": _("Item Description"), "fieldname": "item_description", "fieldtype": "Data", "width": 150},
+		{"label": _("Quantity"), "fieldname": "qty", "fieldtype": "Float", "width": 120},
+		{"label": _("Taxable Value"), "fieldname": "taxable_value", "fieldtype": "Currency", "width": 150},
 		{
-			"label": "Supplementary Duty",
+			"label": _("Supplementary Duty"),
 			"fieldname": "supplementary_duty",
 			"fieldtype": "Currency",
 			"width": 180,
 		},
-		{"label": "VAT", "fieldname": "vat_amount", "fieldtype": "Currency", "width": 100},
+		{"label": _("VAT"), "fieldname": "vat_amount", "fieldtype": "Currency", "width": 100},
 		{
-			"label": "Closing Balance Qty",
+			"label": _("Closing Balance Qty"),
 			"fieldname": "closing_balance_qty",
 			"fieldtype": "Float",
 			"width": 180,
 		},
 		{
-			"label": "Closing Balance Value",
+			"label": _("Closing Balance Value"),
 			"fieldname": "closing_balance_value",
 			"fieldtype": "Currency",
 			"width": 180,
 		},
-		{"label": "Remarks", "fieldname": "remarks", "fieldtype": "Data", "width": 150},
-		{"label": "Item Type", "fieldname": "item_type", "fieldtype": "Data", "width": 100},
+		{"label": _("Remarks"), "fieldname": "remarks", "fieldtype": "Data", "width": 150},
+		{"label": _("Item Type"), "fieldname": "item_type", "fieldtype": "Data", "width": 100},
 		# Added to distinguish item types
 	]
 
@@ -83,8 +88,7 @@ def get_columns():
 def get_data(filters):
 	conditions = get_conditions(filters)
 
-	invoices = frappe.db.sql(
-		f"""
+	query = """
 		SELECT
 			sii.parent AS name,
 			si.posting_date,
@@ -110,7 +114,10 @@ def get_data(filters):
 		INNER JOIN `tabItem` it ON sii.item_code = it.name
 		WHERE {conditions} AND si.docstatus = 1
 		ORDER BY si.posting_date ASC, si.name ASC
-	""",
+	"""
+
+	invoices = frappe.db.sql(
+		query.replace("{conditions}", conditions),
 		filters,
 		as_dict=True,
 	)
@@ -305,17 +312,18 @@ def get_formatted_address(address_name, address_cache):
 		)
 		if address_doc:
 			address_display = ", ".join(
-				filter(
-					None,
-					[
+				[
+					line.strip()
+					for line in [
 						address_doc.address_line1,
 						address_doc.address_line2,
 						address_doc.city,
 						address_doc.state,
 						address_doc.country,
 						address_doc.pincode,
-					],
-				)
+					]
+					if line and line.strip()
+				]
 			)
 			address_cache[address_name] = address_display
 	return address_cache.get(address_name, "")

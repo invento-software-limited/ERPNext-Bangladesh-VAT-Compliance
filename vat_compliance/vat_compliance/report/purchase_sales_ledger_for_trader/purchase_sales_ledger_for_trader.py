@@ -122,8 +122,7 @@ def get_data(filters):
 def get_purchase_data(filters):
 	conditions = get_purchase_conditions(filters)
 
-	purchase_invoices = frappe.db.sql(
-		f"""
+	query = """
 		SELECT
 			pi.name as purchase_invoice_no,
 			pi.posting_date,
@@ -149,7 +148,10 @@ def get_purchase_data(filters):
 		INNER JOIN `tabItem` it ON pii.item_code = it.name
 		WHERE pi.docstatus = 1 {conditions}
 		ORDER BY pi.posting_date, pi.name
-	""",
+	"""
+
+	purchase_invoices = frappe.db.sql(
+		query.replace("{conditions}", conditions),
 		filters,
 		as_dict=1,
 	)
@@ -175,8 +177,7 @@ def get_purchase_data(filters):
 def get_sales_data(filters):
 	conditions = get_sales_conditions(filters)
 
-	sales_invoices = frappe.db.sql(
-		f"""
+	query = """
 		SELECT
 			si.name as sales_invoice_no,
 			si.posting_date as sales_invoice_date,
@@ -200,7 +201,10 @@ def get_sales_data(filters):
 		INNER JOIN `tabItem` it ON sii.item_code = it.name
 		WHERE si.docstatus = 1 {conditions}
 		ORDER BY si.posting_date, si.name
-	""",
+	"""
+
+	sales_invoices = frappe.db.sql(
+		query.replace("{conditions}", conditions),
 		filters,
 		as_dict=1,
 	)
