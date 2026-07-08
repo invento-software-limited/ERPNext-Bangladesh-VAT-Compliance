@@ -1,0 +1,7 @@
+# robots.txt for ERPNext Bangladesh VAT Compliance docs
+# https://invento-software-limited.github.io/ERPNext-Bangladesh-VAT-Compliance/
+
+User-agent: *
+Allow: /
+
+Sitemap: https://invento-software-limited.github.io/ERPNext-Bangladesh-VAT-Compliance/sitemap.xml
