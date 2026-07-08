@@ -1,15 +1,106 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" prefix="og: https://ogp.me/ns#">
 <head>
+  <!-- ===== BASICS ===== -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bangladesh VAT Compliance — Documentation</title>
-  <meta name="description" content="Documentation for the ERPNext Bangladesh VAT Compliance app — Product Overview & User Guide" />
+  <title>ERPNext Bangladesh VAT Compliance — Product Overview & User Guide</title>
+  <meta name="description" content="Official documentation for the ERPNext Bangladesh VAT Compliance app. Simplify VAT management with automated Mushak 6.3, 6.1, 6.2 challans, VDS tracking, treasury deposits, and NBR-compliant reporting for traders, manufacturers, and service providers in Bangladesh." />
+  <meta name="keywords" content="Bangladesh VAT, ERPNext VAT compliance, Mushak 6.3, Mushak 6.1, Mushak 6.2, VAT challan, VDS management, NBR compliance, VAT software Bangladesh, ERPNext Bangladesh, VAT return, tax invoice Bangladesh" />
+  <meta name="author" content="Invento Software Limited" />
+  <meta name="robots" content="index, follow" />
   <meta name="theme-color" content="#0d6e3a" />
+  <meta name="application-name" content="ERPNext Bangladesh VAT Compliance" />
+  <meta name="apple-mobile-web-app-title" content="BD VAT Docs" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
 
-  <!-- marked.js for client-side markdown rendering -->
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
+  <!-- ===== CANONICAL ===== -->
+  <link rel="canonical" href="https://invento-software-limited.github.io/ERPNext-Bangladesh-VAT-Compliance/" />
 
+  <!-- ===== FAVICON ===== -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='16' fill='%230d6e3a'/%3E%3Ctext x='50' y='68' font-size='54' font-weight='bold' text-anchor='middle' fill='%23fff' font-family='system-ui'%3EBD%3C/text%3E%3C/svg%3E" />
+  <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAMlJREFUWEft1rENwjAQBdD/V4wAWYARKJmAEZghEzACIzACIyQyASNEMkJEytn4LFmR7MiOEyne6sqf9O0LgPljYD4G+NnWq9b6AABKqSWlNLXWXgCAc84BwNBaSwBQSskA4DHG7J1zB4RfE0K4EhETY4wAgIhKiKgQETFjbQDAmQ9EhIiMMS4iAgBKKQsAuBHRAwARXQHgQkRnItqUUt4tJecfBQCcc4+UUggAmXNeKaU1ET0BQErpjYhHRHzMOf8TQPRaax/FGGHOmZxzG2uM/wU0P/cDlJ9Y6qCjFNUAAAAASUVORK5CYII=" />
+  <link rel="apple-touch-icon" sizes="180x180" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAYAAAA9zQYyAAAAAXNSR0IArs4c6QAABO9JREFUeJztnU9oHEUchjebTZrYBGMSNG6Sg3oQ9KAHI5p4cBcPgn8u4k1R8CIoikcFj6J4VfQiHoR4UFBBoSc9JFFUJGhMNG0M2SRmuruH3+6SZna3md2d/S3U74FAdjP9zXy7M/NrdnYIIYQQQgghhBBCCCGEEEIIIYQQQgghhBBCCCGEEEIIIYQQQgghhBDCM9gH2AM4ADgAmFJiKgU4B7gMuAq4FhFvR8S/hSr2h1FEAuA1wNsJ0XPAAxFxFzCvLq1ujAL8FPAe4MMEaYg4iIj7UfqVRAXYB/gS8KeEyLuAB4CbUfqVRAV4K+CHgC8mCJwBHASci9KvJCrAtwP+uMTIuwB3o/QriSqEfRPgR4CvlRB4COC3UfqVRAW4G/B9gA+UEDc0dQ5wJUq/kqgAOwDfB/igkrhbgDNR+pVEBXgH4J8BPqIk7hbg+Sj9SqICvA1wEfCgksBbgDtR+pVEBXgN4MeAH5QQNwM4D7gYpV9JVIBXAj4M+FgJcXMB3wYci9KvJCrAswAfA3y0hMAFgB+J0q8kKsDTAJ8AvKeEwOmA/xOlX0lUgKcAPgl4bwmRUwBPROlXEhXgiYDbAB8vITI3fn4bpV9JVIAnAH4L8G0lRG4B/BalX0lUgB2A3wbcVkLkJsDvo/QriQrwCsCvA55RQmQ34J8o/UqiArwM8B+A60qIfBnwlyj9SqICPAfw74B3lRDJgL9G6VcSFeBZgH8HvKuESAb8LUq/kqgAzwD8O+B9JURuAPwSpV9JVICnAf4FcK+EyNWAP0fpVxIV4CmAfwLcLyGSAb+I0q8kKsBTAP8C3C8hkgG/iNKvJCrAUwD/BLhfQiQDfhGlX0lUgKcA/glwv4RIBvwiSr+SqABPAfwT4H4JkQz4RZR+JVEBngL4J8D9EiIZ8Iso/UqiAjwF8E+A+yVEMuAXUfqVRAV4CuCfAPdLiGTAL6L0K4kK8BTAPwHulxDJgF9E6VcSFeApgH8C3C8hkgG/iNKvJCrAUwD/BLhfQiQDfhGlX0lUgKcA/glwv4RIBvwiSr+SqABPAfwT4H4JkQz4RZR+JVEBngL4J8D9EiIZ8Iso/UqiAjwF8E+A+yVEMuAXUfqVRAV4CuCfAPdLiGTAL6L0K4kK8BTAPwHulxDJgF+E0h8bG+Pp6Wk+PDzMN4vFYrFYLJ6/efPmXwb8IpRelkqNMn8I8MESIlcB/hKlX0lUgB2A3wbcVkLkJsDvo/QriQrwCsCvA55RQmQ34J8o/UqiArwM8B+A60qIfBnwlyj9SqICPJ8D+CFgr4TIAP+O0q8kKsCzAB8DvLeEwOmA/xOlX0lUgKcCPgl4TwmB0wCfRelXEhXgqYBPAt5fQuAUwGdR+pVEBXgK4JOA95YQOAXwTJR+JVEBNgE+AnhPCYFTAJ+L0q8kKsAGwEcB7y0h0gD4YpR+JVEB1gE+Bnh/CYEGwBej9CuJCrAW8DHA+0sINAC+GKVfSVSAVYCPBh4sIdAA+GGUfiVRAVYAPh54sIRAA+ALUfqVRAV4L+CJwEMlBHYBnovSryQqwHsAnwQ8XEJgF+BHUfqVRAV4B+BTgI+UENkB+EmUfiVRAfYAPg34eAmRrYAvovQriQrwesDnAHeXENkM+EWUfiXxHsDXAL+q1J8TvRbwiyj9SjL/C0REMRKfBbi7hMAFwE+i3MQJ8BTAM4D3lRDJgMcBt6L0KykqYKq/p4C/b0PcE4A/R+lXEhUw1d+HiLhTSmDXY8Afo/QriQqY6u/Dty0Co1L9C+C3KP1KogKm+vsQqX5qXGpCBBERERERERERERERERERERERERERERERERERERERERERERERiWf/AS0A3P/e/AQYAAAAAElFTkSuQmCC" />
+  <link rel="manifest" href="site.webmanifest" />
+
+  <!-- ===== DNS PRECONNECT & RESOURCE HINTS ===== -->
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="preload" href="https://cdn.jsdelivr.net/npm/marked/marked.min.js" as="script" />
+
+  <!-- ===== OPEN GRAPH (Facebook, LinkedIn, etc.) ===== -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="ERPNext Bangladesh VAT Compliance" />
+  <meta property="og:title" content="ERPNext Bangladesh VAT Compliance — Product Overview & User Guide" />
+  <meta property="og:description" content="Official documentation for the ERPNext Bangladesh VAT Compliance app. Automate Mushak 6.3, 6.1, 6.2 challans, VDS tracking, and treasury deposits. Fully NBR-compliant for traders, manufacturers, and service providers." />
+  <meta property="og:url" content="https://invento-software-limited.github.io/ERPNext-Bangladesh-VAT-Compliance/" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:image" content="https://invento-software-limited.github.io/ERPNext-Bangladesh-VAT-Compliance/assets/og-image.svg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="ERPNext Bangladesh VAT Compliance documentation — Mushak 6.1, 6.2, 6.3, VDS management, and treasury deposits." />
+  <meta property="og:image:type" content="image/svg+xml" />
+
+  <!-- ===== TWITTER CARD ===== -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="ERPNext Bangladesh VAT Compliance — Documentation" />
+  <meta name="twitter:description" content="Simplify Bangladesh VAT compliance with automated Mushak challans, VDS tracking, and treasury deposit management inside ERPNext." />
+  <meta name="twitter:image" content="https://invento-software-limited.github.io/ERPNext-Bangladesh-VAT-Compliance/assets/og-image.svg" />
+
+  <!-- ===== JSON-LD STRUCTURED DATA ===== -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "ERPNext Bangladesh VAT Compliance",
+    "alternateName": "BD VAT Compliance Docs",
+    "url": "https://invento-software-limited.github.io/ERPNext-Bangladesh-VAT-Compliance/",
+    "description": "Official documentation for the ERPNext Bangladesh VAT Compliance app — product overview and user guide.",
+    "inLanguage": "en-US",
+    "isPartOf": {
+      "@type": "Organization",
+      "name": "Invento Software Limited",
+      "url": "https://github.com/invento-software-limited"
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "ERPNext Bangladesh VAT Compliance",
+    "operatingSystem": "Linux, Docker",
+    "applicationCategory": "BusinessApplication",
+    "description": "Automate Bangladesh VAT compliance lifecycle — generate Mushak 6.3, 6.1, 6.2 challans, manage VDS, track treasury deposits, and maintain NBR-compliant registers directly inside ERPNext.",
+    "url": "https://github.com/invento-software-limited/ERPNext-Bangladesh-VAT-Compliance",
+    "author": {
+      "@type": "Organization",
+      "name": "Invento Software Limited"
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://invento-software-limited.github.io/ERPNext-Bangladesh-VAT-Compliance/"
+      }
+    ]
+  }
+  </script>
+
+  <!-- ===== STYLES ===== -->
   <style>
     /* ===== RESET & BASE ===== */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -40,6 +131,34 @@
       --font-mono: "SF Mono", SFMono-Regular, "Fira Code", "Fira Mono", Menlo, monospace;
     }
 
+    /* Screen-reader only */
+    .sr-only {
+      position: absolute;
+      width: 1px; height: 1px;
+      padding: 0; margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* Skip-to-content link */
+    .skip-link {
+      position: absolute;
+      top: -100%;
+      left: 8px;
+      background: var(--green-700);
+      color: var(--white);
+      padding: 8px 16px;
+      border-radius: 0 0 8px 8px;
+      z-index: 200;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: top 0.15s ease;
+    }
+    .skip-link:focus { top: 0; }
+
     html { scroll-behavior: smooth; }
     body {
       font-family: var(--font-sans);
@@ -48,6 +167,15 @@
       color: var(--gray-800);
       background: var(--gray-50);
       display: flex;
+      min-height: 100vh;
+    }
+
+    /* Page wrapper: stacks topbar and main vertically */
+    .page-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
       min-height: 100vh;
     }
 
@@ -78,7 +206,8 @@
       flex-shrink: 0;
     }
 
-    .sidebar-brand-inner {
+    .sidebar-brand a {
+      text-decoration: none;
       display: flex;
       align-items: center;
       gap: 14px;
@@ -156,18 +285,18 @@
       color: var(--gray-800);
     }
 
+    .nav-btn:focus-visible {
+      outline: 2px solid var(--green-600);
+      outline-offset: 2px;
+    }
+
     .nav-btn.active {
       background: var(--green-50);
       color: var(--green-700);
       font-weight: 600;
     }
 
-    .nav-btn .nav-icon {
-      font-size: 18px;
-      width: 24px;
-      text-align: center;
-      flex-shrink: 0;
-    }
+    .nav-btn .nav-icon { font-size: 18px; width: 24px; text-align: center; flex-shrink: 0; }
 
     .nav-btn .badge {
       margin-left: auto;
@@ -196,9 +325,13 @@
       gap: 8px;
       font-size: 13px;
       color: var(--gray-500);
+      text-decoration: none;
     }
-
     .sidebar-footer a:hover { color: var(--gray-700); }
+    .sidebar-footer a:focus-visible {
+      outline: 2px solid var(--green-600);
+      outline-offset: 2px;
+    }
 
     /* ===== MAIN CONTENT ===== */
     .main {
@@ -223,8 +356,7 @@
     }
 
     .hamburger {
-      width: 40px;
-      height: 40px;
+      width: 40px; height: 40px;
       border: none;
       background: transparent;
       cursor: pointer;
@@ -238,10 +370,10 @@
     }
 
     .hamburger:hover { background: var(--gray-100); }
+    .hamburger:focus-visible { outline: 2px solid var(--green-600); outline-offset: 2px; }
     .hamburger span {
       display: block;
-      width: 22px;
-      height: 2.5px;
+      width: 22px; height: 2.5px;
       background: var(--gray-700);
       border-radius: 2px;
       transition: 0.3s;
@@ -260,7 +392,6 @@
       padding: 48px 48px 80px;
     }
 
-    /* Loading state */
     .content-loading {
       display: flex;
       flex-direction: column;
@@ -271,8 +402,7 @@
     }
 
     .content-loading .spinner {
-      width: 40px;
-      height: 40px;
+      width: 40px; height: 40px;
       border: 3px solid var(--gray-200);
       border-top-color: var(--green-700);
       border-radius: 50%;
@@ -341,32 +471,13 @@
       margin-bottom: 1.2rem;
       padding-left: 1.5rem;
     }
+    .markdown-body li { margin-bottom: 0.35rem; }
+    .markdown-body li > ul, .markdown-body li > ol { margin-top: 0.25rem; margin-bottom: 0.25rem; }
 
-    .markdown-body li {
-      margin-bottom: 0.35rem;
-    }
+    .markdown-body strong { font-weight: 700; color: var(--gray-900); }
+    .markdown-body em { font-style: italic; }
+    .markdown-body hr { border: none; border-top: 1px solid var(--gray-200); margin: 2rem 0; }
 
-    .markdown-body li > ul, .markdown-body li > ol {
-      margin-top: 0.25rem;
-      margin-bottom: 0.25rem;
-    }
-
-    .markdown-body strong {
-      font-weight: 700;
-      color: var(--gray-900);
-    }
-
-    .markdown-body em {
-      font-style: italic;
-    }
-
-    .markdown-body hr {
-      border: none;
-      border-top: 1px solid var(--gray-200);
-      margin: 2rem 0;
-    }
-
-    /* Blockquotes */
     .markdown-body blockquote {
       border-left: 4px solid var(--green-600);
       background: var(--green-50);
@@ -375,10 +486,8 @@
       border-radius: 0 8px 8px 0;
       color: var(--gray-700);
     }
-
     .markdown-body blockquote p:last-child { margin-bottom: 0; }
 
-    /* Code */
     .markdown-body code {
       background: var(--gray-100);
       padding: 2px 6px;
@@ -397,23 +506,14 @@
       font-size: 0.875rem;
       line-height: 1.6;
     }
+    .markdown-body pre code { background: transparent; color: inherit; padding: 0; border-radius: 0; font-size: inherit; }
 
-    .markdown-body pre code {
-      background: transparent;
-      color: inherit;
-      padding: 0;
-      border-radius: 0;
-      font-size: inherit;
-    }
-
-    /* Tables */
     .markdown-body table {
       width: 100%;
       border-collapse: collapse;
       margin: 1.25rem 0;
       font-size: 0.95rem;
     }
-
     .markdown-body th {
       background: var(--green-700);
       color: var(--white);
@@ -421,19 +521,12 @@
       text-align: left;
       padding: 10px 14px;
     }
-
     .markdown-body th:first-child { border-radius: 8px 0 0 0; }
     .markdown-body th:last-child { border-radius: 0 8px 0 0; }
-
-    .markdown-body td {
-      padding: 10px 14px;
-      border-bottom: 1px solid var(--gray-200);
-    }
-
+    .markdown-body td { padding: 10px 14px; border-bottom: 1px solid var(--gray-200); }
     .markdown-body tr:last-child td { border-bottom: none; }
     .markdown-body tr:nth-child(even) td { background: var(--gray-50); }
 
-    /* Images */
     .markdown-body img {
       margin: 1.5rem auto;
       border-radius: 12px;
@@ -444,10 +537,7 @@
       background: var(--white);
     }
 
-    /* Lists with emoji icons */
-    .markdown-body ul li::marker {
-      color: var(--green-600);
-    }
+    .markdown-body ul li::marker { color: var(--green-600); }
 
     /* ===== OVERLAY (mobile) ===== */
     .sidebar-overlay {
@@ -460,17 +550,11 @@
       transition: opacity 0.3s ease;
       pointer-events: none;
     }
-
-    .sidebar-overlay.show {
-      opacity: 1;
-      pointer-events: auto;
-    }
+    .sidebar-overlay.show { opacity: 1; pointer-events: auto; }
 
     /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
-      .sidebar {
-        transform: translateX(-100%);
-      }
+      .sidebar { transform: translateX(-100%); }
       .sidebar.open { transform: translateX(0); }
       .topbar { display: flex; }
       .main { margin-left: 0; }
@@ -484,7 +568,6 @@
       .content-area { padding: 32px 28px 60px; }
     }
 
-    /* ===== PRINT ===== */
     @media print {
       .sidebar, .topbar, .sidebar-overlay { display: none !important; }
       .main { margin-left: 0; }
@@ -495,72 +578,87 @@
 </head>
 <body>
 
+  <!-- ===== SKIP LINK (accessibility) ===== -->
+  <a class="skip-link" href="#content">Skip to main content</a>
+
   <!-- ===== SIDEBAR ===== -->
   <aside class="sidebar" id="sidebar" role="navigation" aria-label="Documentation navigation">
     <div class="sidebar-brand">
-      <div class="sidebar-brand-inner">
-        <div class="brand-icon">BD</div>
+      <a href="/ERPNext-Bangladesh-VAT-Compliance/" aria-label="Home — Bangladesh VAT Compliance">
+        <div class="brand-icon" aria-hidden="true">BD</div>
         <div class="brand-text">
           <span class="brand-name">VAT Compliance</span>
           <span class="brand-sub">ERPNext Bangladesh</span>
         </div>
-      </div>
+      </a>
     </div>
 
-    <nav class="sidebar-nav">
-      <div class="sidebar-nav-label">Documentation</div>
+    <nav class="sidebar-nav" aria-label="Documentation pages">
+      <div class="sidebar-nav-label" id="nav-heading">Documentation</div>
 
-      <button class="nav-btn active" data-page="overview" onclick="switchPage('overview')">
-        <span class="nav-icon">📘</span>
+      <button class="nav-btn active" data-page="overview" onclick="switchPage('overview')" aria-current="page">
+        <span class="nav-icon" aria-hidden="true">📘</span>
         Product Overview
       </button>
 
       <button class="nav-btn" data-page="guide" onclick="switchPage('guide')">
-        <span class="nav-icon">📖</span>
+        <span class="nav-icon" aria-hidden="true">📖</span>
         User Guide
       </button>
     </nav>
 
     <div class="sidebar-footer">
-      <a href="https://github.com/invento-software-limited/ERPNext-Bangladesh-VAT-Compliance" target="_blank" rel="noopener">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      <a href="https://github.com/invento-software-limited/ERPNext-Bangladesh-VAT-Compliance" target="_blank" rel="noopener noreferrer" aria-label="View source code on GitHub">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
         GitHub
       </a>
     </div>
   </aside>
 
   <!-- ===== OVERLAY (mobile) ===== -->
-  <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
+  <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()" role="presentation"></div>
 
-  <!-- ===== TOPBAR (mobile) ===== -->
-  <header class="topbar">
-    <button class="hamburger" onclick="toggleSidebar()" aria-label="Toggle navigation">
-      <span></span><span></span><span></span>
-    </button>
-    <span class="topbar-title" id="topbarTitle">Product Overview</span>
-  </header>
+  <!-- ===== PAGE WRAP (topbar + main, stacked vertically) ===== -->
+  <div class="page-wrap">
+    <header class="topbar">
+      <button class="hamburger" onclick="toggleSidebar()" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="sidebar">
+        <span></span><span></span><span></span>
+      </button>
+      <span class="topbar-title" id="topbarTitle">Product Overview</span>
+    </header>
 
-  <!-- ===== MAIN CONTENT ===== -->
-  <main class="main">
-    <div class="content-area" id="content">
-      <div class="content-loading">
-        <div class="spinner"></div>
+    <main class="main" id="main-content" role="main">
+      <article class="content-area" id="content-area" itemscope itemtype="https://schema.org/Article">
+      <meta itemprop="author" content="Invento Software Limited" />
+      <meta itemprop="publisher" content="Invento Software Limited" />
+      <span itemprop="publisher" itemscope itemtype="https://schema.org/Organization">
+        <meta itemprop="name" content="Invento Software Limited" />
+      </span>
+
+      <div class="content-loading" id="loading-indicator" role="status" aria-live="polite">
+        <div class="spinner" aria-hidden="true"></div>
         <span>Loading documentation…</span>
       </div>
-    </div>
+
+      <div id="content" aria-live="polite"></div>
+    </article>
   </main>
+  </div><!-- /.page-wrap -->
 
   <script>
     // ---- Configuration ----
+    const SITE_URL = 'https://invento-software-limited.github.io/ERPNext-Bangladesh-VAT-Compliance/';
     const PAGES = {
       overview: {
         file: 'product_overview.md',
         title: 'Product Overview',
+        description: 'Product overview for the ERPNext Bangladesh VAT Compliance app — features, target audience, roadmap, and capabilities for NBR-compliant VAT management.',
         emoji: '📘',
       },
       guide: {
         file: 'user_guide.md',
         title: 'User Guide',
+        description: 'Step-by-step user guide for the ERPNext Bangladesh VAT Compliance app — sales workflow, purchase workflow, compliance reports, Mushak 6.3 generation, and VDS management.',
         emoji: '📖',
       },
     };
@@ -572,30 +670,26 @@
     function toggleSidebar() {
       const sidebar = document.getElementById('sidebar');
       const overlay = document.getElementById('overlay');
-      sidebar.classList.toggle('open');
-      overlay.classList.toggle('show');
-      document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
+      const hamburger = document.querySelector('.hamburger');
+      const isOpen = sidebar.classList.toggle('open');
+      overlay.classList.toggle('show', isOpen);
+      document.body.style.overflow = isOpen ? 'hidden' : '';
+      if (hamburger) hamburger.setAttribute('aria-expanded', isOpen);
     }
 
     function closeSidebar() {
       document.getElementById('sidebar').classList.remove('open');
       document.getElementById('overlay').classList.remove('show');
       document.body.style.overflow = '';
+      const hamburger = document.querySelector('.hamburger');
+      if (hamburger) hamburger.setAttribute('aria-expanded', 'false');
     }
 
     // ---- Markdown rendering ----
     function renderMarkdown(text) {
-      // Set marked options
-      marked.setOptions({
-        breaks: true,
-        gfm: true,
-      });
+      marked.setOptions({ breaks: true, gfm: true });
 
-      // Pre-process: fix image paths (ensure ./assets/ works)
-      // Also handle emoji shortcodes (the .md already has raw emoji, so this is fine)
       const html = marked.parse(text);
-
-      // Post-process: add target="_blank" to external links, wrap tables
       const div = document.createElement('div');
       div.className = 'markdown-body';
       div.innerHTML = html;
@@ -604,8 +698,16 @@
       div.querySelectorAll('a').forEach(a => {
         if (a.hostname && a.hostname !== location.hostname) {
           a.setAttribute('target', '_blank');
-          a.setAttribute('rel', 'noopener');
+          a.setAttribute('rel', 'noopener noreferrer');
         }
+      });
+
+      // Add IDs to headings for anchor links
+      div.querySelectorAll('h1, h2, h3, h4').forEach(h => {
+        const id = h.textContent.toLowerCase()
+          .replace(/[^a-z0-9ঀ-৿]+/g, '-')
+          .replace(/^-+|-+$/g, '');
+        if (id && !h.id) h.id = id;
       });
 
       // Smooth scroll for anchor links
@@ -621,31 +723,49 @@
       return div;
     }
 
+    // ---- Update JSON-LD breadcrumb ----
+    function updateBreadcrumb(pageTitle) {
+      const breadcrumbScript = document.querySelector('script[type="application/ld+json"]:nth-of-type(3)');
+      if (breadcrumbScript) {
+        try {
+          const data = JSON.parse(breadcrumbScript.textContent);
+          data.itemListElement = [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL },
+            { '@type': 'ListItem', position: 2, name: pageTitle, item: SITE_URL }
+          ];
+          breadcrumbScript.textContent = JSON.stringify(data);
+        } catch (e) { /* ignore parse errors */ }
+      }
+    }
+
     // ---- Load and display a page ----
     async function loadPage(pageKey) {
       const page = PAGES[pageKey];
       if (!page) return;
 
       const contentEl = document.getElementById('content');
+      const loadingEl = document.getElementById('loading-indicator');
+      const contentArea = document.getElementById('content-area');
+      const heading = pageKey === 'overview' ? 'Product Overview' : 'User Guide';
+
+      // Hide loading, show content area
+      if (loadingEl) loadingEl.style.display = 'none';
+      if (contentArea) contentArea.setAttribute('aria-label', heading);
 
       // If cached, render immediately
       if (cachedContent[pageKey]) {
         contentEl.innerHTML = '';
         contentEl.appendChild(cachedContent[pageKey].cloneNode(true));
         updateActiveNav(pageKey);
-        document.title = `${page.title} — Bangladesh VAT Compliance`;
-        document.getElementById('topbarTitle').textContent = page.title;
+        updateMeta(pageKey);
+        updateBreadcrumb(page.title);
         window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
 
       // Show loading
-      contentEl.innerHTML = `
-        <div class="content-loading">
-          <div class="spinner"></div>
-          <span>Loading ${page.title}…</span>
-        </div>
-      `;
+      contentEl.innerHTML = '';
+      if (loadingEl) loadingEl.style.display = 'flex';
 
       try {
         const response = await fetch(page.file);
@@ -655,21 +775,23 @@
         const rendered = renderMarkdown(text);
         cachedContent[pageKey] = rendered.cloneNode(true);
 
+        if (loadingEl) loadingEl.style.display = 'none';
         contentEl.innerHTML = '';
         contentEl.appendChild(rendered);
 
         updateActiveNav(pageKey);
-        document.title = `${page.title} — Bangladesh VAT Compliance`;
-        document.getElementById('topbarTitle').textContent = page.title;
+        updateMeta(pageKey);
+        updateBreadcrumb(page.title);
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
         // Close sidebar on mobile after navigation
         closeSidebar();
       } catch (err) {
         console.error('Failed to load page:', err);
+        if (loadingEl) loadingEl.style.display = 'none';
         contentEl.innerHTML = `
           <div class="content-error">
-            <p style="font-size:2rem;margin-bottom:8px;">⚠️</p>
+            <p style="font-size:2rem;margin-bottom:8px;" aria-hidden="true">⚠️</p>
             <p style="font-size:1.1rem;font-weight:600;color:var(--gray-700);margin-bottom:4px;">Failed to load documentation</p>
             <p style="color:var(--gray-500);font-size:0.9rem;">${err.message}</p>
             <p style="margin-top:16px;">
@@ -678,6 +800,32 @@
           </div>
         `;
       }
+    }
+
+    // ---- Update meta tags on page switch ----
+    function updateMeta(pageKey) {
+      const page = PAGES[pageKey];
+      if (!page) return;
+
+      const fullTitle = `${page.title} — Bangladesh VAT Compliance`;
+      document.title = fullTitle;
+
+      // Meta description
+      let metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc) metaDesc.setAttribute('content', page.description);
+
+      // OG / Twitter
+      const ogTitle = document.querySelector('meta[property="og:title"]');
+      if (ogTitle) ogTitle.setAttribute('content', fullTitle);
+      const ogDesc = document.querySelector('meta[property="og:description"]');
+      if (ogDesc) ogDesc.setAttribute('content', page.description);
+      const twTitle = document.querySelector('meta[name="twitter:title"]');
+      if (twTitle) twTitle.setAttribute('content', fullTitle);
+      const twDesc = document.querySelector('meta[name="twitter:description"]');
+      if (twDesc) twDesc.setAttribute('content', page.description);
+
+      // Top bar title
+      document.getElementById('topbarTitle').textContent = page.title;
     }
 
     // ---- Page switching ----
@@ -689,7 +837,9 @@
 
     function updateActiveNav(pageKey) {
       document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.page === pageKey);
+        const isActive = btn.dataset.page === pageKey;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-current', isActive ? 'page' : 'false');
       });
     }
 
@@ -702,14 +852,14 @@
     });
 
     // ---- Load default page on DOM ready ----
-    document.addEventListener('DOMContentLoaded', () => loadPage('overview'));
-    // Fallback if DOM already loaded
-    if (document.readyState !== 'loading') loadPage('overview');
-
-    // ---- Service worker registration (optional, for offline) ----
-    // if ('serviceWorker' in navigator) {
-    //   navigator.serviceWorker.register('/sw.js');
-    // }
+    function init() {
+      loadPage('overview');
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
   </script>
 </body>
 </html>
