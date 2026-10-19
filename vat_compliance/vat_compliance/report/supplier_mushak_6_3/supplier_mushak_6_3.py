@@ -4,11 +4,13 @@
 import frappe
 from frappe import _
 
+from vat_compliance import report_kit as kit
+
 
 def execute(filters=None):
 	columns = get_columns()
 	data = get_data(filters)
-	return columns, data
+	return columns, data, get_meta(filters, data)
 
 
 def get_columns():
@@ -44,6 +46,7 @@ def get_data(filters):
 			posting_date,
 			supplier,
 			grand_total,
+			base_grand_total,
 			custom_mushak_63
 		FROM
 			`tabPurchase Invoice`
@@ -99,3 +102,22 @@ def upload_mushak_63(invoice_id: str, file_url: str):
 
 	frappe.db.set_value("Purchase Invoice", invoice_id, "custom_mushak_63", file_url)
 	return True
+
+
+def get_meta(filters, data):
+	"""Header cards and charts, in company currency, from the same bills as the table."""
+	filters = frappe._dict(filters or {})
+	value = lambda r: r.get("base_grand_total")
+	collected = [r for r in data if r.get("status") == "Collected"]
+	pending = [r for r in data if r.get("status") != "Collected"]
+	return kit.meta(
+		filters,
+		bills=len(data),
+		value=kit.total(data, value),
+		collected=len(collected),
+		collected_value=kit.total(collected, value),
+		pending=len(pending),
+		pending_value=kit.total(pending, value),
+		pending_suppliers=kit.group(pending, lambda r: r.get("supplier"), value, limit=6),
+		trend_count=kit.monthly(data, lambda r: r.get("posting_date"), lambda r: 1, filters),
+	)

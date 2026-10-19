@@ -5,11 +5,14 @@ import frappe
 from frappe import _
 from frappe.utils import flt, getdate
 
+from vat_compliance import report_kit as kit
+from vat_compliance.vat_rates import fallback_vat
+
 
 def execute(filters=None):
 	columns = get_columns()
 	data = get_data(filters)
-	return columns, data
+	return columns, data, get_meta(filters, data)
 
 
 def get_columns():
@@ -139,6 +142,7 @@ def get_purchase_data(filters):
 			pii.amount as purchase_value,
 			pii.net_amount as taxable_value,
 			pii.item_tax_template,
+			pii.item_tax_rate,
 			pi.name as purchase_challan_no,
 			pi.posting_date as purchase_challan_date,
 			it.is_stock_item,
@@ -159,7 +163,7 @@ def get_purchase_data(filters):
 	# Calculate taxes for each purchase item
 	for invoice in purchase_invoices:
 		invoice.vat_amount = calculate_purchase_vat(
-			invoice.item_tax_template, invoice.taxable_value, invoice.company
+			invoice.item_tax_template, invoice.taxable_value, invoice.company, invoice.item_tax_rate
 		)
 		invoice.supplementary_duty = calculate_supplementary_duty(
 			invoice.item_tax_template, invoice.taxable_value, invoice.company
@@ -194,6 +198,7 @@ def get_sales_data(filters):
 			sii.amount as taxable_value,
 			sii.net_amount,
 			sii.item_tax_template,
+			sii.item_tax_rate,
 			it.is_stock_item,
 			it.stock_uom
 		FROM `tabSales Invoice Item` sii
@@ -212,7 +217,7 @@ def get_sales_data(filters):
 	# Calculate taxes for each sales item
 	for invoice in sales_invoices:
 		invoice.vat_amount = calculate_sales_vat(
-			invoice.item_tax_template, invoice.taxable_value, invoice.company
+			invoice.item_tax_template, invoice.taxable_value, invoice.company, invoice.item_tax_rate
 		)
 		invoice.supplementary_duty = calculate_supplementary_duty(
 			invoice.item_tax_template, invoice.taxable_value, invoice.company
@@ -459,10 +464,13 @@ def get_sales_conditions(filters):
 	return conditions
 
 
-def calculate_purchase_vat(item_tax_template, taxable_value, company):
-	"""Calculate VAT for purchase items"""
-	if not item_tax_template or not taxable_value:
+def calculate_purchase_vat(item_tax_template, taxable_value, company, item_tax_rate=None):
+	"""Calculate VAT for purchase items: the template's rate, or the line's VAT-account
+	rate when it has no template (VAT added through the invoice's tax table)."""
+	if not taxable_value:
 		return 0
+	if not item_tax_template:
+		return flt(taxable_value) * fallback_vat(item_tax_rate, company)[1] / 100
 
 	try:
 		tax_rate = frappe.db.sql(
@@ -483,9 +491,9 @@ def calculate_purchase_vat(item_tax_template, taxable_value, company):
 	return 0
 
 
-def calculate_sales_vat(item_tax_template, taxable_value, company):
+def calculate_sales_vat(item_tax_template, taxable_value, company, item_tax_rate=None):
 	"""Calculate VAT for sales items"""
-	return calculate_purchase_vat(item_tax_template, taxable_value, company)
+	return calculate_purchase_vat(item_tax_template, taxable_value, company, item_tax_rate)
 
 
 def calculate_supplementary_duty(item_tax_template, taxable_value, company):
@@ -504,3 +512,29 @@ def get_address_display(address_name):
 		return address.get_display()
 	except Exception:
 		return ""
+
+
+def get_meta(filters, data):
+	"""Header cards and charts, from the same ledger rows as the table.
+	Purchase rows carry a purchase challan; sales rows a sales invoice."""
+	filters = frappe._dict(filters or {})
+	purchases = [r for r in data if r.get("purchase_challan_no")]
+	sales = [r for r in data if r.get("sales_invoice_no")]
+	taxable = lambda r: r.get("taxable_value")
+	vat = lambda r: r.get("vat_amount")
+	day = lambda r: r.get("posting_date")
+	output, inp = kit.monthly(sales, day, vat, filters), kit.monthly(purchases, day, vat, filters)
+	return kit.meta(
+		filters,
+		purchases=kit.total(purchases, taxable),
+		purchase_bills=len({r.get("purchase_challan_no") for r in purchases}),
+		input_vat=kit.total(purchases, vat),
+		sales=kit.total(sales, taxable),
+		sales_invoices=len({r.get("sales_invoice_no") for r in sales}),
+		output_vat=kit.total(sales, vat),
+		trend_purchases=kit.monthly(purchases, day, taxable, filters),
+		trend_sales=kit.monthly(sales, day, taxable, filters),
+		trend_output=output,
+		trend_input=inp,
+		trend_net={**output, "values": [o - i for o, i in zip(output["values"], inp["values"])]},
+	)

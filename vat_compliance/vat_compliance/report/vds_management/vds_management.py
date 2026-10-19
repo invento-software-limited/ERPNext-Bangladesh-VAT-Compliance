@@ -7,13 +7,15 @@ import frappe
 from frappe import _
 from frappe.utils import flt
 
+from vat_compliance import report_kit as kit
+from vat_compliance.vat_rates import is_taxable_line, line_vat
+
 
 def execute(filters=None):
 	"""Execute the report."""
 	data = get_data(filters)
 	columns = get_columns()
-	message = get_message()
-	return columns, data, message
+	return columns, data, get_meta(filters, data)
 
 
 def get_columns():
@@ -76,16 +78,6 @@ def get_columns():
 			"width": 120,
 		},
 	]
-
-
-def get_message():
-	"""Return the report legend."""
-	return """<span class="indicator red">
-		DNGT : Deducted but not deposited into govt. treasury
-		</span>&nbsp;&nbsp;&nbsp;&nbsp;
-		<span class="indicator green">
-		DDGT : Deducted and deposited into govt. treasury
-		</span>"""
 
 
 def _build_base_conditions():
@@ -178,11 +170,11 @@ def _get_tax_template_groups(invoice_doc, allocated_amount):
 
 	groups = []
 
-	# Calculate total net amount of taxable items
+	# Calculate total net amount of taxable items (with a template, or VAT from the tax table)
 	taxable_items = [
 		item
 		for item in invoice_doc.items
-		if item.get("item_tax_template") and flt(item.get("net_amount")) > 0
+		if is_taxable_line(item, invoice_doc.company) and flt(item.get("net_amount")) > 0
 	]
 	total_net_amount = sum(flt(item.get("net_amount", 0)) for item in taxable_items)
 
@@ -193,19 +185,9 @@ def _get_tax_template_groups(invoice_doc, allocated_amount):
 
 	for item in taxable_items:
 		tax_category = item.get("item_tax_template")
-
-		# Parse item_tax_rate
-		tax_rows = json.loads(item.get("item_tax_rate", "{}"))
-		if not tax_rows:
+		first_key, tax_rate = line_vat(item, invoice_doc.company)
+		if not first_key:
 			continue
-
-		first_key = next(iter(tax_rows))
-		tax_value = tax_rows[first_key]
-
-		if isinstance(tax_value, dict):
-			tax_rate = tax_value.get("tax_rate", 0)
-		else:
-			tax_rate = tax_value
 
 		account_credit = item.get("expense_account")
 		liability_head = first_key
@@ -406,3 +388,29 @@ def get_data(filters):
 		result_data = _filter_by_status(result_data, status_filter)
 
 	return result_data
+
+
+def get_meta(filters, data):
+	"""Header cards and charts. Indented rows split one payment across tax groups;
+	they carry amount but take the date, supplier and status of the row above."""
+	filters = frappe._dict(filters or {})
+	rows, parent = [], {}
+	for r in data:
+		if not r.get("indent"):
+			parent = r
+		rows.append({"date": parent.get("payment_date"), "supplier": parent.get("supplier_name"),
+			"status": parent.get("status"), "amount": flt(r.get("vds_amount"))})
+	amount = lambda r: r["amount"]
+	deposited = [r for r in rows if r["status"] == "DDGT"]
+	return kit.meta(
+		filters,
+		deducted=kit.total(rows, amount),
+		payments=len({r.get("payment_entry_id") for r in data if not r.get("indent") and r.get("payment_entry_id")}),
+		pending=kit.total([r for r in rows if r["status"] == "DNGT"], amount),
+		pending_count=len([r for r in data if not r.get("indent") and r.get("status") == "DNGT"]),
+		deposited=kit.total(deposited, amount),
+		deposited_count=len([r for r in data if not r.get("indent") and r.get("status") == "DDGT"]),
+		suppliers=kit.group(rows, lambda r: r["supplier"], amount),
+		trend=kit.monthly(rows, lambda r: r["date"], amount, filters),
+		trend_deposited=kit.monthly(deposited, lambda r: r["date"], amount, filters),
+	)
