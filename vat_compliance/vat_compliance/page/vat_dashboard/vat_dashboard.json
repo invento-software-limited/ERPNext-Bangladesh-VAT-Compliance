@@ -1,0 +1,26 @@
+{
+ "content": null,
+ "creation": "2026-10-19 14:00:00.000000",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2026-10-19 14:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Vat Compliance",
+ "name": "vat-dashboard",
+ "owner": "Administrator",
+ "page_name": "vat-dashboard",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Accounts Manager"
+  },
+  {
+   "role": "Accounts User"
+  }
+ ],
+ "standard": "Yes",
+ "title": "VAT Dashboard"
+}

@@ -5,11 +5,14 @@ import frappe
 from frappe import _
 from frappe.utils import flt
 
+from vat_compliance import report_kit as kit
+from vat_compliance.vat_rates import fallback_vat
+
 
 def execute(filters=None):
 	columns = get_columns()
 	data = get_data(filters)
-	return columns, data
+	return columns, data, get_meta(filters, data)
 
 
 def get_columns():
@@ -105,6 +108,7 @@ def get_data(filters):
 			sii.amount,
 			sii.net_amount,
 			sii.item_tax_template,
+			sii.item_tax_rate,
 			si.name as challan_no,
 			si.posting_date as challan_date,
 			it.is_stock_item,
@@ -170,7 +174,7 @@ def get_data(filters):
 
 		# Calculate VAT amount
 		vat_amount = calculate_vat_amount(
-			row.get("item_tax_template"), row.get("net_amount"), filters.get("company")
+			row.get("item_tax_template"), row.get("net_amount"), filters.get("company"), row.get("item_tax_rate")
 		)
 
 		# Get customer BIN/NID
@@ -329,10 +333,13 @@ def get_formatted_address(address_name, address_cache):
 	return address_cache.get(address_name, "")
 
 
-def calculate_vat_amount(item_tax_template, net_amount, company):
-	"""Calculate VAT amount based on item tax template"""
-	if not item_tax_template or not net_amount:
+def calculate_vat_amount(item_tax_template, net_amount, company, item_tax_rate=None):
+	"""Calculate VAT amount based on item tax template, or on the line's VAT-account rate
+	when the line has no template (VAT added through the invoice's tax table)."""
+	if not net_amount:
 		return 0
+	if not item_tax_template:
+		return flt(net_amount) * fallback_vat(item_tax_rate, company)[1] / 100
 
 	try:
 		tax_rate = frappe.db.sql(
@@ -352,3 +359,23 @@ def calculate_vat_amount(item_tax_template, net_amount, company):
 		frappe.log_error(frappe.get_traceback(), "VAT Calculation Error")
 
 	return 0
+
+
+def get_meta(filters, data):
+	"""Header cards and charts, from the same register lines as the table."""
+	filters = frappe._dict(filters or {})
+	taxable = lambda r: r.get("taxable_value")
+	vat = lambda r: r.get("vat_amount")
+	rated = [r for r in data if flt(r.get("vat_amount"))]
+	return kit.meta(
+		filters,
+		taxable=kit.total(data, taxable),
+		vat=kit.total(data, vat),
+		lines=len(data),
+		documents=len({r.get("challan_no") for r in data}),
+		rated_taxable=kit.total(rated, taxable),
+		by_item_type=kit.group(data, lambda r: r.get("item_type"), taxable),
+		parties=kit.group(rated, lambda r: r.get("buyer_name"), vat, limit=5),
+		trend=kit.monthly(data, lambda r: r.get("posting_date"), taxable, filters),
+		trend_vat=kit.monthly(data, lambda r: r.get("posting_date"), vat, filters),
+	)

@@ -6,6 +6,8 @@ import json
 import frappe
 from frappe import _
 
+from vat_compliance import report_kit as kit
+
 
 def execute(filters=None):
 	if not filters:
@@ -14,7 +16,7 @@ def execute(filters=None):
 	columns = get_columns()
 	data = get_data(filters)
 
-	return columns, data
+	return columns, data, get_meta(filters, data)
 
 
 def get_columns():
@@ -55,38 +57,22 @@ def get_columns():
 
 
 def get_data(filters):
-	conditions = []
-	values = {}
-
-	if filters.get("from_date"):
-		conditions.append("posting_date >= %(from_date)s")
-		values["from_date"] = filters.get("from_date")
-
-	if filters.get("to_date"):
-		conditions.append("posting_date <= %(to_date)s")
-		values["to_date"] = filters.get("to_date")
-
-	if filters.get("company"):
-		conditions.append("company = %(company)s")
-		values["company"] = filters.get("company")
-
-	if filters.get("customer"):
-		conditions.append("customer = %(customer)s")
-		values["customer"] = filters.get("customer")
-
-	if filters.get("sales_invoice"):
-		conditions.append("name = %(sales_invoice)s")
-		values["sales_invoice"] = filters.get("sales_invoice")
-
+	# Real Sales Invoice fields: the old version passed from_date/to_date as if they were
+	# fields, so the report always came back empty. get_list applies the user's permissions.
+	list_filters = [["docstatus", "=", 1]]
 	if filters.get("status"):
-		conditions.append("status = %(status)s")
-		values["status"] = filters.get("status")
-	else:
-		conditions.append("docstatus = 1")
+		list_filters = [["status", "=", filters.get("status")]]
+	if filters.get("from_date"):
+		list_filters.append(["posting_date", ">=", filters.get("from_date")])
+	if filters.get("to_date"):
+		list_filters.append(["posting_date", "<=", filters.get("to_date")])
+	for field, key in (("company", "company"), ("customer", "customer"), ("name", "sales_invoice")):
+		if filters.get(key):
+			list_filters.append([field, "=", filters.get(key)])
 
-	invoices = frappe.get_all(
+	invoices = frappe.get_list(
 		"Sales Invoice",
-		filters=values,
+		filters=list_filters,
 		fields=[
 			"name",
 			"posting_date",
@@ -96,8 +82,11 @@ def get_data(filters):
 			"total_taxes_and_charges",
 			"grand_total",
 			"status",
+			"base_net_total",
+			"base_total_taxes_and_charges",
 		],
 		order_by="posting_date DESC",
+		limit_page_length=0,
 	)
 
 	for inv in invoices:
@@ -160,3 +149,19 @@ def download_all_invoices(filters):
 	except Exception as e:
 		frappe.log_error(f"Error in download_all_invoices: {e!s}", "Download All Invoices")
 		frappe.throw(_("Error generating zip file: {0}").format(str(e)))
+
+
+def get_meta(filters, data):
+	"""Header cards and charts, in company currency, from the same invoices as the table."""
+	filters = frappe._dict(filters or {})
+	day = lambda r: r.get("posting_date")
+	vat = lambda r: r.get("base_total_taxes_and_charges")
+	return kit.meta(
+		filters,
+		invoices=len(data),
+		net=kit.total(data, lambda r: r.get("base_net_total")),
+		vat=kit.total(data, vat),
+		statuses=kit.group(data, lambda r: r.get("status"), lambda r: r.get("base_net_total")),
+		trend_count=kit.monthly(data, day, lambda r: 1, filters),
+		trend_vat=kit.monthly(data, day, vat, filters),
+	)
