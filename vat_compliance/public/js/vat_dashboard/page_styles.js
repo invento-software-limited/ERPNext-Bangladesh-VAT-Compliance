@@ -21,20 +21,12 @@ vat_compliance.page.CSS = `
 .sc.t{background:#fff;border:1px solid var(--mid)}
 .k .sc{vertical-align:1px}
 .per{position:relative;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;margin-left:auto}
-.per button{font-family:inherit;font-size:10.5px;font-weight:500;line-height:1.3;padding:4px 9px;border-radius:5px;
-  color:var(--mid);border:1px solid var(--rule);background:#fff;cursor:pointer;white-space:nowrap}
-.per button:hover{border-color:#c5ccd4;color:var(--ink)}
-.per button:focus-visible{outline:2px solid #2C377D;outline-offset:1px}
-.per button.on,.per button.go{background:#2C377D;border-color:#2C377D;color:#fff;font-weight:600}
-.pop{display:none;position:absolute;top:calc(100% + 6px);right:0;z-index:40;width:300px;max-width:calc(100vw - 32px);padding:12px;background:#fff;
-  border:1px solid var(--rule);border-radius:8px;box-shadow:0 10px 28px rgba(13,17,23,.14)}
-.pop.open{display:block}
-.pop .dates{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
-.pop label{min-width:0;display:flex;flex-direction:column;gap:4px;font-size:9px;letter-spacing:.14em;text-transform:uppercase;font-weight:500;color:var(--mid)}
-.pop input{font-family:inherit;font-size:12px;padding:5px 6px;border:1px solid var(--rule);border-radius:5px;color:var(--ink);width:100%;min-width:0;box-sizing:border-box}
-.pop .perr{display:none;margin-top:8px;font-size:11px;color:var(--claret)}
-.pop .perr.on{display:block}
-.pop .act{display:flex;justify-content:flex-end;gap:6px;margin-top:10px}
+.per button{font-family:inherit;font-size:var(--text-sm,13px);font-weight:420;line-height:1.4;height:var(--btn-height,28px);
+  padding:4px 8px;border:none;border-radius:var(--radius,8px);background:var(--control-bg,#f3f3f3);color:var(--text-color,#171717);
+  cursor:pointer;white-space:nowrap}
+.per button:hover{background:var(--btn-default-hover-bg,#ededed)}
+.per button:focus-visible{outline:none;box-shadow:var(--focus-default,0 0 0 2px #c9c9c9)}
+.per button.on{background:var(--btn-primary,#171717);color:var(--neutral,#fff)}
 
 .sec .sub{margin-left:auto;order:2;letter-spacing:0;text-transform:none;font-size:10.5px;font-weight:400}
 .fl-c a.lk,.fl-c a.lk:hover{color:#fff}

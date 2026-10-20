@@ -65,37 +65,89 @@
 			this.root.querySelectorAll(".per [data-p]").forEach((btn) => {
 				btn.onclick = () => (btn.dataset.p === "custom" ? this.toggle_custom() : this.set({ period: btn.dataset.p, from_date: null, to_date: null }));
 			});
-			this.$(".pop .go").onclick = () => this.apply_custom();
-			this.$(".pop .cancel").onclick = () => this.$(".pop").classList.remove("open");
-			this.$(".pop").onkeydown = (e) => {
-				if (e.key === "Escape") this.$(".pop").classList.remove("open");
-				if (e.key === "Enter") this.apply_custom();
-			};
 			this.root.addEventListener("click", (e) => {
 				const more = e.target.closest("[data-more]");
 				if (more) this.load_more(+more.dataset.more);
 			});
 		}
 
+		// Custom period: a popover in <body> (outside the shadow root) so Frappe's DateRange
+		// control and its datepicker get the desk's own styling and behaviour.
 		toggle_custom() {
-			const pop = this.$(".pop");
-			if (pop.classList.toggle("open")) {
-				const today = frappe.datetime.get_today();
-				this.$(".pop .from").value = this.state.from_date || (this.data && this.data.period_start) || frappe.datetime.add_days(today, -29);
-				this.$(".pop .to").value = this.state.to_date || (this.data && this.data.period_end) || today;
-				this.$(".pop .perr").classList.remove("on");
-				this.$(".pop .from").focus();
-			}
+			if (this.custom_open()) return this.close_custom();
+			if (!this.pop) this.make_custom_pop();
+			const today = frappe.datetime.get_today();
+			const from_date = this.state.from_date || (this.data && this.data.period_start) || frappe.datetime.add_days(today, -29);
+			const to_date = this.state.to_date || (this.data && this.data.period_end) || today;
+			this.range.set_value([from_date, to_date]);
+			this.custom_error("");
+			this.pop.style.display = "block";
+			this.place_custom();
+			this.range.$input.trigger("focus");
+		}
+
+		make_custom_pop() {
+			const pop = (this.pop = document.createElement("div"));
+			pop.setAttribute("role", "dialog");
+			pop.setAttribute("aria-label", __("Custom period"));
+			pop.style.cssText = "display:none;position:fixed;z-index:1030;width:280px;padding:12px;background:var(--fg-color,#fff);"
+				+ "border:1px solid var(--border-color,#ededed);border-radius:var(--radius,8px);box-shadow:var(--shadow-lg)";
+			pop.innerHTML = `<div class="range"></div><div class="perr text-danger small" style="display:none;margin-top:-4px"></div>
+				<div style="display:flex;justify-content:flex-end;gap:6px;margin-top:8px">
+				<button type="button" class="btn btn-default btn-sm cancel">${__("Cancel")}</button>
+				<button type="button" class="btn btn-primary btn-sm go">${__("Apply")}</button></div>`;
+			document.body.appendChild(pop);
+			this.range = frappe.ui.form.make_control({
+				parent: pop.querySelector(".range"),
+				df: { fieldtype: "DateRange", fieldname: "period_range", label: __("Date Range") },
+				render_input: true,
+			});
+			pop.querySelector(".go").onclick = () => this.apply_custom();
+			pop.querySelector(".cancel").onclick = () => this.close_custom();
+			pop.onkeydown = (e) => {
+				if (e.key === "Escape") this.close_custom();
+				if (e.key === "Enter") this.apply_custom();
+			};
+			document.addEventListener("pointerdown", (e) => {
+				const path = e.composedPath();
+				const keep = path.some((n) => n === pop || (n.classList && (n.classList.contains("datepicker") || n.classList.contains("cu"))));
+				if (this.custom_open() && !keep) this.close_custom();
+			});
+			const reposition = () => this.custom_open() && this.place_custom();
+			window.addEventListener("resize", reposition);
+			window.addEventListener("scroll", reposition, true);
+			frappe.router.on("change", () => this.close_custom());
+		}
+
+		custom_open() {
+			return this.pop && this.pop.style.display !== "none";
+		}
+
+		// Anchor under the Custom button, right-aligned, kept inside the viewport.
+		place_custom() {
+			const btn = this.$(".per .cu").getBoundingClientRect();
+			const width = this.pop.offsetWidth;
+			this.pop.style.top = `${btn.bottom + 6}px`;
+			this.pop.style.left = `${Math.max(8, Math.min(btn.right - width, window.innerWidth - width - 8))}px`;
+		}
+
+		close_custom() {
+			if (!this.pop) return;
+			this.range.datepicker && this.range.datepicker.hide();
+			this.pop.style.display = "none";
+		}
+
+		custom_error(message) {
+			const err = this.pop.querySelector(".perr");
+			err.textContent = message;
+			err.style.display = message ? "block" : "none";
 		}
 
 		apply_custom() {
-			const from_date = this.$(".pop .from").value, to_date = this.$(".pop .to").value;
-			const msg = !from_date || !to_date ? __("Choose both dates.") : from_date > to_date ? __("From must be on or before To.") : "";
-			const err = this.$(".pop .perr");
-			err.textContent = msg;
-			err.classList.toggle("on", !!msg);
-			if (msg) return;
-			this.$(".pop").classList.remove("open");
+			const value = this.range.get_value();
+			const [from_date, to_date] = Array.isArray(value) ? value : [];
+			if (!from_date || !to_date) return this.custom_error(__("Choose both dates."));
+			this.close_custom();
 			this.set({ period: "custom", from_date, to_date });
 		}
 
