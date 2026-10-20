@@ -12,6 +12,10 @@ frappe.query_reports["Mushak 6_3"] = {
 		vat_report_header(report, mushak_63_header);
 	},
 	formatter(value, row, column, data, default_formatter) {
+		if (data && column.fieldname === "download" && value) {
+			const href = `/printview?doctype=Sales%20Invoice&name=${encodeURIComponent(value)}&trigger_print=1`;
+			return `<a class="btn btn-xs btn-default" href="${href}" target="_blank" rel="noopener">${frappe.utils.icon("download", "xs")} ${__("Download")}</a>`;
+		}
 		const out = default_formatter(value, row, column, data);
 		if (data && column.fieldname === "status" && value) {
 			return `<span style="display:inline-block;padding:2px 8px;border-radius:5px;font-size:10.5px;font-weight:600;color:#fff;background:${MUSHAK_63_COLORS[value] || "#3b4757"}">${frappe.utils.escape_html(value)}</span>`;

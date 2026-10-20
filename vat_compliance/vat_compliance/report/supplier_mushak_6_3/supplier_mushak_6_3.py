@@ -21,19 +21,25 @@ def get_columns():
 			"label": _("Purchase Invoice"),
 			"fieldtype": "Link",
 			"options": "Purchase Invoice",
-			"width": 250,
+			"width": 240,
 		},
 		{
 			"fieldname": "supplier",
 			"label": _("Supplier"),
 			"fieldtype": "Link",
 			"options": "Supplier",
-			"width": 220,
+			"width": 300,
 		},
-		{"fieldname": "grand_total", "label": _("Grand Total"), "fieldtype": "Currency", "width": 150},
-		{"fieldname": "custom_mushak_63", "label": _("Mushak 6.3"), "fieldtype": "Data", "width": 180},
-		{"fieldname": "status", "label": _("Status"), "fieldtype": "Data", "width": 120},
-		{"fieldname": "action", "label": _("Action"), "fieldtype": "Data", "width": 150},
+		{
+			"fieldname": "total_taxes_and_charges",
+			"label": _("Total VAT"),
+			"fieldtype": "Currency",
+			"width": 150,
+		},
+		{"fieldname": "grand_total", "label": _("Grand Total"), "fieldtype": "Currency", "width": 180},
+		{"fieldname": "custom_mushak_63", "label": _("Mushak 6.3"), "fieldtype": "Data", "width": 220},
+		{"fieldname": "status", "label": _("Status"), "fieldtype": "Data", "width": 140},
+		{"fieldname": "action", "label": _("Action"), "fieldtype": "Data", "width": 180},
 	]
 
 
@@ -45,6 +51,7 @@ def get_data(filters):
 			name as invoice,
 			posting_date,
 			supplier,
+			total_taxes_and_charges,
 			grand_total,
 			base_grand_total,
 			custom_mushak_63

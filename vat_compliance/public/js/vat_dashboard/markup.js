@@ -27,11 +27,6 @@ vat_compliance.page.HTML = () => {
     <div class="per" role="group" aria-label="${__("Period")}">
       ${presets.map(([p, l]) => `<button type="button" data-p="${p}">${l}</button>`).join("")}
       <button type="button" class="cu" data-p="custom" aria-haspopup="dialog">${__("Custom")}</button>
-      <div class="pop" role="dialog" aria-label="${__("Custom period")}">
-        <div class="dates"><label>${__("From")}<input type="date" class="from"></label><label>${__("To")}<input type="date" class="to"></label></div>
-        <div class="perr"></div>
-        <div class="act"><button type="button" class="cancel">${__("Cancel")}</button><button type="button" class="go">${__("Apply")}</button></div>
-      </div>
     </div>
   </div>
 </div>

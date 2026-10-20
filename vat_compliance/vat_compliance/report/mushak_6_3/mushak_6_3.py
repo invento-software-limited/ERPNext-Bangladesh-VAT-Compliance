@@ -21,38 +21,38 @@ def execute(filters=None):
 
 def get_columns():
 	return [
-		{"label": _("Posting Date"), "fieldname": "posting_date", "fieldtype": "Date", "width": 110},
+		{"label": _("Posting Date"), "fieldname": "posting_date", "fieldtype": "Date", "width": 130},
 		{
 			"label": _("Invoice No"),
 			"fieldname": "name",
 			"fieldtype": "Link",
 			"options": "Sales Invoice",
-			"width": 200,
+			"width": 220,
 		},
 		{
 			"label": _("Customer"),
 			"fieldname": "customer",
 			"fieldtype": "Link",
 			"options": "Customer",
-			"width": 180,
+			"width": 280,
 		},
 		{
 			"label": _("Company"),
 			"fieldname": "company",
 			"fieldtype": "Link",
 			"options": "Company",
-			"width": 150,
+			"width": 260,
 		},
-		{"label": _("Total (Excl. VAT)"), "fieldname": "net_total", "fieldtype": "Currency", "width": 130},
+		{"label": _("Total (Excl. VAT)"), "fieldname": "net_total", "fieldtype": "Currency", "width": 170},
 		{
 			"label": _("Total VAT"),
 			"fieldname": "total_taxes_and_charges",
 			"fieldtype": "Currency",
-			"width": 120,
+			"width": 150,
 		},
-		{"label": _("Grand Total"), "fieldname": "grand_total", "fieldtype": "Currency", "width": 130},
-		{"label": _("Status"), "fieldname": "status", "fieldtype": "Data", "width": 100},
-		{"label": _("Download 6.3"), "fieldname": "download", "fieldtype": "Data", "width": 130},
+		{"label": _("Grand Total"), "fieldname": "grand_total", "fieldtype": "Currency", "width": 170},
+		{"label": _("Status"), "fieldname": "status", "fieldtype": "Data", "width": 130},
+		{"label": _("Download 6.3"), "fieldname": "download", "fieldtype": "Data", "width": 150},
 	]
 
 
@@ -89,13 +89,9 @@ def get_data(filters):
 		limit_page_length=0,
 	)
 
+	# The JS formatter turns this into the print/download button.
 	for inv in invoices:
-		inv["download"] = (
-			f"<a class='btn btn-xs btn-success' "
-			f"href='/printview?doctype=Sales%20Invoice&name={inv.name}"
-			f"&trigger_print=1' target='_blank'>"
-			f"<i class='fa fa-download'></i></a>"
-		)
+		inv["download"] = inv.name
 
 	return invoices
 
