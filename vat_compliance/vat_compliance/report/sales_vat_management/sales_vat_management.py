@@ -7,33 +7,14 @@ import frappe
 from frappe import _
 from frappe.utils import flt
 
+from vat_compliance import report_kit as kit
+from vat_compliance.vat_rates import line_vat
+
 
 def execute(filters=None):
 	columns = get_columns()
 	data = get_data(filters)
-	message = get_message()
-	return columns, data, message
-
-
-def get_message():
-	return """<span class="indicator blue">
-        IPNR : Invoiced (Payment Not Received)
-        </span> &nbsp;&nbsp;&nbsp;
-        <span class="indicator orange">
-        Collected
-        </span>
-        &nbsp;&nbsp;&nbsp;
-        <span class="indicator green">
-        CDGT : Collected And Deposited Into Gov't Treasury
-        </span>
-        &nbsp;&nbsp;&nbsp
-        <span class="indicator green">
-        DVCR : Deducted (VDS Certificate received)
-        </span>
-        &nbsp;&nbsp;&nbsp;
-        <span class="indicator red">
-        DVCNR : Deducted  (VDS Certificate Not received)
-        </span>"""
+	return columns, data, get_meta(filters, data)
 
 
 def get_columns():
@@ -208,21 +189,10 @@ def _calculate_vat_amount_and_accounts(inv_doc, row_data):
 	vat_amount = 0
 
 	for item in inv_doc.items:
-		if not item.item_tax_template:
+		# Template lines read their template's rate; lines without one, their VAT-account rate.
+		first_key, tax_rate = line_vat(item, inv_doc.company)
+		if not first_key:
 			continue
-
-		# Parse item_tax_rate
-		tax_rows = json.loads(item.get("item_tax_rate", "{}"))
-		if not tax_rows:
-			continue
-
-		first_key = next(iter(tax_rows))
-		tax_value = tax_rows[first_key]
-
-		if isinstance(tax_value, dict):
-			tax_rate = tax_value.get("tax_rate", 0)
-		else:
-			tax_rate = tax_value
 
 		if tax_rate > 0:
 			account_heads.add(first_key)
@@ -305,8 +275,8 @@ def get_data(filters):
 			if row["status"] not in filters.get("status"):
 				continue
 
-		# Set VAT amount if calculated
-		if vat_amount > 0:
+		# Set VAT amount if calculated; a credit note's VAT is negative and must net off
+		if vat_amount:
 			row["vds_amount"] = vat_amount
 
 		# Set account credit
@@ -389,3 +359,27 @@ def _get_journal_entry_status(child_name):
 		return "CDGT"
 
 	return None
+
+
+SALES_STATUSES = [
+	("IPNR", "Invoiced (payment not received)"),
+	("Collected", "Collected"),
+	("CDGT", "Collected and deposited into Gov't treasury"),
+	("DVCR", "Deducted (VDS certificate received)"),
+	("DVCNR", "Deducted (VDS certificate not received)"),
+]
+
+
+def get_meta(filters, data):
+	"""Header cards and charts, from the same rows as the table."""
+	filters = frappe._dict(filters or {})
+	vat = lambda r: r.get("vds_amount")
+	by_status = {s: [r for r in data if r.get("status") == s] for s, _ in SALES_STATUSES}
+	return kit.meta(
+		filters,
+		output=kit.total(data, vat),
+		invoices=len({r.get("invoice_id") for r in data}),
+		statuses=[{"status": s, "label": label, "count": len(by_status[s]), "amount": kit.total(by_status[s], vat)}
+			for s, label in SALES_STATUSES],
+		trend=kit.monthly(data, lambda r: r.get("payment_date"), vat, filters),
+	)

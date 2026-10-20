@@ -4,11 +4,13 @@
 import frappe
 from frappe import _
 
+from vat_compliance import report_kit as kit
+
 
 def execute(filters=None):
 	columns = get_columns()
 	data = get_data(filters)
-	return columns, data
+	return columns, data, get_meta(filters, data)
 
 
 def get_columns():
@@ -19,19 +21,25 @@ def get_columns():
 			"label": _("Purchase Invoice"),
 			"fieldtype": "Link",
 			"options": "Purchase Invoice",
-			"width": 250,
+			"width": 240,
 		},
 		{
 			"fieldname": "supplier",
 			"label": _("Supplier"),
 			"fieldtype": "Link",
 			"options": "Supplier",
-			"width": 220,
+			"width": 300,
 		},
-		{"fieldname": "grand_total", "label": _("Grand Total"), "fieldtype": "Currency", "width": 150},
-		{"fieldname": "custom_mushak_63", "label": _("Mushak 6.3"), "fieldtype": "Data", "width": 180},
-		{"fieldname": "status", "label": _("Status"), "fieldtype": "Data", "width": 120},
-		{"fieldname": "action", "label": _("Action"), "fieldtype": "Data", "width": 150},
+		{
+			"fieldname": "total_taxes_and_charges",
+			"label": _("Total VAT"),
+			"fieldtype": "Currency",
+			"width": 150,
+		},
+		{"fieldname": "grand_total", "label": _("Grand Total"), "fieldtype": "Currency", "width": 180},
+		{"fieldname": "custom_mushak_63", "label": _("Mushak 6.3"), "fieldtype": "Data", "width": 220},
+		{"fieldname": "status", "label": _("Status"), "fieldtype": "Data", "width": 140},
+		{"fieldname": "action", "label": _("Action"), "fieldtype": "Data", "width": 180},
 	]
 
 
@@ -43,7 +51,9 @@ def get_data(filters):
 			name as invoice,
 			posting_date,
 			supplier,
+			total_taxes_and_charges,
 			grand_total,
+			base_grand_total,
 			custom_mushak_63
 		FROM
 			`tabPurchase Invoice`
@@ -99,3 +109,22 @@ def upload_mushak_63(invoice_id: str, file_url: str):
 
 	frappe.db.set_value("Purchase Invoice", invoice_id, "custom_mushak_63", file_url)
 	return True
+
+
+def get_meta(filters, data):
+	"""Header cards and charts, in company currency, from the same bills as the table."""
+	filters = frappe._dict(filters or {})
+	value = lambda r: r.get("base_grand_total")
+	collected = [r for r in data if r.get("status") == "Collected"]
+	pending = [r for r in data if r.get("status") != "Collected"]
+	return kit.meta(
+		filters,
+		bills=len(data),
+		value=kit.total(data, value),
+		collected=len(collected),
+		collected_value=kit.total(collected, value),
+		pending=len(pending),
+		pending_value=kit.total(pending, value),
+		pending_suppliers=kit.group(pending, lambda r: r.get("supplier"), value, limit=6),
+		trend_count=kit.monthly(data, lambda r: r.get("posting_date"), lambda r: 1, filters),
+	)

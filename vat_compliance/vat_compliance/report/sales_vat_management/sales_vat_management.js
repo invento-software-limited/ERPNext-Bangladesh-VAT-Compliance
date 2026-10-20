@@ -1,6 +1,15 @@
 // Copyright (c) 2025, na and contributors
 // For license information, please see license.txt
 
+// Deep-fill status colours, shared by the table pills and the header.
+const SALES_VAT_COLORS = { IPNR: "#22405e", Collected: "#7a4f12", CDGT: "#0a5a3c", DVCR: "#17505d", DVCNR: "#7e2a30" };
+
+// Header above the table: KPI cards and charts from this report's own rows (vat_report/kit.js).
+const vat_report_header = (report, build) =>
+	frappe.require("/assets/vat_compliance/js/vat_report/loader.js", () =>
+		vat_compliance.report_kit_ready.then((kit) => kit.render(report, (meta) => build(meta, kit)))
+	);
+
 frappe.query_reports["Sales VAT Management"] = {
 	filters: [
 		{
@@ -77,20 +86,15 @@ frappe.query_reports["Sales VAT Management"] = {
 	},
 	formatter: function (value, row, column, data, default_formatter) {
 		let formatted_value = default_formatter(value, row, column, data);
-		if (data && column.fieldname === "status") {
-			if (data.status === "DVCR" || data.status === "CDGT") {
-				formatted_value = `<span class="indicator green">${value}</span>`;
-			}
-			if (data.status === "Collected") {
-				formatted_value = `<span class="indicator orange">${value}</span>`;
-			} else if (data.status === "DVCNR") {
-				formatted_value = `<span class="indicator red">${value}</span>`;
-			} else if (data.status === "IPNR") {
-				formatted_value = `<span class="indicator blue">${value}</span>`;
-			}
+		if (data && column.fieldname === "status" && SALES_VAT_COLORS[data.status]) {
+			formatted_value = `<span style="display:inline-block;padding:2px 8px;border-radius:5px;font-size:10.5px;font-weight:600;color:#fff;background:${
+				SALES_VAT_COLORS[data.status]
+			}">${frappe.utils.escape_html(value)}</span>`;
 		}
-
 		return formatted_value;
+	},
+	after_refresh(report) {
+		vat_report_header(report, sales_vat_header);
 	},
 	onload: function (report) {
 		report.page.add_inner_button(__("Upload Challan"), function () {
@@ -177,3 +181,40 @@ frappe.query_reports["Sales VAT Management"] = {
 		});
 	},
 };
+
+function sales_vat_header(m, kit) {
+	const st = Object.fromEntries(m.statuses.map((s) => [s.status, s]));
+	const share = (keys) => (m.output ? (keys.reduce((t, k) => t + st[k].amount, 0) / m.output) * 100 : 0);
+	const gauge = (keys) => kit.mini.gauge(share(keys), SALES_VAT_COLORS[keys[0]], [`${kit.fmt.pct(share(keys), 0)} ${__("of output")}`, ""]);
+	const status_card = (k, keys, sub, tint) =>
+		kit.card({
+			k, tint, sub, act: "status", arg: keys, title: __("Show these rows"),
+			v: kit.money(keys.reduce((t, s) => t + st[s].amount, 0)),
+			pill: [__("{0} inv.", [keys.reduce((t, s) => t + st[s].count, 0)]), SALES_VAT_COLORS[keys[0]]],
+			visual: gauge(keys),
+		});
+	const withheld = st.DVCR.amount + st.DVCNR.amount;
+	const chart = kit.bars({ series: m.trend, act: "period" });
+	const cards = [
+		kit.card({ k: __("Output VAT"), v: kit.money(m.output), pill: [__("{0} inv.", [m.invoices]), "#3b4757"], sub: __("on these invoices"),
+			visual: kit.mini.area_sparkline(m.trend.values, m.trend.labels, "#097C52") }),
+		status_card(__("Invoiced, unpaid"), ["IPNR"], "IPNR"),
+		status_card(__("Collected, to deposit"), ["Collected"], __("awaiting deposit"), true),
+		status_card(__("Deposited"), ["CDGT"], "CDGT"),
+		kit.card({ k: __("Withheld by customers"), v: kit.money(withheld), act: "status", arg: ["DVCR", "DVCNR"],
+			pill: [__("{0} cert. pending", [st.DVCNR.count]), st.DVCNR.count ? "#7e2a30" : "#3b4757"],
+			visual: kit.seg_bar([{ label: "DVCR", value: st.DVCR.amount, color: "#17505d" }, { label: "DVCNR", value: st.DVCNR.amount, color: "#7e2a30" }]) }),
+	];
+	const parts = m.statuses.map((s) => ({ label: `${s.status} · ${s.label}`, value: s.amount, count: s.count, color: SALES_VAT_COLORS[s.status], act: "status", arg: [s.status] }));
+	return {
+		html: `<div class="mx surf c5">${cards.join("")}</div>
+			<div class="surf card"><div class="two">
+				<div><div class="hrow"><div class="h">${__("Output VAT by period")}</div><div class="hs">${kit.esc(kit.subtitle(m, chart.unit))}</div></div>${chart.svg}</div>
+				<div><div class="hrow"><div class="h">${__("Challan status")}</div><div class="hs">${__("Click a status to filter the table")}</div></div>${kit.composition(parts)}</div>
+			</div></div>`,
+		actions: {
+			status: (keys, report) => kit.set_filters(report, { status: keys }),
+			period: (range, report) => kit.set_filters(report, range),
+		},
+	};
+}

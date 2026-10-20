@@ -1,11 +1,12 @@
 # Copyright (c) 2025, na and contributors
 # For license information, please see license.txt
 
-import json
-
 import frappe
 from frappe import _
 from frappe.utils import flt
+
+from vat_compliance import report_kit as kit
+from vat_compliance.vat_rates import line_vat
 
 
 def execute(filters=None):
@@ -15,7 +16,7 @@ def execute(filters=None):
 	columns = get_columns()
 	data = get_data(filters)
 
-	return columns, data
+	return columns, data, get_meta(filters, data)
 
 
 def get_columns():
@@ -176,17 +177,9 @@ def get_data(filters):
 
 			item_type = "Service Item"
 
-		tax_rows = json.loads(row.get("item_tax_rate", "{}"))
-
-		if tax_rows:
-			first_key = next(iter(tax_rows))
-			tax_value = tax_rows[first_key]
-			if isinstance(tax_value, dict):
-				tax_rate = tax_value.get("tax_rate", 0)
-			else:
-				tax_rate = tax_value
-		else:
-			tax_rate = 0
+		# Template lines read their template's rate; lines without one, their VAT-account
+		# rate only, so another tax on the line is never reported as VAT.
+		tax_rate = line_vat(row, filters.get("company"))[1]
 
 		vat_amount = row.get("net_amount", 0) * (tax_rate / 100)
 
@@ -231,6 +224,7 @@ def get_data(filters):
 			"opening_balance_value": opening_balance_value,
 			"name": row.get("name"),
 			"supplier_name": row.get("supplier_name"),
+			"supplier": row.get("supplier"),
 			"supplier_address_display": supplier_address_display,
 			"supplier_bin_no": row.get("supplier_bin_no"),
 			"item_code": row.get("item_name") or row.get("item_code"),
@@ -338,3 +332,24 @@ def get_stock_consumption_value(item_code, filters):
 	)
 
 	return flt(consumption_value[0][0]) if consumption_value else 0
+
+
+def get_meta(filters, data):
+	"""Header cards and charts, from the same register lines as the table."""
+	filters = frappe._dict(filters or {})
+	taxable = lambda r: r.get("base_net_amount")
+	vat = lambda r: r.get("vat_amount")
+	rated = [r for r in data if flt(r.get("vat_amount"))]
+	return kit.meta(
+		filters,
+		taxable=kit.total(data, taxable),
+		vat=kit.total(data, vat),
+		lines=len(data),
+		documents=len({r.get("name") for r in data}),
+		rated_taxable=kit.total(rated, taxable),
+		by_item_type=kit.group(data, lambda r: r.get("item_type"), taxable),
+		parties=[{**g, "name": next((r.get("supplier_name") for r in rated if r.get("supplier") == g["key"]), g["key"])}
+			for g in kit.group(rated, lambda r: r.get("supplier"), vat, limit=5)],
+		trend=kit.monthly(data, lambda r: r.get("posting_date"), taxable, filters),
+		trend_vat=kit.monthly(data, lambda r: r.get("posting_date"), vat, filters),
+	)

@@ -4,6 +4,8 @@ import frappe
 from erpnext.accounts.doctype.payment_entry.payment_entry import PaymentEntry
 from frappe.utils import flt
 
+from vat_compliance.vat_rates import is_taxable_line, line_tax_map
+
 
 def get_cost_center(doc):
 	"""
@@ -77,7 +79,7 @@ def calculate_tax_rows(doc: dict | str) -> list:
 		items = inv_doc.get("items", [])
 
 		taxable_items = [
-			item for item in items if item.get("item_tax_template") and flt(item.get("net_amount")) > 0
+			item for item in items if is_taxable_line(item, inv_doc.company) and flt(item.get("net_amount")) > 0
 		]
 		total_net_amount = sum(flt(item.get("net_amount", 0)) for item in taxable_items)
 
@@ -89,7 +91,7 @@ def calculate_tax_rows(doc: dict | str) -> list:
 		for item in taxable_items:
 			item_net_amount = flt(item.get("net_amount"))
 			allocated_amount = item_net_amount * allocation_ratio
-			item_tax_map = json.loads(item.get("item_tax_rate", "{}"))
+			item_tax_map = line_tax_map(item, inv_doc.company)
 
 			for account, rate in item_tax_map.items():
 				vat_rate = flt(rate) / 100

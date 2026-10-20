@@ -11,15 +11,15 @@ app_license = "mit"
 # required_apps = []
 
 # Each item in the list will be shown as an app in the apps page
-# add_to_apps_screen = [
-# 	{
-# 		"name": "vat_compliance",
-# 		"logo": "/assets/vat_compliance/img/logo.webp",
-# 		"title": "Vat Compliance",
-# 		"route": "/desk/bd-vat-compliance",
-# 		# "has_permission": "vat_compliance.api.permission.has_app_permission"
-# 	}
-# ]
+add_to_apps_screen = [
+	{
+		"name": "vat_compliance",
+		"logo": "/assets/vat_compliance/img/logo.webp",
+		"title": "Vat Compliance",
+		"route": "/desk/bd-vat-compliance",
+		# "has_permission": "vat_compliance.api.permission.has_app_permission"
+	}
+]
 
 # Includes in <head>
 # ------------------
