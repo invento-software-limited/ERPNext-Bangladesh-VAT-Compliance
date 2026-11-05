@@ -161,8 +161,13 @@ def download_all_invoices(filters):
 def get_meta(filters, data):
 	"""Header cards and charts, in company currency, from the same invoices as the table."""
 	filters = frappe._dict(filters or {})
-	day = lambda r: r.get("posting_date")
-	vat = lambda r: r.get("base_total_taxes_and_charges")
+
+	def day(r):
+		return r.get("posting_date")
+
+	def vat(r):
+		return r.get("base_total_taxes_and_charges")
+
 	return kit.meta(
 		filters,
 		invoices=len(data),

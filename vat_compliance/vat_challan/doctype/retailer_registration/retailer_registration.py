@@ -8,7 +8,12 @@ from frappe.model.document import Document
 from vat_compliance.access import require_doc
 from vat_compliance.vschallan import VATSmartChallan
 
-DOCUMENT_CATEGORIES = ("nid_document", "business_identification_number", "trade_license", "tax_identification")
+DOCUMENT_CATEGORIES = (
+	"nid_document",
+	"business_identification_number",
+	"trade_license",
+	"tax_identification",
+)
 
 
 class RetailerRegistration(Document):

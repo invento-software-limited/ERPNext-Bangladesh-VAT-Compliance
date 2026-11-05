@@ -13,7 +13,7 @@ class RunningStock:
 	def __init__(self, openings, movements):
 		self.balances = {item: (flt(b.get("qty")), flt(b.get("value"))) for item, b in openings.items()}
 		self.pending = {}
-		for movement in sorted(movements, key=lambda m: getdate(m["posting_date"])):
+		for movement in sorted(movements, key=_posting_date):
 			self.pending.setdefault(movement["item_code"], []).append(movement)
 
 	def opening(self, item):
@@ -29,3 +29,7 @@ class RunningStock:
 
 	def close(self, item, qty, value):
 		self.balances[item] = (qty, value)
+
+
+def _posting_date(movement):
+	return getdate(movement["posting_date"])

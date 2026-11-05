@@ -20,7 +20,9 @@ def meta(filters, **sections):
 	"""The header payload: currency, the period the filters cover, plus report sections."""
 	company = (filters or {}).get("company") or frappe.defaults.get_user_default("Company")
 	currency = frappe.get_cached_value("Company", company, "default_currency") if company else None
-	symbol, on_right = (frappe.get_cached_value("Currency", currency, ["symbol", "symbol_on_right"]) if currency else None) or ("", 0)
+	symbol, on_right = (
+		frappe.get_cached_value("Currency", currency, ["symbol", "symbol_on_right"]) if currency else None
+	) or ("", 0)
 	return {
 		"vat_header": 1,
 		"currency": {"code": currency, "symbol": symbol or currency or "", "on_right": cint(on_right)},
@@ -48,8 +50,12 @@ def monthly(rows, date_of, value_of, filters):
 			if lo <= d <= hi:
 				values[i] += flt(value_of(r))
 				break
-	return {"labels": [m[2] for m in marks], "values": values,
-		"starts": [str(m[0]) for m in marks], "ends": [str(m[1]) for m in marks]}
+	return {
+		"labels": [m[2] for m in marks],
+		"values": values,
+		"starts": [str(m[0]) for m in marks],
+		"ends": [str(m[1]) for m in marks],
+	}
 
 
 def group(rows, key_of, value_of, limit=None):

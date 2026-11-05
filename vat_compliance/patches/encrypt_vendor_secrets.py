@@ -25,4 +25,6 @@ def _encrypt_owner_nids():
 	for row in frappe.get_all(doctype, filters={"owner_nid": ["is", "set"]}, fields=["name", "owner_nid"]):
 		if set(row.owner_nid) != {"*"}:
 			set_encrypted_password(doctype, row.name, row.owner_nid, "owner_nid")
-			frappe.db.set_value(doctype, row.name, "owner_nid", "*" * len(row.owner_nid), update_modified=False)
+			frappe.db.set_value(
+				doctype, row.name, "owner_nid", "*" * len(row.owner_nid), update_modified=False
+			)

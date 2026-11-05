@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, patch
 
 import frappe
 
-from vat_compliance import api
+from vat_compliance import api, vschallan
 from vat_compliance.hook_functions import payment_entry
 from vat_compliance.vat_challan.doctype.pos_vendor_configuration import pos_vendor_configuration as vendor
 from vat_compliance.vat_challan.doctype.retailer_registration import retailer_registration as retailer
@@ -22,7 +22,6 @@ from vat_compliance.vat_challan.doctype.vc_zone import vc_zone
 from vat_compliance.vat_compliance.page.vat_payment import vat_payment
 from vat_compliance.vat_compliance.report.sales_vat_management import sales_vat_management
 from vat_compliance.vat_compliance.report.supplier_mushak_6_3 import supplier_mushak_6_3
-from vat_compliance import vschallan
 
 REFUSED_FOR_GUEST = (
 	(vat_invoice.sync_vat_invoice, ("VI-1",)),

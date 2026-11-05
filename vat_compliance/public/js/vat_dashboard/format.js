@@ -17,7 +17,9 @@ vat_compliance.dashboard.format = (() => {
 	// Lakh/crore grouping for South Asian currencies, thousands grouping otherwise.
 	const grouped = (n, decimals = 0) => {
 		const neg = n < 0;
-		const [whole, frac] = Math.abs(n || 0).toFixed(decimals).split(".");
+		const [whole, frac] = Math.abs(n || 0)
+			.toFixed(decimals)
+			.split(".");
 		let s = whole;
 		if (south_asian() && s.length > 3) {
 			s = s.slice(0, -3).replace(/\B(?=(\d{2})+(?!\d))/g, ",") + "," + s.slice(-3);
@@ -31,8 +33,15 @@ vat_compliance.dashboard.format = (() => {
 		const abs = Math.abs(n || 0);
 		const sign = n < 0 ? "-" : "";
 		const steps = south_asian()
-			? [[1e7, 2, "Cr"], [1e5, 1, "L"]]
-			: [[1e9, 2, "B"], [1e6, 2, "M"], [1e3, 1, "K"]];
+			? [
+					[1e7, 2, "Cr"],
+					[1e5, 1, "L"],
+			  ]
+			: [
+					[1e9, 2, "B"],
+					[1e6, 2, "M"],
+					[1e3, 1, "K"],
+			  ];
 		for (const [size, decimals, unit] of steps) {
 			if (abs >= size) return { number: sign + (abs / size).toFixed(decimals), unit };
 		}
@@ -61,7 +70,8 @@ vat_compliance.dashboard.format = (() => {
 		if (span.textContent) el.appendChild(span);
 	};
 
-	const pct = (n, decimals = 1) => (n == null || isNaN(n) ? "—" : `${Number(n).toFixed(decimals)}%`);
+	const pct = (n, decimals = 1) =>
+		n == null || isNaN(n) ? "—" : `${Number(n).toFixed(decimals)}%`;
 
 	const qty = (n) => grouped(n, Number.isInteger(Math.round((n || 0) * 1000) / 1000) ? 0 : 2);
 
@@ -90,5 +100,17 @@ vat_compliance.dashboard.format = (() => {
 	// "USD 61,350.00": a fully grouped amount labelled with its own currency code.
 	const full_code = (n, code) => in_currency(code, code, false, () => full(n));
 
-	return { use_currency, in_currency, compact, full, full_code, set_compact, pct, qty, date, esc, ccy };
+	return {
+		use_currency,
+		in_currency,
+		compact,
+		full,
+		full_code,
+		set_compact,
+		pct,
+		qty,
+		date,
+		esc,
+		ccy,
+	};
 })();

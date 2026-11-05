@@ -300,7 +300,12 @@ def get_opening_balances(filters):
 
 def get_consumption_movements(filters):
 	"""Stock consumed in manufacture per item and day, in one query rather than one per row."""
-	conditions = ["se.docstatus = 1", "se.purpose = 'Manufacture'", "sed.s_warehouse IS NOT NULL", "sed.t_warehouse IS NULL"]
+	conditions = [
+		"se.docstatus = 1",
+		"se.purpose = 'Manufacture'",
+		"sed.s_warehouse IS NOT NULL",
+		"sed.t_warehouse IS NULL",
+	]
 	for key, condition in (
 		("from_date", "se.posting_date >= %(from_date)s"),
 		("to_date", "se.posting_date <= %(to_date)s"),
@@ -322,8 +327,13 @@ def get_consumption_movements(filters):
 def get_meta(filters, data):
 	"""Header cards and charts, from the same register lines as the table."""
 	filters = frappe._dict(filters or {})
-	taxable = lambda r: r.get("base_net_amount")
-	vat = lambda r: r.get("vat_amount")
+
+	def taxable(r):
+		return r.get("base_net_amount")
+
+	def vat(r):
+		return r.get("vat_amount")
+
 	rated = [r for r in data if flt(r.get("vat_amount"))]
 	return kit.meta(
 		filters,
@@ -333,8 +343,15 @@ def get_meta(filters, data):
 		documents=len({r.get("name") for r in data}),
 		rated_taxable=kit.total(rated, taxable),
 		by_item_type=kit.group(data, lambda r: r.get("item_type"), taxable),
-		parties=[{**g, "name": next((r.get("supplier_name") for r in rated if r.get("supplier") == g["key"]), g["key"])}
-			for g in kit.group(rated, lambda r: r.get("supplier"), vat, limit=5)],
+		parties=[
+			{
+				**g,
+				"name": next(
+					(r.get("supplier_name") for r in rated if r.get("supplier") == g["key"]), g["key"]
+				),
+			}
+			for g in kit.group(rated, lambda r: r.get("supplier"), vat, limit=5)
+		],
 		trend=kit.monthly(data, lambda r: r.get("posting_date"), taxable, filters),
 		trend_vat=kit.monthly(data, lambda r: r.get("posting_date"), vat, filters),
 	)

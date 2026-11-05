@@ -395,14 +395,25 @@ def get_meta(filters, data):
 	for r in data:
 		if not r.get("indent"):
 			parent = r
-		rows.append({"date": parent.get("payment_date"), "supplier": parent.get("supplier_name"),
-			"status": parent.get("status"), "amount": flt(r.get("vds_amount"))})
-	amount = lambda r: r["amount"]
+		rows.append(
+			{
+				"date": parent.get("payment_date"),
+				"supplier": parent.get("supplier_name"),
+				"status": parent.get("status"),
+				"amount": flt(r.get("vds_amount")),
+			}
+		)
+
+	def amount(r):
+		return r["amount"]
+
 	deposited = [r for r in rows if r["status"] == "DDGT"]
 	return kit.meta(
 		filters,
 		deducted=kit.total(rows, amount),
-		payments=len({r.get("payment_entry_id") for r in data if not r.get("indent") and r.get("payment_entry_id")}),
+		payments=len(
+			{r.get("payment_entry_id") for r in data if not r.get("indent") and r.get("payment_entry_id")}
+		),
 		pending=kit.total([r for r in rows if r["status"] == "DNGT"], amount),
 		pending_count=len([r for r in data if not r.get("indent") and r.get("status") == "DNGT"]),
 		deposited=kit.total(deposited, amount),

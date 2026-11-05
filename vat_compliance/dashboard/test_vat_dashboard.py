@@ -10,8 +10,14 @@ from vat_compliance.dashboard import period, vat_ledger
 
 
 def _row(voucher_type, debit=0, credit=0, posted="2026-10-10"):
-	return frappe._dict(voucher_type=voucher_type, voucher_no="X", debit=debit, credit=credit,
-		posting_date=date.fromisoformat(posted), liability=credit - debit)
+	return frappe._dict(
+		voucher_type=voucher_type,
+		voucher_no="X",
+		debit=debit,
+		credit=credit,
+		posting_date=date.fromisoformat(posted),
+		liability=credit - debit,
+	)
 
 
 class TestVATLedger(unittest.TestCase):
@@ -24,15 +30,23 @@ class TestVATLedger(unittest.TestCase):
 		self.assertEqual(vat_ledger._source(_row("Journal Entry"), "Journal Entry"), "adjustment")
 
 	def test_balance_identity_holds(self):
-		rows = [_row("Sales Invoice", credit=1000), _row("Sales Invoice", debit=100), _row("Purchase Invoice", debit=300),
-			_row("Journal Entry", debit=200), _row("Journal Entry", credit=50)]
-		for r, je in zip(rows, [None, None, None, "VAT Payment Entry", "Opening Entry"]):
+		rows = [
+			_row("Sales Invoice", credit=1000),
+			_row("Sales Invoice", debit=100),
+			_row("Purchase Invoice", debit=300),
+			_row("Journal Entry", debit=200),
+			_row("Journal Entry", credit=50),
+		]
+		for r, je in zip(rows, [None, None, None, "VAT Payment Entry", "Opening Entry"], strict=False):
 			r.source = vat_ledger._source(r, je)
 		t = vat_ledger.totals(rows)
 		self.assertEqual(t["output"], 900)  # sales returns post as debits and net off
 		self.assertEqual(t["input"], 300)
 		self.assertEqual(t["deposit"], 200)
-		self.assertEqual(t["opening"] + t["output"] - t["input"] - t["deposit"] + t["adjustment"], vat_ledger.balance(rows, "2026-12-31"))
+		self.assertEqual(
+			t["opening"] + t["output"] - t["input"] - t["deposit"] + t["adjustment"],
+			vat_ledger.balance(rows, "2026-12-31"),
+		)
 
 
 class TestVATPeriod(unittest.TestCase):

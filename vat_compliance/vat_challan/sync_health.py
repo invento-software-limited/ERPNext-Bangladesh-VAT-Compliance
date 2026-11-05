@@ -20,7 +20,11 @@ def report_sync_health():
 	if users:
 		enqueue_create_notification(
 			list(users),
-			{"type": "Alert", "document_type": "VAT Invoice", "subject": _("VAT challan sync: {0}").format(", ".join(problems))},
+			{
+				"type": "Alert",
+				"document_type": "VAT Invoice",
+				"subject": _("VAT challan sync: {0}").format(", ".join(problems)),
+			},
 		)
 
 
@@ -31,7 +35,9 @@ def _problems():
 		(_("{0} failed"), {"status": "Failed"}),
 		(_("{0} stuck syncing"), {"status": "Syncing"}),
 	)
-	problems = [label.format(n) for label, filters in counts if (n := frappe.db.count("VAT Invoice", filters))]
+	problems = [
+		label.format(n) for label, filters in counts if (n := frappe.db.count("VAT Invoice", filters))
+	]
 	if _integration_in_use() and not frappe.db.get_single_value("POS Vendor Configuration", "sync_schedule"):
 		problems.append(_("no sync schedule set"))
 	return problems

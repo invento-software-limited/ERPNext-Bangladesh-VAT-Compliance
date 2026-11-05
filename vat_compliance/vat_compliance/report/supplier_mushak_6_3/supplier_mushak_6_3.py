@@ -122,7 +122,10 @@ def upload_mushak_63(invoice_id: str, file_url: str):
 def get_meta(filters, data):
 	"""Header cards and charts, in company currency, from the same bills as the table."""
 	filters = frappe._dict(filters or {})
-	value = lambda r: r.get("base_grand_total")
+
+	def value(r):
+		return r.get("base_grand_total")
+
 	collected = [r for r in data if r.get("status") == "Collected"]
 	pending = [r for r in data if r.get("status") != "Collected"]
 	return kit.meta(

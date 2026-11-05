@@ -170,7 +170,10 @@ def get_data(filters):
 
 		# Calculate VAT amount
 		vat_amount = calculate_vat_amount(
-			row.get("item_tax_template"), row.get("net_amount"), filters.get("company"), row.get("item_tax_rate")
+			row.get("item_tax_template"),
+			row.get("net_amount"),
+			filters.get("company"),
+			row.get("item_tax_rate"),
 		)
 
 		# Get customer BIN/NID
@@ -345,8 +348,13 @@ def calculate_vat_amount(item_tax_template, net_amount, company, item_tax_rate=N
 def get_meta(filters, data):
 	"""Header cards and charts, from the same register lines as the table."""
 	filters = frappe._dict(filters or {})
-	taxable = lambda r: r.get("taxable_value")
-	vat = lambda r: r.get("vat_amount")
+
+	def taxable(r):
+		return r.get("taxable_value")
+
+	def vat(r):
+		return r.get("vat_amount")
+
 	rated = [r for r in data if flt(r.get("vat_amount"))]
 	return kit.meta(
 		filters,

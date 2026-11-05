@@ -354,7 +354,9 @@ def upload_challan(rows, challan_data):
 
 
 def _require_references(payment_entry, invoice_ids):
-	referenced = frappe.get_all("Payment Entry Reference", filters={"parent": payment_entry}, pluck="reference_name")
+	referenced = frappe.get_all(
+		"Payment Entry Reference", filters={"parent": payment_entry}, pluck="reference_name"
+	)
 	if set(invoice_ids) - set(referenced):
 		frappe.throw(_("Payment Entry {0} does not cover all selected invoices.").format(payment_entry))
 
@@ -396,13 +398,18 @@ SALES_STATUSES = [
 def get_meta(filters, data):
 	"""Header cards and charts, from the same rows as the table."""
 	filters = frappe._dict(filters or {})
-	vat = lambda r: r.get("vds_amount")
+
+	def vat(r):
+		return r.get("vds_amount")
+
 	by_status = {s: [r for r in data if r.get("status") == s] for s, _ in SALES_STATUSES}
 	return kit.meta(
 		filters,
 		output=kit.total(data, vat),
 		invoices=len({r.get("invoice_id") for r in data}),
-		statuses=[{"status": s, "label": label, "count": len(by_status[s]), "amount": kit.total(by_status[s], vat)}
-			for s, label in SALES_STATUSES],
+		statuses=[
+			{"status": s, "label": label, "count": len(by_status[s]), "amount": kit.total(by_status[s], vat)}
+			for s, label in SALES_STATUSES
+		],
 		trend=kit.monthly(data, lambda r: r.get("payment_date"), vat, filters),
 	)

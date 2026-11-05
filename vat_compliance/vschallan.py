@@ -152,7 +152,9 @@ class VATSmartChallan:
 			# Save to Single Doc
 			# set_single_value alone would bypass the Password field's encryption.
 			set_encrypted_password(self.docname, self.docname, self.access_token, "access_token")
-			frappe.db.set_single_value("POS Vendor Configuration", "access_token", "*" * len(self.access_token or ""))
+			frappe.db.set_single_value(
+				"POS Vendor Configuration", "access_token", "*" * len(self.access_token or "")
+			)
 			frappe.db.set_single_value("POS Vendor Configuration", "expiry_date", self.expiry_date)
 			frappe.db.set_single_value("POS Vendor Configuration", "company_id", self.company_id)
 
@@ -712,7 +714,9 @@ class VATSmartChallan:
 			"email": customer.email_id,
 		}
 
-		vat_invoice_detail = [self._sale_line(doc, item, valid_service_type_ids, retailer_doc) for item in doc.items]
+		vat_invoice_detail = [
+			self._sale_line(doc, item, valid_service_type_ids, retailer_doc) for item in doc.items
+		]
 
 		payload = {
 			"invoice_number": doc.name,
@@ -835,7 +839,9 @@ class VATSmartChallan:
 		if isinstance(payload, str):
 			payload = json.loads(payload)
 
-		parsed_data = self.get_response_data(f"{self.base_url}/integration/record_vat", "POST", payload=payload)
+		parsed_data = self.get_response_data(
+			f"{self.base_url}/integration/record_vat", "POST", payload=payload
+		)
 		doc.db_set("response", json.dumps(parsed_data, indent=2))
 
 		if str(parsed_data.get("status_code")) == "200":
@@ -874,7 +880,9 @@ class VATSmartChallan:
 		query = {"invoice_number": doc.invoice_number}
 		if doc.s_challan_number:
 			query["smart_challan_number"] = doc.s_challan_number
-		return self.get_response_data(f"{self.base_url}/integration/get_vat_invoice_details?{urlencode(query)}", "GET")
+		return self.get_response_data(
+			f"{self.base_url}/integration/get_vat_invoice_details?{urlencode(query)}", "GET"
+		)
 
 	def download_schallan(self, doc):
 		url = f"{self.base_url}/integration/download_schallan"
@@ -912,7 +920,9 @@ class VATSmartChallan:
 		"""Prepare the return payload on the original sale's VAT Invoice, ready to sync."""
 		doc = frappe.db.exists("VAT Invoice", {"invoice_number": invoice_doc.return_against})
 		if not doc:
-			frappe.log_error(f"No VAT Invoice for {invoice_doc.return_against}", "VAT Invoice not found error")
+			frappe.log_error(
+				f"No VAT Invoice for {invoice_doc.return_against}", "VAT Invoice not found error"
+			)
 			return
 		doc = frappe.get_doc("VAT Invoice", doc)
 
@@ -1016,7 +1026,9 @@ class VATSmartChallan:
 
 	def _vendor_rejected(self, parsed_data):
 		status_code = parsed_data.get("status_code")
-		return str(parsed_data.get("success")) == "0" or (status_code is not None and str(status_code) != "200")
+		return str(parsed_data.get("success")) == "0" or (
+			status_code is not None and str(status_code) != "200"
+		)
 
 	def _return_status(self, payload, invoice_doc):
 		returned = sum(flt(d.get("quantity")) for d in payload.get("return_request_details", []))
@@ -1060,7 +1072,9 @@ def _sync_is_due():
 	config = frappe.get_single("POS Vendor Configuration")
 	if cint(config.disabled):
 		return False
-	days_between = {"Daily": 0, "After Submit": 0, "Weekly": 7, "Monthly": 30, "Quarterly": 90}.get(config.sync_schedule)
+	days_between = {"Daily": 0, "After Submit": 0, "Weekly": 7, "Monthly": 30, "Quarterly": 90}.get(
+		config.sync_schedule
+	)
 	if days_between is None:
 		return False
 	if not days_between or not config.last_sync_date:
@@ -1072,7 +1086,9 @@ def _fail_stale_syncing():
 	"""A worker killed mid-send leaves Syncing behind. Failed gets retried, and a retry asks
 	the vendor first, so this cannot cause a duplicate."""
 	cutoff = add_to_date(now_datetime(), hours=-STALE_SYNC_HOURS)
-	for name in frappe.get_all("VAT Invoice", filters={"status": "Syncing", "modified": ["<", cutoff]}, pluck="name"):
+	for name in frappe.get_all(
+		"VAT Invoice", filters={"status": "Syncing", "modified": ["<", cutoff]}, pluck="name"
+	):
 		frappe.db.set_value("VAT Invoice", name, "status", "Failed")
 
 
@@ -1097,7 +1113,9 @@ def _prepare_return(vschallan, doctype, name):
 
 
 def _enqueue_due_invoices():
-	for name in frappe.get_all("VAT Invoice", filters={"status": ["in", list(SYNCABLE_STATUSES)]}, pluck="name"):
+	for name in frappe.get_all(
+		"VAT Invoice", filters={"status": ["in", list(SYNCABLE_STATUSES)]}, pluck="name"
+	):
 		enqueue_sync(name)
 
 
