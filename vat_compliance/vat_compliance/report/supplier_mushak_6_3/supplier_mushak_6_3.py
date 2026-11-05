@@ -6,6 +6,7 @@ from frappe import _
 
 from vat_compliance import report_kit as kit
 from vat_compliance.access import require_doc, require_readable_file, scope_report_to_company
+from vat_compliance.vat_rates import add_invoice_vat
 
 
 def execute(filters=None):
@@ -33,7 +34,7 @@ def get_columns():
 			"width": 300,
 		},
 		{
-			"fieldname": "total_taxes_and_charges",
+			"fieldname": "vat_amount",
 			"label": _("Total VAT"),
 			"fieldtype": "Currency",
 			"width": 150,
@@ -53,7 +54,9 @@ def get_data(filters):
 			name as invoice,
 			posting_date,
 			supplier,
+			company,
 			total_taxes_and_charges,
+			base_total_taxes_and_charges,
 			grand_total,
 			base_grand_total,
 			custom_mushak_63
@@ -71,6 +74,8 @@ def get_data(filters):
 		filters,
 		as_dict=1,
 	)
+
+	add_invoice_vat("Purchase Invoice", data, name_field="invoice")
 
 	for row in data:
 		if row.get("custom_mushak_63"):

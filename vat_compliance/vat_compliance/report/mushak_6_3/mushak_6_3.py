@@ -8,6 +8,7 @@ from frappe import _
 
 from vat_compliance import report_kit as kit
 from vat_compliance.access import require_report
+from vat_compliance.vat_rates import add_invoice_vat
 
 # Each invoice renders a PDF inside the web request, so the request size must be bounded.
 MAX_BULK_INVOICES = 500
@@ -50,7 +51,7 @@ def get_columns():
 		{"label": _("Total (Excl. VAT)"), "fieldname": "net_total", "fieldtype": "Currency", "width": 170},
 		{
 			"label": _("Total VAT"),
-			"fieldname": "total_taxes_and_charges",
+			"fieldname": "vat_amount",
 			"fieldtype": "Currency",
 			"width": 150,
 		},
@@ -93,6 +94,8 @@ def get_data(filters):
 		limit_page_length=0,
 	)
 
+	add_invoice_vat("Sales Invoice", invoices)
+
 	# The JS formatter turns this into the print/download button.
 	for inv in invoices:
 		inv["download"] = inv.name
@@ -125,6 +128,7 @@ def download_all_invoices(filters):
 	try:
 		zip_buffer = BytesIO()
 
+		included, failed = [], []
 		with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
 			for invoice in invoices:
 				try:
@@ -134,28 +138,42 @@ def download_all_invoices(filters):
 						as_pdf=True,
 						pdf_generator="wkhtmltopdf",
 					)
-					filename = f"Mushak_6_3_{invoice['name']}.pdf"
-					zipf.writestr(filename, pdf_content)
-
+					zipf.writestr(f"Mushak_6_3_{invoice['name']}.pdf", pdf_content)
+					included.append(invoice["name"])
 				except Exception as e:
 					frappe.log_error(
 						f"Error generating PDF for invoice {invoice['name']}: {e!s}",
 						"Download All Invoices",
 					)
-					continue
+					failed.append(invoice["name"])
+			zipf.writestr("MANIFEST.txt", build_manifest(included, failed))
+
+		if not included:
+			frappe.throw(_("None of the {0} invoices could be generated. See Error Log.").format(len(failed)))
 
 		zip_buffer.seek(0)
 
-		file_name = f"mushak_6_3_invoices_{frappe.utils.now_datetime().strftime('%Y%m%d_%H%M%S')}.zip"
+		# A partial set must be obvious before anyone opens or files it.
+		prefix = "INCOMPLETE_" if failed else ""
+		file_name = f"{prefix}mushak_6_3_invoices_{frappe.utils.now_datetime().strftime('%Y%m%d_%H%M%S')}.zip"
 
 		frappe.response["filename"] = file_name
 		frappe.response["filecontent"] = zip_buffer.getvalue()
 		frappe.response["type"] = "download"
 		frappe.response["content_type"] = "application/zip"
 
+	except frappe.ValidationError:
+		raise
 	except Exception as e:
 		frappe.log_error(f"Error in download_all_invoices: {e!s}", "Download All Invoices")
 		frappe.throw(_("Error generating zip file: {0}").format(str(e)))
+
+
+def build_manifest(included, failed):
+	lines = [f"Included: {len(included)}", f"Failed: {len(failed)}", "", "Included invoices:", *included]
+	if failed:
+		lines += ["", "FAILED, NOT IN THIS ZIP:", *failed]
+	return "\n".join(lines) + "\n"
 
 
 def get_meta(filters, data):
@@ -166,7 +184,7 @@ def get_meta(filters, data):
 		return r.get("posting_date")
 
 	def vat(r):
-		return r.get("base_total_taxes_and_charges")
+		return r.get("base_vat_amount")
 
 	return kit.meta(
 		filters,

@@ -5,11 +5,11 @@ import json
 
 import frappe
 from frappe import _
-from frappe.utils import flt
 
 from vat_compliance import report_kit as kit
 from vat_compliance.access import require_doc, require_readable_file, scope_report_to_company
-from vat_compliance.vat_rates import line_vat, payment_ratio
+from vat_compliance.deposits import sales_deposited, sales_head_vat
+from vat_compliance.vat_rates import payment_ratio
 
 
 def execute(filters=None):
@@ -98,7 +98,7 @@ def _get_payment_data(filters):
             pe.party_name as customer_name,
             si.status as invoice_status,
             pe.name as payment_entry_id,
-            si.grand_total as invoice_amount,
+            si.base_grand_total as invoice_amount,
             0 as vds_amount,
             per.custom_vdsvcs as vds,
             per.allocated_amount as allocated_amount,
@@ -138,19 +138,23 @@ def _get_no_payment_data(filters):
             si.customer_name as customer_name,
             si.status as invoice_status,
             NULL as payment_entry_id,
-            si.grand_total as invoice_amount,
+            si.base_grand_total as invoice_amount,
             NULL as vds_amount,
             NULL as vds,
             NULL as allocated_amount,
             NULL as child_name,
             fy.name as fiscal_year
         FROM `tabSales Invoice` si
-        LEFT JOIN `tabPayment Entry Reference` per ON per.reference_name = si.name
-        LEFT JOIN `tabPayment Entry` pe ON per.parent = pe.name
-            AND pe.docstatus = 1
-            AND pe.payment_type = 'Receive'
         LEFT JOIN `tabFiscal Year` fy ON si.posting_date BETWEEN fy.year_start_date AND fy.year_end_date
-        WHERE {where_clause} AND pe.name IS NULL
+        WHERE {where_clause}
+            AND NOT EXISTS (
+                SELECT 1 FROM `tabPayment Entry Reference` per
+                INNER JOIN `tabPayment Entry` pe ON per.parent = pe.name
+                WHERE per.reference_doctype = 'Sales Invoice'
+                    AND per.reference_name = si.name
+                    AND pe.docstatus = 1
+                    AND pe.payment_type = 'Receive'
+            )
         ORDER BY si.posting_date DESC
     """
 
@@ -189,34 +193,19 @@ def _get_attachments_map(payment_entry_ids):
 
 def _calculate_vat_amount_and_accounts(inv_doc, row_data):
 	"""Calculate VAT amount and get account heads for an invoice"""
-	account_heads = set()
-	vat_amount = 0
+	heads = sales_head_vat(inv_doc)
+	vat_amount = sum(heads.values())
 
-	for item in inv_doc.items:
-		# Template lines read their template's rate; lines without one, their VAT-account rate.
-		first_key, tax_rate = line_vat(item, inv_doc.company)
-		if not first_key:
-			continue
-
-		if tax_rate > 0:
-			account_heads.add(first_key)
-
-			if row_data.get("payment_entry_id"):
-				if row_data.get("vds") == "Collected":
-					row_data["status"] = "Collected"
-					je_status = _get_journal_entry_status(row_data.get("child_name"))
-					if je_status:
-						row_data["status"] = je_status
-
-				vat_amount += flt(item.get("net_amount", 0.0)) * (tax_rate / 100)
-			else:
-				vat_amount += flt(item.get("net_amount", 0.0)) * (tax_rate / 100)
-
-	# Each payment row carries only the VAT in what that payment covers.
 	if row_data.get("payment_entry_id"):
+		if heads and row_data.get("vds") == "Collected":
+			row_data["status"] = "Collected"
+			row_data["deposit_key"] = row_data.get("child_name")
+			if sales_deposited(row_data.get("child_name"), heads):
+				row_data["status"] = "CDGT"
+		# Each payment row carries only the VAT in what that payment covers.
 		vat_amount *= payment_ratio(inv_doc, row_data.get("allocated_amount"))
 
-	return account_heads, vat_amount
+	return set(heads), vat_amount
 
 
 def _process_invoice_status(row_data, attachments_map):
@@ -359,31 +348,6 @@ def _require_references(payment_entry, invoice_ids):
 	)
 	if set(invoice_ids) - set(referenced):
 		frappe.throw(_("Payment Entry {0} does not cover all selected invoices.").format(payment_entry))
-
-
-def _get_journal_entry_status(child_name):
-	"""Get journal entry status for a payment entry reference."""
-	if not child_name:
-		return None
-
-	je_account = frappe.db.get_all(
-		"Journal Entry Account",
-		filters={"reference_detail_no": ["like", f"%{child_name}%"], "custom_tax_type": "VAT"},
-		fields=["parent"],
-	)
-
-	if not je_account:
-		return None
-
-	if je_account[0] and not je_account[0].get("parent"):
-		return None
-
-	je_doc = frappe.get_doc("Journal Entry", je_account[0]["parent"])
-
-	if je_doc.docstatus == 1:
-		return "CDGT"
-
-	return None
 
 
 SALES_STATUSES = [

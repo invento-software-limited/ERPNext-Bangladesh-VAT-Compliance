@@ -91,34 +91,41 @@ vat_compliance.page.render = (() => {
 			text(`st_${key}`, cell == null ? "—" : fmt.compact(cell.amount));
 			text(`st_${key}_s`, sub);
 		};
-		const none = __("no report access");
+		const missing = (report) =>
+			(st.failed || []).includes(report)
+				? __("report failed, see Error Log")
+				: __("no report access");
+		const no_sales = missing("Sales VAT Management"),
+			no_vds = missing("VDS Management");
 		const sales = st.sales,
 			vds = st.vds;
 		set(
 			"ipnr",
 			sales && n(sales, "IPNR"),
-			sales ? __("{0} invoice(s)", [sales.IPNR.count]) : none
+			sales ? __("{0} invoice(s)", [sales.IPNR.count]) : no_sales
 		);
 		set(
 			"collected",
 			sales && n(sales, "Collected"),
-			sales ? __("{0} · awaiting deposit", [sales.Collected.count]) : none
+			sales ? __("{0} · awaiting deposit", [sales.Collected.count]) : no_sales
 		);
 		set(
 			"cdgt",
 			sales && n(sales, "CDGT"),
-			sales ? __("{0} into treasury", [sales.CDGT.count]) : none
+			sales ? __("{0} into treasury", [sales.CDGT.count]) : no_sales
 		);
 		const withheld = sales && { amount: sales.DVCNR.amount + sales.DVCR.amount };
 		set(
 			"withheld",
 			withheld,
-			sales ? __("{0} certificate(s) pending", [sales.DVCNR.count]) : none
+			sales ? __("{0} certificate(s) pending", [sales.DVCNR.count]) : no_sales
 		);
 		set(
 			"dngt",
 			vds && n(vds, "DNGT"),
-			vds ? __("{0} · {1} deposited", [vds.DNGT.count, fmt.compact(vds.DDGT.amount)]) : none
+			vds
+				? __("{0} · {1} deposited", [vds.DNGT.count, fmt.compact(vds.DDGT.amount)])
+				: no_vds
 		);
 		text(
 			"status_sub",

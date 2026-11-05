@@ -5,6 +5,8 @@ import requests
 from frappe import _
 from frappe.rate_limiter import rate_limit
 
+from vat_compliance.hook_functions.party_verification import remember_check
+
 BASE_URL = "https://www.achallan.gov.bd/acs/v2"
 # Protects the government service from one user or a loop; the buttons are clicked by hand.
 VALIDATION_LIMIT_PER_MINUTE = 30
@@ -72,7 +74,9 @@ def validate_bin(bin_no: str):
 		api_response = session.get(validate_url, params=params, timeout=timeout)
 		api_response.raise_for_status()
 
-		return api_response.json()
+		result = api_response.json()
+		remember_check("bin", bin_no, result)
+		return result
 
 	except requests.exceptions.RequestException as e:
 		frappe.log_error(f"BIN Validation Error: {e!s}", frappe.get_traceback())
@@ -101,7 +105,9 @@ def validate_tin(tin_no: str):
 		api_response = session.get(validate_url, params=params, timeout=timeout)
 		api_response.raise_for_status()
 
-		return api_response.json()
+		result = api_response.json()
+		remember_check("tin", tin_no, result)
+		return result
 
 	except requests.exceptions.RequestException as e:
 		frappe.log_error(f"TIN Validation Error: {e!s}", frappe.get_traceback())

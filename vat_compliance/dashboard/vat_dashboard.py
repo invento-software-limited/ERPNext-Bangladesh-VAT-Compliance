@@ -43,7 +43,8 @@ class VATDashboard:
 		self.today = getdate(today())
 		self.start, self.end, self.label = periods.resolve(period, from_date, to_date, self.today, company)
 		self.accounts = ledger.vat_accounts(company)
-		self.rows = ledger.gl_rows(company, self.accounts, max(self.end, self.today))
+		since = min(periods.previous(self.start, self.end)[0], self.today)
+		self.rows = ledger.gl_rows(company, self.accounts, max(self.end, self.today), since)
 		self.in_period = [r for r in self.rows if self.start <= r.posting_date <= self.end]
 		self.docs = self._documents()
 

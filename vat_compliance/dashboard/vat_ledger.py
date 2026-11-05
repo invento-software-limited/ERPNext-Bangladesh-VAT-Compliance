@@ -8,7 +8,7 @@ balance = opening + output - input - deposits + adjustments, always.
 """
 
 import frappe
-from frappe.utils import flt, getdate
+from frappe.utils import add_days, flt, getdate
 
 from vat_compliance.vat_rates import vat_accounts
 
@@ -16,18 +16,16 @@ SOURCES = ("output", "input", "deposit", "opening", "adjustment")
 OUTPUT_VOUCHERS = ("Sales Invoice", "POS Invoice")
 
 
-def gl_rows(company, accounts, upto):
-	"""Non-cancelled VAT postings up to `upto`, through the permission-aware list API."""
+def gl_rows(company, accounts, upto, since=None):
+	"""Non-cancelled VAT postings up to `upto`, through the permission-aware list API. Postings
+	before `since` are summed into one row, because only the balance needs them."""
 	if not accounts:
 		return []
-	rows = frappe.get_list(
+	scope = {"company": company, "account": ["in", accounts], "is_cancelled": 0}
+	dates = ["between", [since, upto]] if since else ["<=", upto]
+	rows = _carried_forward(scope, since) + frappe.get_list(
 		"GL Entry",
-		filters={
-			"company": company,
-			"account": ["in", accounts],
-			"is_cancelled": 0,
-			"posting_date": ["<=", upto],
-		},
+		filters={**scope, "posting_date": dates},
 		fields=["posting_date", "voucher_type", "voucher_no", "debit", "credit"],
 		order_by="posting_date asc, creation asc",
 		limit_page_length=0,
@@ -38,6 +36,25 @@ def gl_rows(company, accounts, upto):
 		r.source = _source(r, je_types.get(r.voucher_no))
 		r.liability = flt(r.credit) - flt(r.debit)  # + raises what is owed to the treasury
 	return rows
+
+
+def _carried_forward(scope, since):
+	if not since:
+		return []
+	totals = frappe.get_list(
+		"GL Entry",
+		filters={**scope, "posting_date": ["<", since]},
+		fields=[{"SUM": "debit", "as": "debit"}, {"SUM": "credit", "as": "credit"}],
+		limit_page_length=0,
+	)
+	debit, credit = (flt(totals[0].debit), flt(totals[0].credit)) if totals else (0, 0)
+	if not (debit or credit):
+		return []
+	return [
+		frappe._dict(
+			posting_date=add_days(since, -1), voucher_type="", voucher_no="", debit=debit, credit=credit
+		)
+	]
 
 
 def _journal_types(names):
