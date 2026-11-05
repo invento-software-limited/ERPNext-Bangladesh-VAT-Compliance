@@ -10,7 +10,7 @@
  "idx": 2,
  "is_standard": "Yes",
  "letterhead": null,
- "modified": "2025-09-07 15:50:17.028357",
+ "modified": "2026-11-05 11:30:00.000000",
  "modified_by": "Administrator",
  "module": "Vat Challan",
  "name": "VAT Invoice",
@@ -22,6 +22,12 @@
  "roles": [
   {
    "role": "System Manager"
+  },
+  {
+   "role": "Accounts Manager"
+  },
+  {
+   "role": "Accounts User"
   }
  ],
  "timeout": 0

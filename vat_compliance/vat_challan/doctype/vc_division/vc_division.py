@@ -11,8 +11,9 @@ class VCDivision(Document):
 	pass
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def sync_vc_division():
+	frappe.has_permission("VC Division", "create", throw=True)
 	vschallan = VATSmartChallan()
 	vschallan.get_division()
 	return "success"

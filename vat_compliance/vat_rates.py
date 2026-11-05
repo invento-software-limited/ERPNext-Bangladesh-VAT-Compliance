@@ -63,6 +63,13 @@ def line_vat(item, company):
 	return fallback_vat(rates, company)
 
 
+def payment_ratio(invoice, allocated):
+	"""Share of an invoice a payment covers. Allocations are VAT-inclusive, so the base is the
+	gross total: half of a 115 invoice is 57.50, which carries half the VAT."""
+	total = abs(flt(invoice.get("rounded_total") or invoice.get("grand_total")))
+	return min(abs(flt(allocated)) / total, 1.0) if total else 0.0
+
+
 def fallback_vat(rates, company):
 	"""VAT on a line without a template: its rate on the first VAT account that has one."""
 	rates = parse_item_tax_rate(rates)

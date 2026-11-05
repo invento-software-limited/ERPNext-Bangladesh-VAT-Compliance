@@ -6,6 +6,7 @@ from frappe import _
 from frappe.utils import flt
 
 from vat_compliance import report_kit as kit
+from vat_compliance.stock_movements import RunningStock
 from vat_compliance.vat_rates import fallback_vat
 
 
@@ -131,29 +132,22 @@ def get_data(filters):
 
 	data = []
 
-	# Get opening balances for stock items
-	opening_balances = get_opening_balances(filters)
+	stock = RunningStock(get_opening_balances(filters), get_production_movements(filters))
 
 	for i, row in enumerate(invoices, start=1):
 		item_code = row.get("item_code")
 		is_stock_item = row.get("is_stock_item", 0)
 
 		if is_stock_item:
-			# Stock item calculations
-			opening_balance_qty = opening_balances.get(item_code, {}).get("qty", 0)
-			opening_balance_value = opening_balances.get(item_code, {}).get("value", 0)
+			opening_balance_qty, opening_balance_value = stock.opening(item_code)
+			production_qty, production_value = stock.take_movements(item_code, row.get("posting_date"))
 
-			# Production quantity (for stock items, this would come from production records)
-			production_qty = get_production_qty(item_code, filters)
-			production_value = get_production_value(item_code, filters)
-
-			# Total produced (cumulative)
 			total_produced_qty = production_qty
 			total_produced_value = production_value
 
-			# Closing balance for stock items
-			closing_balance_qty = opening_balance_qty + production_qty - row.get("qty", 0)
-			closing_balance_value = opening_balance_value + production_value - row.get("amount", 0)
+			closing_balance_qty = opening_balance_qty + production_qty - flt(row.get("qty"))
+			closing_balance_value = opening_balance_value + production_value - flt(row.get("amount"))
+			stock.close(item_code, closing_balance_qty, closing_balance_value)
 
 			item_type = "Stock Item"
 		else:
@@ -241,7 +235,7 @@ def get_opening_balances(filters):
 	"""Get opening balances for stock items as of from_date"""
 	opening_balances = {}
 
-	if not filters.get("from_date"):
+	if not filters.get("from_date") or not filters.get("company"):
 		return opening_balances
 
 	# Get stock ledger entries for opening balance
@@ -266,40 +260,25 @@ def get_opening_balances(filters):
 	return opening_balances
 
 
-def get_production_qty(item_code, filters):
-	"""Get production quantity for stock items within date range"""
-	production_qty = frappe.db.sql(
-		"""
-								   SELECT SUM(sed.qty) as total_qty
-								   FROM `tabStock Entry Detail` sed
-											INNER JOIN `tabStock Entry` se ON sed.parent = se.name
-								   WHERE sed.item_code = %s
-									 AND se.posting_date BETWEEN %s AND %s
-									 AND se.docstatus = 1
-									 AND sed.s_warehouse IS NULL
-								   """,
-		(item_code, filters.get("from_date"), filters.get("to_date")),
-	)
+def get_production_movements(filters):
+	"""Stock received per item and day in the period, in one query rather than one per row."""
+	conditions = ["se.docstatus = 1", "sed.s_warehouse IS NULL"]
+	for key, condition in (
+		("from_date", "se.posting_date >= %(from_date)s"),
+		("to_date", "se.posting_date <= %(to_date)s"),
+		("company", "se.company = %(company)s"),
+	):
+		if filters.get(key):
+			conditions.append(condition)
 
-	return flt(production_qty[0][0]) if production_qty else 0
-
-
-def get_production_value(item_code, filters):
-	"""Get production value for stock items within date range"""
-	production_value = frappe.db.sql(
-		"""
-									 SELECT SUM(sed.amount) as total_value
-									 FROM `tabStock Entry Detail` sed
-											  INNER JOIN `tabStock Entry` se ON sed.parent = se.name
-									 WHERE sed.item_code = %s
-									   AND se.posting_date BETWEEN %s AND %s
-									   AND se.docstatus = 1
-									   AND sed.s_warehouse IS NULL
-									 """,
-		(item_code, filters.get("from_date"), filters.get("to_date")),
-	)
-
-	return flt(production_value[0][0]) if production_value else 0
+	query = """
+		SELECT sed.item_code, se.posting_date, SUM(sed.qty) AS qty, SUM(sed.amount) AS value
+		FROM `tabStock Entry Detail` sed
+		INNER JOIN `tabStock Entry` se ON sed.parent = se.name
+		WHERE {conditions}
+		GROUP BY sed.item_code, se.posting_date
+	"""
+	return frappe.db.sql(query.replace("{conditions}", " AND ".join(conditions)), filters, as_dict=True)
 
 
 def get_formatted_address(address_name, address_cache):

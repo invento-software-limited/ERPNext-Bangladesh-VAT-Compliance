@@ -235,7 +235,7 @@
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
-   "options": "Pending\nSynced\nFailed\nPartly Return\nReturn",
+   "options": "Pending\nSyncing\nSynced\nFailed\nPartly Return\nReturn",
    "read_only": 1
   },
   {
@@ -322,7 +322,7 @@
  "in_create": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-09 14:36:43.476469",
+ "modified": "2026-11-05 11:30:00.000000",
  "modified_by": "Administrator",
  "module": "Vat Challan",
  "name": "VAT Invoice",
@@ -339,6 +339,21 @@
    "role": "System Manager",
    "share": 1,
    "write": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts Manager",
+   "write": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts User"
   }
  ],
  "row_format": "Dynamic",

@@ -27,6 +27,11 @@ frappe.ui.form.on("Payment Entry Reference", {
 			frm.payment_controller.calculate_deduction_rows();
 		}
 	},
+	allocated_amount(frm) {
+		if (frm.payment_controller) {
+			frm.payment_controller.calculate_deduction_rows();
+		}
+	},
 });
 
 class PaymentController {
@@ -46,7 +51,11 @@ class PaymentController {
 				},
 				callback: function (r) {
 					if (r.message) {
-						frm.clear_table("deductions");
+						// Keep write-offs and other manual rows; only VDS rows have a reference.
+						frm.doc.deductions = (frm.doc.deductions || []).filter(
+							(d) => !d.custom_reference_doctype
+						);
+						frm.doc.deductions.forEach((d, i) => (d.idx = i + 1));
 
 						$.each(r.message, function (i, d) {
 							let row = frm.add_child("deductions");

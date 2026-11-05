@@ -8,7 +8,8 @@ from frappe import _
 from frappe.utils import flt
 
 from vat_compliance import report_kit as kit
-from vat_compliance.vat_rates import line_vat
+from vat_compliance.access import require_doc
+from vat_compliance.vat_rates import line_vat, payment_ratio
 
 
 def execute(filters=None):
@@ -99,6 +100,7 @@ def _get_payment_data(filters):
             si.grand_total as invoice_amount,
             0 as vds_amount,
             per.custom_vdsvcs as vds,
+            per.allocated_amount as allocated_amount,
             per.name as child_name,
             fy.name as fiscal_year
         FROM `tabPayment Entry Reference` per
@@ -138,6 +140,7 @@ def _get_no_payment_data(filters):
             si.grand_total as invoice_amount,
             NULL as vds_amount,
             NULL as vds,
+            NULL as allocated_amount,
             NULL as child_name,
             fy.name as fiscal_year
         FROM `tabSales Invoice` si
@@ -207,6 +210,10 @@ def _calculate_vat_amount_and_accounts(inv_doc, row_data):
 				vat_amount += flt(item.get("net_amount", 0.0)) * (tax_rate / 100)
 			else:
 				vat_amount += flt(item.get("net_amount", 0.0)) * (tax_rate / 100)
+
+	# Each payment row carries only the VAT in what that payment covers.
+	if row_data.get("payment_entry_id"):
+		vat_amount *= payment_ratio(inv_doc, row_data.get("allocated_amount"))
 
 	return account_heads, vat_amount
 
@@ -289,9 +296,10 @@ def get_data(filters):
 	return result_data
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def upload_challan(rows, challan_data):
-	"""Upload challan for selected rows"""
+	"""Upload challan for selected rows. Rows come from the browser, so only invoices the
+	Payment Entry really references are recorded."""
 	if isinstance(rows, str):
 		rows = json.loads(rows)
 
@@ -314,6 +322,8 @@ def upload_challan(rows, challan_data):
 
 	# Create attachments
 	for pe_id, invoice_ids in pe_map.items():
+		require_doc("Payment Entry", pe_id, "write")
+		_require_references(pe_id, invoice_ids)
 		doc = frappe.get_doc(
 			{
 				"doctype": "Document Attachment",
@@ -332,8 +342,17 @@ def upload_challan(rows, challan_data):
 			}
 		)
 		doc.insert(ignore_permissions=True)
+		frappe.get_doc("Payment Entry", pe_id).add_comment(
+			"Info", _("VAT challan {0} attached").format(challan_data.get("challan_no") or "")
+		)
 
 	return True
+
+
+def _require_references(payment_entry, invoice_ids):
+	referenced = frappe.get_all("Payment Entry Reference", filters={"parent": payment_entry}, pluck="reference_name")
+	if set(invoice_ids) - set(referenced):
+		frappe.throw(_("Payment Entry {0} does not cover all selected invoices.").format(payment_entry))
 
 
 def _get_journal_entry_status(child_name):

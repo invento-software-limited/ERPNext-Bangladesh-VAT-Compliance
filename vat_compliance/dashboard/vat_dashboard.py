@@ -10,9 +10,9 @@ selected window; the VAT balance is as of today.
 
 import frappe
 from frappe import _
-from frappe.core.doctype.user_permission.user_permission import get_user_permissions
 from frappe.utils import cint, flt, getdate, today
 
+from vat_compliance.access import allowed_companies
 from vat_compliance.dashboard import period as periods
 from vat_compliance.dashboard import vat_ledger as ledger
 from vat_compliance.dashboard.vat_status import treasury_status
@@ -30,20 +30,11 @@ def get_dashboard_data(company=None, period="tm", from_date=None, to_date=None, 
 
 
 def _validate_company(company):
-	allowed = _allowed_companies()
+	allowed = allowed_companies()
 	company = company or frappe.defaults.get_user_default("Company") or (allowed[0] if allowed else None)
 	if not company or company not in allowed:
 		frappe.throw(_("You do not have access to company {0}").format(company or ""), frappe.PermissionError)
 	return company
-
-
-def _allowed_companies():
-	names = frappe.get_all("Company", pluck="name", order_by="name asc")
-	restricted = get_user_permissions().get("Company")
-	if restricted:
-		allowed = {p.get("doc") for p in restricted}
-		names = [n for n in names if n in allowed]
-	return names
 
 
 class VATDashboard:
@@ -61,7 +52,7 @@ class VATDashboard:
 		symbol, on_right = frappe.get_cached_value("Currency", currency, ["symbol", "symbol_on_right"]) or ("", 0)
 		now, prior = ledger.totals(self.in_period), ledger.totals(self.rows, *periods.previous(self.start, self.end))
 		return {
-			"company": self.company, "companies": _allowed_companies(), "currency": currency,
+			"company": self.company, "companies": allowed_companies(), "currency": currency,
 			"currency_symbol": symbol or currency, "currency_symbol_on_right": cint(on_right),
 			"accounts": self.accounts, "today": self.today, "period": self.period,
 			"period_start": self.start, "period_end": self.end, "period_label": self.label,

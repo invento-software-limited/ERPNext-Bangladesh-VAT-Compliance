@@ -5,6 +5,7 @@ import frappe
 from frappe import _
 
 from vat_compliance import report_kit as kit
+from vat_compliance.access import require_doc
 
 
 def execute(filters=None):
@@ -102,12 +103,19 @@ def get_conditions(filters):
 	return "AND " + " AND ".join(conditions) if conditions else ""
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def upload_mushak_63(invoice_id: str, file_url: str):
 	if not invoice_id or not file_url:
 		frappe.throw(_("Missing invoice or file"))
 
-	frappe.db.set_value("Purchase Invoice", invoice_id, "custom_mushak_63", file_url)
+	require_doc("Purchase Invoice", invoice_id, "write")
+	if not frappe.db.exists("File", {"file_url": file_url}):
+		frappe.throw(_("File not found"))
+
+	invoice = frappe.get_doc("Purchase Invoice", invoice_id)
+	invoice.db_set("custom_mushak_63", file_url)
+	# db_set leaves no version history, and this field is compliance evidence.
+	invoice.add_comment("Info", _("Supplier Mushak 6.3 attached: {0}").format(file_url))
 	return True
 
 

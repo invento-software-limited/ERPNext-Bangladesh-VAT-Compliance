@@ -4,6 +4,7 @@ import frappe
 from frappe import _
 from frappe.utils import flt
 
+from vat_compliance.access import require_company, require_report
 from vat_compliance.vat_compliance.report.sales_vat_management.sales_vat_management import (
 	execute as execute_sales_vat,
 )
@@ -12,6 +13,10 @@ from vat_compliance.vat_compliance.report.vds_management.vds_management import e
 
 @frappe.whitelist()
 def get_vat_payment_data(from_date: str, to_date: str, company: str):
+	require_company(company)
+	require_report("Sales VAT Management")
+	require_report("VDS Management")
+
 	filters = {"from_date": from_date, "to_date": to_date, "company": company}
 
 	data = []
@@ -44,7 +49,7 @@ def get_vat_payment_data(from_date: str, to_date: str, company: str):
 	return data
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def make_journal_entry(rows: str | list):
 	if isinstance(rows, str):
 		rows = json.loads(rows)

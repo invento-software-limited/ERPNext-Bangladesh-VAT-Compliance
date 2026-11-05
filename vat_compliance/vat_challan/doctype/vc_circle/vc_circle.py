@@ -11,8 +11,9 @@ class VCCircle(Document):
 	pass
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def sync_vc_circle():
+	frappe.has_permission("VC Circle", "create", throw=True)
 	vschallan = VATSmartChallan()
 	vschallan.get_circle()
 	return "success"

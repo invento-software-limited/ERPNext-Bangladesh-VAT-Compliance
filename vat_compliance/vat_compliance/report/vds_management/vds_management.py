@@ -8,7 +8,7 @@ from frappe import _
 from frappe.utils import flt
 
 from vat_compliance import report_kit as kit
-from vat_compliance.vat_rates import is_taxable_line, line_vat
+from vat_compliance.vat_rates import is_taxable_line, line_vat, payment_ratio
 
 
 def execute(filters=None):
@@ -176,12 +176,7 @@ def _get_tax_template_groups(invoice_doc, allocated_amount):
 		for item in invoice_doc.items
 		if is_taxable_line(item, invoice_doc.company) and flt(item.get("net_amount")) > 0
 	]
-	total_net_amount = sum(flt(item.get("net_amount", 0)) for item in taxable_items)
-
-	if not total_net_amount:
-		return []
-
-	allocation_ratio = min(flt(allocated_amount) / total_net_amount, 1.0)
+	allocation_ratio = payment_ratio(invoice_doc, allocated_amount)
 
 	for item in taxable_items:
 		tax_category = item.get("item_tax_template")
@@ -233,7 +228,7 @@ def _get_tax_template_groups(invoice_doc, allocated_amount):
 	return groups
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def make_journal_entry(rows: str | list):
 	"""Create a Journal Entry for the selected rows."""
 	if isinstance(rows, str):
