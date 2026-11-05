@@ -11,5 +11,8 @@ vat_compliance.report_kit_ready =
 		"/assets/vat_compliance/js/vat_dashboard/styles.js",
 		"/assets/vat_compliance/js/vat_report/kit.js",
 	]
-		.reduce((chain, src) => chain.then(() => new Promise((done) => frappe.require(src, done))), Promise.resolve())
+		.reduce(
+			(chain, src) => chain.then(() => new Promise((done) => frappe.require(src, done))),
+			Promise.resolve()
+		)
 		.then(() => vat_compliance.report_kit);

@@ -34,16 +34,18 @@ class TestVATDeductionCertificate(FrappeTestCase):
 			return True
 
 		certificate = MagicMock()
-		with patch(f"{MODULE}.frappe.has_permission", side_effect=read_only), patch(
-			f"{MODULE}.frappe.get_doc", return_value=certificate
+		with (
+			patch(f"{MODULE}.frappe.has_permission", side_effect=read_only),
+			patch(f"{MODULE}.frappe.get_doc", return_value=certificate),
 		):
 			self.assertRaises(frappe.PermissionError, generate_mushak_6_6, "VDC-ANY")
 		certificate.update_references_and_context.assert_not_called()
 
 	def test_generate_regenerates_for_permitted_user(self):
 		certificate = MagicMock()
-		with patch(f"{MODULE}.frappe.has_permission", return_value=True), patch(
-			f"{MODULE}.frappe.get_doc", return_value=certificate
+		with (
+			patch(f"{MODULE}.frappe.has_permission", return_value=True),
+			patch(f"{MODULE}.frappe.get_doc", return_value=certificate),
 		):
 			self.assertIs(generate_mushak_6_6("VDC-ANY"), certificate)
 		certificate.update_references_and_context.assert_called_once()
@@ -63,7 +65,9 @@ class TestCertificateContent(unittest.TestCase):
 
 	def context(self, supplier_bin="B1", company_bin="C1", rows=None):
 		docs = {
-			"Supplier": frappe._dict(name="SUP-1", supplier_name="<img src=x onerror=alert(1)>", custom_bin_no=supplier_bin),
+			"Supplier": frappe._dict(
+				name="SUP-1", supplier_name="<img src=x onerror=alert(1)>", custom_bin_no=supplier_bin
+			),
 			"Company": frappe._dict(name="Co", custom_bin_no=company_bin),
 			"Purchase Invoice": frappe._dict(posting_date=None, total_taxes_and_charges=15),
 		}

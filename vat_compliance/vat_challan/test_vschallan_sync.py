@@ -27,7 +27,13 @@ class FakeInvoice(frappe._dict):
 
 def invoice(**values):
 	return FakeInvoice(
-		{"name": "VI-1", "invoice_number": "SINV-1", "status": "Pending", "requested_payloads": "{}", **values}
+		{
+			"name": "VI-1",
+			"invoice_number": "SINV-1",
+			"status": "Pending",
+			"requested_payloads": "{}",
+			**values,
+		}
 	)
 
 
@@ -62,7 +68,9 @@ class TestSaleSync(VendorCase):
 		self.assertEqual((doc.status, doc.vat_invoice_id), ("Synced", "V1"))
 
 	def test_claim_is_committed_before_the_vendor_call(self):
-		self.client.get_response_data.side_effect = lambda *a, **k: frappe.db.commit.assert_called_once() or ACCEPTED
+		self.client.get_response_data.side_effect = (
+			lambda *a, **k: frappe.db.commit.assert_called_once() or ACCEPTED
+		)
 		self.sync(invoice())
 
 	def test_rejected_sale_fails(self):
@@ -138,7 +146,9 @@ class TestReturnSync(VendorCase):
 
 	def test_repeated_item_uses_each_vendor_line_once(self):
 		available = [{"product_name": "Tea", "id": 1}, {"product_name": "Tea", "id": 2}]
-		ids = [self.client._return_line(frappe._dict(), self.line("Tea"), available)["product_id"] for _ in "ab"]
+		ids = [
+			self.client._return_line(frappe._dict(), self.line("Tea"), available)["product_id"] for _ in "ab"
+		]
 		self.assertEqual(ids, [1, 2])
 
 	def test_unmatched_return_line_is_an_error(self):

@@ -522,9 +522,16 @@ def get_meta(filters, data):
 	filters = frappe._dict(filters or {})
 	purchases = [r for r in data if r.get("purchase_challan_no")]
 	sales = [r for r in data if r.get("sales_invoice_no")]
-	taxable = lambda r: r.get("taxable_value")
-	vat = lambda r: r.get("vat_amount")
-	day = lambda r: r.get("posting_date")
+
+	def taxable(r):
+		return r.get("taxable_value")
+
+	def vat(r):
+		return r.get("vat_amount")
+
+	def day(r):
+		return r.get("posting_date")
+
 	output, inp = kit.monthly(sales, day, vat, filters), kit.monthly(purchases, day, vat, filters)
 	return kit.meta(
 		filters,
@@ -538,5 +545,8 @@ def get_meta(filters, data):
 		trend_sales=kit.monthly(sales, day, taxable, filters),
 		trend_output=output,
 		trend_input=inp,
-		trend_net={**output, "values": [o - i for o, i in zip(output["values"], inp["values"])]},
+		trend_net={
+			**output,
+			"values": [o - i for o, i in zip(output["values"], inp["values"], strict=False)],
+		},
 	)

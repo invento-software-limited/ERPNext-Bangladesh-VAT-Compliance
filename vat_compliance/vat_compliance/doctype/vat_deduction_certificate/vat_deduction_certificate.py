@@ -16,7 +16,6 @@ from frappe.utils.print_format import download_pdf
 from vat_compliance.access import require_doc
 from vat_compliance.vat_compliance.report.vds_management.vds_management import get_data
 
-
 # Written only by generate_mushak_6_6. Code fields are not sanitized on save, and both end up
 # rendered as HTML, so a value sent by a client must never be kept.
 GENERATED_FIELDS = ("certificate_html", "context")

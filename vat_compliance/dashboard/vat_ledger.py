@@ -4,13 +4,13 @@
 """VAT as posted to the ledger: which accounts count as VAT, and what each posting is.
 
 Every GL row on a VAT account falls in exactly one source, so
-balance = opening + output − input − deposits + adjustments, always.
+balance = opening + output - input - deposits + adjustments, always.
 """
 
 import frappe
 from frappe.utils import flt, getdate
 
-from vat_compliance.vat_rates import vat_accounts  # noqa: F401  the same accounts the VAT reports use
+from vat_compliance.vat_rates import vat_accounts
 
 SOURCES = ("output", "input", "deposit", "opening", "adjustment")
 OUTPUT_VOUCHERS = ("Sales Invoice", "POS Invoice")
@@ -20,9 +20,18 @@ def gl_rows(company, accounts, upto):
 	"""Non-cancelled VAT postings up to `upto`, through the permission-aware list API."""
 	if not accounts:
 		return []
-	rows = frappe.get_list("GL Entry", filters={"company": company, "account": ["in", accounts], "is_cancelled": 0,
-		"posting_date": ["<=", upto]}, fields=["posting_date", "voucher_type", "voucher_no", "debit", "credit"],
-		order_by="posting_date asc, creation asc", limit_page_length=0)
+	rows = frappe.get_list(
+		"GL Entry",
+		filters={
+			"company": company,
+			"account": ["in", accounts],
+			"is_cancelled": 0,
+			"posting_date": ["<=", upto],
+		},
+		fields=["posting_date", "voucher_type", "voucher_no", "debit", "credit"],
+		order_by="posting_date asc, creation asc",
+		limit_page_length=0,
+	)
 	je_types = _journal_types({r.voucher_no for r in rows if r.voucher_type == "Journal Entry"})
 	for r in rows:
 		r.posting_date = getdate(r.posting_date)
@@ -34,8 +43,15 @@ def gl_rows(company, accounts, upto):
 def _journal_types(names):
 	if not names or not frappe.has_permission("Journal Entry", "read"):
 		return {}
-	return dict(frappe.get_list("Journal Entry", filters={"name": ["in", list(names)]},
-		fields=["name", "voucher_type"], as_list=True, limit_page_length=0))
+	return dict(
+		frappe.get_list(
+			"Journal Entry",
+			filters={"name": ["in", list(names)]},
+			fields=["name", "voucher_type"],
+			as_list=True,
+			limit_page_length=0,
+		)
+	)
 
 
 def _source(row, je_type):

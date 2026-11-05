@@ -23,7 +23,7 @@ def resolve(period, from_date=None, to_date=None, today=None, company=None):
 			frappe.throw(_("From date must be on or before To date."))
 		if date_diff(end, start) > MAX_CUSTOM_DAYS:
 			frappe.throw(_("Choose a range of three years or less."))
-		return start, end, f"{start:%d %b %Y} – {end:%d %b %Y}"
+		return start, end, f"{start:%d %b %Y} \u2013 {end:%d %b %Y}"
 	if period == "tm":
 		return getdate(get_first_day(today)), today, _(LABELS[period])
 	if period == "lm":
