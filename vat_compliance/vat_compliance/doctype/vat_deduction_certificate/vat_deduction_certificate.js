@@ -2,6 +2,11 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on("VAT Deduction Certificate", {
+	onload(frm) {
+		if (frm.is_new() && !frm.doc.company) {
+			frm.set_value("company", frappe.defaults.get_user_default("Company"));
+		}
+	},
 	refresh(frm) {
 		const generate_mushak = () => {
 			frappe.call({
