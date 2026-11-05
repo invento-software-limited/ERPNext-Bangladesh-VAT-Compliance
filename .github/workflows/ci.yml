@@ -83,6 +83,8 @@ jobs:
 
       - name: Setup
         run: |
+          # The runner's client requires TLS by default, and the mariadb:10.6 service has none.
+          printf '[client]\nskip-ssl\n' > ~/.my.cnf
           pip install frappe-bench
           bench init --skip-redis-config-generation --skip-assets --python "$(which python)" ~/frappe-bench --frappe-branch version-16
           mariadb --host 127.0.0.1 --port 3306 -u root -proot -e "SET GLOBAL character_set_server = 'utf8mb4'"
