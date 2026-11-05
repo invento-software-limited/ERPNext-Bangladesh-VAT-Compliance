@@ -139,7 +139,9 @@ override_doctype_class = {"Payment Entry": "vat_compliance.hook_functions.paymen
 # Hook on document methods and events
 
 doc_events = {
-	"POS Invoice": {"on_submit": "vat_compliance.vat_challan.hook_functions.vat_invoice.create_vat_invoice"}
+	"POS Invoice": {"on_submit": "vat_compliance.vat_challan.hook_functions.vat_invoice.create_vat_invoice"},
+	"Sales Invoice": {"on_submit": "vat_compliance.vat_challan.hook_functions.vat_invoice.create_vat_invoice"},
+	"Payment Entry": {"before_validate": "vat_compliance.hook_functions.payment_entry.sync_vds_deductions"},
 }
 
 # Scheduled Tasks
@@ -189,6 +191,15 @@ scheduler_events = {
 
 # User Data Protection
 # --------------------
+
+user_data_fields = [
+	{
+		"doctype": "Retailer Registration",
+		"filter_by": "owner_email",
+		"redact_fields": ["owner_full_name", "owner_cc", "owner_mobile", "owner_email", "owner_nid"],
+		"partial": 1,
+	},
+]
 
 # user_data_fields = [
 # 	{

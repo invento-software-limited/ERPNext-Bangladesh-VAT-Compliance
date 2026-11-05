@@ -102,20 +102,20 @@ class TestReports(unittest.TestCase):
 		self.assertEqual(svm._calculate_vat_amount_and_accounts(inv, {})[1], -18000)
 
 	def test_vds_groups_include_lines_without_a_template(self):
-		inv = _Doc(company="T", items=[_line(1000, {VAT: 15}), _line(1000, {})])
-		groups = vds._get_tax_template_groups(inv, 500)
+		inv = _Doc(company="T", grand_total=2150, items=[_line(1000, {VAT: 15}), _line(1000, {})])
+		groups = vds._get_tax_template_groups(inv, 1075)
 		self.assertEqual(len(groups), 1)
 		self.assertEqual(groups[0]["liability_head"], VAT)
-		self.assertAlmostEqual(groups[0]["vds_amount"], 75)  # 500 of 1,000 taxable × 15%
+		self.assertAlmostEqual(groups[0]["vds_amount"], 75)  # half the 2,150 gross, so half of 1,000 taxable × 15%
 
 
 @patch.object(vat_rates, "vat_accounts", _vat_accounts)
 class TestPaymentVds(unittest.TestCase):
 	def test_withheld_payment_deducts_vat_on_a_line_without_template(self):
 		inv = _Doc(doctype="Purchase Invoice", name="PI-1", company="T", cost_center="Main - T",
-			items=[_line(1000, {VAT: 15, OTHER: 5})])
+			grand_total=1150, items=[_line(1000, {VAT: 15, OTHER: 5})])
 		pe = _Doc(payment_type="Pay", company="T", references=[frappe._dict(
-			reference_doctype="Purchase Invoice", reference_name="PI-1", custom_vdsvcs="Withheld", allocated_amount=1000)])
+			reference_doctype="Purchase Invoice", reference_name="PI-1", custom_vdsvcs="Withheld", allocated_amount=1150)])
 		with patch.object(payment_entry.frappe, "get_doc", return_value=inv):
-			rows = payment_entry.calculate_tax_rows(pe)
+			rows = payment_entry.get_vds_rows(pe)
 		self.assertEqual([(r["account"], r["amount"]) for r in rows], [(VAT, -150)])

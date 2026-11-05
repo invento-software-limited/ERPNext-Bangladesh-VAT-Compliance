@@ -93,7 +93,9 @@
    "fieldname": "sync_schedule",
    "fieldtype": "Select",
    "label": "Sync Schedule",
-   "options": "\nAfter Submit\nDaily\nWeekly\nMonthly"
+   "options": "\nAfter Submit\nDaily\nWeekly\nMonthly",
+   "reqd": 1,
+   "default": "After Submit"
   },
   {
    "fieldname": "column_break_csds",
@@ -110,7 +112,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-12-08 14:39:49.283623",
+ "modified": "2026-11-05 11:30:00.000000",
  "modified_by": "Administrator",
  "module": "Vat Challan",
  "name": "POS Vendor Configuration",

@@ -1,0 +1,39 @@
+# Copyright (c) 2026, Invento Software Limited and contributors
+# For license information, please see license.txt
+
+"""Permission checks for whitelisted methods. A whitelisted method is open to every logged-in
+user, and page or report role lists do not protect it."""
+
+import frappe
+from frappe import _
+from frappe.core.doctype.user_permission.user_permission import get_user_permissions
+
+
+def require_doc(doctype, name, *ptypes):
+	"""Throw unless the user holds every ptype on the document (read when none is given).
+
+	The doctype check runs first: the document check loads `name`, and would otherwise tell
+	an unauthorized caller which names exist.
+	"""
+	for ptype in ptypes or ("read",):
+		frappe.has_permission(doctype, ptype, throw=True)
+		frappe.has_permission(doctype, ptype, doc=name, throw=True)
+
+
+def require_company(company):
+	if not company or company not in allowed_companies():
+		frappe.throw(_("You do not have access to company {0}").format(company or ""), frappe.PermissionError)
+
+
+def require_report(report):
+	if not frappe.get_doc("Report", report).is_permitted():
+		frappe.throw(_("You do not have access to report {0}").format(report), frappe.PermissionError)
+
+
+def allowed_companies():
+	names = frappe.get_all("Company", pluck="name", order_by="name asc")
+	restricted = get_user_permissions().get("Company")
+	if restricted:
+		allowed = {p.get("doc") for p in restricted}
+		names = [n for n in names if n in allowed]
+	return names

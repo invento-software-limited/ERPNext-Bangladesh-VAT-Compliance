@@ -3,8 +3,16 @@ import re
 import frappe
 import requests
 from frappe import _
+from frappe.rate_limiter import rate_limit
 
 BASE_URL = "https://www.achallan.gov.bd/acs/v2"
+# Protects the government service from one user or a loop; the buttons are clicked by hand.
+VALIDATION_LIMIT_PER_MINUTE = 30
+
+
+def _require_party_write():
+	if not (frappe.has_permission("Customer", "write") or frappe.has_permission("Supplier", "write")):
+		frappe.throw(_("You do not have access to verify BIN or TIN."), frappe.PermissionError)
 
 
 def _get_acs_session():
@@ -45,11 +53,13 @@ def _get_acs_session():
 	return session
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
+@rate_limit(limit=VALIDATION_LIMIT_PER_MINUTE, seconds=60)
 def validate_bin(bin_no: str):
 	"""
 	Validate BIN number using the external API from achallan.gov.bd.
 	"""
+	_require_party_write()
 	validate_url = f"{BASE_URL}/api/remote/binValidate"
 
 	try:
@@ -72,11 +82,13 @@ def validate_bin(bin_no: str):
 		frappe.throw(f"An unexpected error occurred: {e!s}")
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
+@rate_limit(limit=VALIDATION_LIMIT_PER_MINUTE, seconds=60)
 def validate_tin(tin_no: str):
 	"""
 	Validate TIN number using the external API from achallan.gov.bd.
 	"""
+	_require_party_write()
 	validate_url = f"{BASE_URL}/api/remote/tinValidate"
 
 	try:

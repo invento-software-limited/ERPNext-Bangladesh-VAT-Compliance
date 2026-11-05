@@ -11,8 +11,9 @@ class VCVATCommissionRate(Document):
 	pass
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def sync_vc_vat_commission_rate():
+	frappe.has_permission("VC VAT Commission Rate", "create", throw=True)
 	vschallan = VATSmartChallan()
 	vschallan.get_vat_commission_rate()
 	return "success"

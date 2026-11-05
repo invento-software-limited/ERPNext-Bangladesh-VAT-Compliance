@@ -11,8 +11,9 @@ class VCServiceType(Document):
 	pass
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def sync_vc_service_type():
+	frappe.has_permission("VC Service Type", "create", throw=True)
 	vschallan = VATSmartChallan()
 	vschallan.get_service_types()
 	return "success"

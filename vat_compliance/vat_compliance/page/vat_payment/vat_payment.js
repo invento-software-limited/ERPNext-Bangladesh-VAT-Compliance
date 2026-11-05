@@ -81,6 +81,7 @@ class VATPayment {
 			});
 		}
 
+		const escape = (value) => frappe.utils.escape_html(value == null ? "" : String(value));
 		let columns = [
 			{
 				name: "Payment Date",
@@ -90,9 +91,10 @@ class VATPayment {
 				id: "payment_date",
 			},
 			{ name: "Source Report", field: "source_report", width: 150, id: "source_report" },
-			{ name: "Invoice ID", field: "invoice_id", width: 140, id: "invoice_id" },
+			{ name: "Invoice ID", field: "invoice_id", width: 140, id: "invoice_id", format: escape },
 			{ name: "Party Type", field: "party_type", width: 100, id: "party_type" },
-			{ name: "Party Name", field: "party_name", width: 150, id: "party_name" },
+			// Party names are free text entered by users.
+			{ name: "Party Name", field: "party_name", width: 150, id: "party_name", format: escape },
 			{
 				name: "VAT Amount",
 				field: "vds_amount",
@@ -100,7 +102,7 @@ class VATPayment {
 				format: (value) => format_currency(value),
 				id: "vds_amount",
 			},
-			{ name: "Account Head", field: "liability_head", width: 200, id: "liability_head" },
+			{ name: "Account Head", field: "liability_head", width: 200, id: "liability_head", format: escape },
 			{ name: "Status", field: "status", width: 100, id: "status" },
 		];
 

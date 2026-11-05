@@ -57,30 +57,26 @@ frappe.ui.form.on("Retailer Registration", {
 		}
 	},
 	nid_document: function (frm) {
-		submit_document(frm.doc.nid_document, frm.doc.retailer_id, "nid_document");
+		submit_document(frm, frm.doc.nid_document, "nid_document");
 	},
 	bin_document: function (frm) {
-		submit_document(
-			frm.doc.bin_document,
-			frm.doc.retailer_id,
-			"business_identification_number"
-		);
+		submit_document(frm, frm.doc.bin_document, "business_identification_number");
 	},
 	trade_document: function (frm) {
-		submit_document(frm.doc.trade_document, frm.doc.retailer_id, "trade_license");
+		submit_document(frm, frm.doc.trade_document, "trade_license");
 	},
 	tin_document: function (frm) {
-		submit_document(frm.doc.tin_document, frm.doc.retailer_id, "tax_identification");
+		submit_document(frm, frm.doc.tin_document, "tax_identification");
 	},
 });
 
-function submit_document(file_path, retailer_id, document_category_key) {
+function submit_document(frm, file_path, document_category_key) {
 	if (file_path) {
 		frappe.call({
 			method: "vat_compliance.vat_challan.doctype.retailer_registration.retailer_registration.upload_file",
 			args: {
+				name: frm.doc.name,
 				file_path: file_path,
-				retailer_id: retailer_id,
 				document_category_key: document_category_key,
 			},
 			callback: function (r) {
