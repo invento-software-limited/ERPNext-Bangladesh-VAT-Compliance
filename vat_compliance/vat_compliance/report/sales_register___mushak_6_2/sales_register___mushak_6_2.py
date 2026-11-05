@@ -6,12 +6,14 @@ from frappe import _
 from frappe.utils import flt
 
 from vat_compliance import report_kit as kit
+from vat_compliance.access import scope_report_to_company
 from vat_compliance.stock_movements import RunningStock
 from vat_compliance.vat_rates import fallback_vat
 
 
 def execute(filters=None):
 	columns = get_columns()
+	scope_report_to_company(filters)
 	data = get_data(filters)
 	return columns, data, get_meta(filters, data)
 

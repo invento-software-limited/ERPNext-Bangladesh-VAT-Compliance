@@ -8,12 +8,13 @@ from frappe import _
 from frappe.utils import flt
 
 from vat_compliance import report_kit as kit
-from vat_compliance.access import require_doc
+from vat_compliance.access import require_doc, require_readable_file, scope_report_to_company
 from vat_compliance.vat_rates import line_vat, payment_ratio
 
 
 def execute(filters=None):
 	columns = get_columns()
+	scope_report_to_company(filters)
 	data = get_data(filters)
 	return columns, data, get_meta(filters, data)
 
@@ -319,6 +320,9 @@ def upload_challan(rows, challan_data):
 		if pe_id not in pe_map:
 			pe_map[pe_id] = []
 		pe_map[pe_id].append(row.get("invoice_id"))
+
+	if challan_data.get("file"):
+		require_readable_file(challan_data.get("file"))
 
 	# Create attachments
 	for pe_id, invoice_ids in pe_map.items():

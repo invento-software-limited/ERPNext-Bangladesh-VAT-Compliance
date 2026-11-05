@@ -95,12 +95,11 @@ class TestUploadGuards(unittest.TestCase):
 				retailer.upload_file("R-1", "trade_license", "/private/files/other.pdf")
 		client.assert_not_called()
 
+	@patch("vat_compliance.access.find_file_by_url", return_value=None)
 	@patch.object(supplier_mushak_6_3, "require_doc")
-	def test_mushak_6_3_needs_a_real_file(self, _require):
-		with patch.object(frappe, "db", MagicMock()) as db:
-			db.exists.return_value = None
-			with self.assertRaises(frappe.ValidationError):
-				supplier_mushak_6_3.upload_mushak_63("PI-1", "/files/none.pdf")
+	def test_mushak_6_3_needs_a_readable_file(self, _require, _find):
+		with self.assertRaises(frappe.PermissionError):
+			supplier_mushak_6_3.upload_mushak_63("PI-1", "/private/files/other.pdf")
 
 	def test_challan_invoices_must_be_on_the_payment(self):
 		with patch.object(frappe, "get_all", return_value=["SINV-1"]):

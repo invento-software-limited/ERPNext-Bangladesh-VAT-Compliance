@@ -5,11 +5,12 @@ import frappe
 from frappe import _
 
 from vat_compliance import report_kit as kit
-from vat_compliance.access import require_doc
+from vat_compliance.access import require_doc, require_readable_file, scope_report_to_company
 
 
 def execute(filters=None):
 	columns = get_columns()
+	scope_report_to_company(filters)
 	data = get_data(filters)
 	return columns, data, get_meta(filters, data)
 
@@ -109,8 +110,7 @@ def upload_mushak_63(invoice_id: str, file_url: str):
 		frappe.throw(_("Missing invoice or file"))
 
 	require_doc("Purchase Invoice", invoice_id, "write")
-	if not frappe.db.exists("File", {"file_url": file_url}):
-		frappe.throw(_("File not found"))
+	require_readable_file(file_url)
 
 	invoice = frappe.get_doc("Purchase Invoice", invoice_id)
 	invoice.db_set("custom_mushak_63", file_url)

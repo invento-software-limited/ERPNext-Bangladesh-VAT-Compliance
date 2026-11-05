@@ -6,11 +6,13 @@ from frappe import _
 from frappe.utils import flt
 
 from vat_compliance import report_kit as kit
+from vat_compliance.access import scope_report_to_company
 from vat_compliance.stock_movements import RunningStock
 from vat_compliance.vat_rates import line_vat
 
 
 def execute(filters=None):
+	scope_report_to_company(filters)
 	if not filters:
 		filters = {}
 
