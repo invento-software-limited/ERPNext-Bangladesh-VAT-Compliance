@@ -16,10 +16,15 @@ frappe.ui.form.on("VAT Deduction Certificate", {
 			});
 		};
 
+		const wrapper = $(frm.fields_dict["vat_deduction_certificate"].wrapper).empty();
 		if (frm.doc.certificate_html) {
-			$(frm.fields_dict["vat_deduction_certificate"].wrapper).html(frm.doc.certificate_html);
-		} else {
-			$(frm.fields_dict["vat_deduction_certificate"].wrapper).html(`<div></div>`);
+			// No allow-scripts: stored HTML can be displayed here but can never run code.
+			const frame = $(`<iframe sandbox="allow-same-origin" style="width:100%;border:0"></iframe>`);
+			frame.attr("srcdoc", frm.doc.certificate_html);
+			frame.on("load", function () {
+				this.style.height = `${this.contentDocument.documentElement.scrollHeight}px`;
+			});
+			wrapper.append(frame);
 		}
 
 		if (!frm.doc.__islocal) {

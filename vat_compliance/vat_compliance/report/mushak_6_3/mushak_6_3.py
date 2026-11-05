@@ -7,6 +7,10 @@ import frappe
 from frappe import _
 
 from vat_compliance import report_kit as kit
+from vat_compliance.access import require_report
+
+# Each invoice renders a PDF inside the web request, so the request size must be bounded.
+MAX_BULK_INVOICES = 500
 
 
 def execute(filters=None):
@@ -61,7 +65,7 @@ def get_data(filters):
 	# fields, so the report always came back empty. get_list applies the user's permissions.
 	list_filters = [["docstatus", "=", 1]]
 	if filters.get("status"):
-		list_filters = [["status", "=", filters.get("status")]]
+		list_filters.append(["status", "=", filters.get("status")])
 	if filters.get("from_date"):
 		list_filters.append(["posting_date", ">=", filters.get("from_date")])
 	if filters.get("to_date"):
@@ -104,12 +108,19 @@ def download_all_invoices(filters):
 	import zipfile
 	from io import BytesIO
 
+	require_report("Mushak 6_3")
+	frappe.has_permission("Sales Invoice", "print", throw=True)
+
 	if isinstance(filters, str):
 		filters = frappe.parse_json(filters)
 
 	invoices = get_data(filters)
 	if not invoices:
 		frappe.throw(_("No invoices found for the selected filters"))
+	if len(invoices) > MAX_BULK_INVOICES:
+		frappe.throw(
+			_("Select at most {0} invoices to download. Narrow the date range.").format(MAX_BULK_INVOICES)
+		)
 
 	try:
 		zip_buffer = BytesIO()

@@ -142,6 +142,10 @@ doc_events = {
 	"POS Invoice": {"on_submit": "vat_compliance.vat_challan.hook_functions.vat_invoice.create_vat_invoice"},
 	"Sales Invoice": {"on_submit": "vat_compliance.vat_challan.hook_functions.vat_invoice.create_vat_invoice"},
 	"Payment Entry": {"before_validate": "vat_compliance.hook_functions.payment_entry.sync_vds_deductions"},
+	"Purchase Invoice": {
+		"validate": "vat_compliance.hook_functions.purchase_invoice.validate_mushak_63",
+		"before_update_after_submit": "vat_compliance.hook_functions.purchase_invoice.validate_mushak_63",
+	},
 }
 
 # Scheduled Tasks

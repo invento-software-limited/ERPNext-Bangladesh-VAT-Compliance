@@ -57,7 +57,12 @@ frappe.query_reports["Supplier Mushak 6 3"] = {
 		}
 
 		if (column.fieldname == "custom_mushak_63" && value) {
-			value = `<a href="${value}" target="_blank" style="text-decoration: underline;">${value}</a>`;
+			// Older rows were never validated, so treat the stored value as untrusted.
+			const url = String(data.custom_mushak_63 || "");
+			const safe = frappe.utils.escape_html(url);
+			value = /^(\/files\/|\/private\/files\/|https?:\/\/)/i.test(url)
+				? `<a href="${safe}" target="_blank" rel="noopener noreferrer" style="text-decoration: underline;">${safe}</a>`
+				: safe;
 		}
 
 		if (column.fieldname == "action") {

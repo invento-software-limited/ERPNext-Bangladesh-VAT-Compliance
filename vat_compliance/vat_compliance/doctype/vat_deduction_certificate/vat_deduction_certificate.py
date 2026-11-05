@@ -17,10 +17,21 @@ from vat_compliance.access import require_doc
 from vat_compliance.vat_compliance.report.vds_management.vds_management import get_data
 
 
+# Written only by generate_mushak_6_6. Code fields are not sanitized on save, and both end up
+# rendered as HTML, so a value sent by a client must never be kept.
+GENERATED_FIELDS = ("certificate_html", "context")
+
+
 class VATDeductionCertificate(Document):
 	def validate(self):
+		self.keep_generated_fields()
 		self.check_date_range_conflicts()
 		self.validate_return_date()
+
+	def keep_generated_fields(self):
+		saved = self.get_doc_before_save()
+		for field in GENERATED_FIELDS:
+			self.set(field, saved.get(field) if saved else None)
 
 	def validate_return_date(self):
 		if self.certificate_type == "Related To VAT Return":
