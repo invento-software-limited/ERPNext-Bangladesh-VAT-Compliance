@@ -280,12 +280,15 @@ def get_meta(filters, data):
 	for r in data:
 		if not r.get("indent"):
 			parent = r
+		status = r.get("status") or parent.get("status")
 		rows.append(
 			{
 				"date": parent.get("payment_date"),
 				"supplier": parent.get("supplier_name"),
-				"status": r.get("status") or parent.get("status"),
+				"status": status,
 				"amount": flt(r.get("vds_amount")),
+				# A payment counts once per status, not once per tax group.
+				"counted": not r.get("indent") or status != parent.get("status"),
 			}
 		)
 
@@ -300,9 +303,9 @@ def get_meta(filters, data):
 			{r.get("payment_entry_id") for r in data if not r.get("indent") and r.get("payment_entry_id")}
 		),
 		pending=kit.total([r for r in rows if r["status"] == "DNGT"], amount),
-		pending_count=len([r for r in rows if r["status"] == "DNGT"]),
+		pending_count=len([r for r in rows if r["status"] == "DNGT" and r["counted"]]),
 		deposited=kit.total(deposited, amount),
-		deposited_count=len(deposited),
+		deposited_count=len([r for r in deposited if r["counted"]]),
 		suppliers=kit.group(rows, lambda r: r["supplier"], amount),
 		trend=kit.monthly(rows, lambda r: r["date"], amount, filters),
 		trend_deposited=kit.monthly(deposited, lambda r: r["date"], amount, filters),
