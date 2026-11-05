@@ -48,6 +48,15 @@ class TestCertificateFields(unittest.TestCase):
 		self.assertEqual((doc.certificate_html, doc.context), ("<p>ok</p>", "{}"))
 
 
+class TestCertificateCompanyField(unittest.TestCase):
+	def test_company_can_be_chosen_once(self):
+		# A required read-only field with no value is hidden, so the form could never be saved.
+		field = frappe.get_meta("VAT Deduction Certificate").get_field("company")
+		self.assertTrue(field.reqd)
+		self.assertFalse(field.read_only)
+		self.assertTrue(field.set_only_once)
+
+
 class TestMushak63Attachment(unittest.TestCase):
 	def invoice(self, value, changed=True):
 		doc = frappe.new_doc("Purchase Invoice")
