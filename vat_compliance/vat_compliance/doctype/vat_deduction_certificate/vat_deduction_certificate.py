@@ -9,16 +9,29 @@ from bs4 import BeautifulSoup
 from frappe import _
 from frappe.contacts.doctype.address.address import get_company_address
 from frappe.model.document import Document
-from frappe.utils import getdate
+from frappe.utils import flt, getdate
+from frappe.utils.html_utils import escape_html
 from frappe.utils.print_format import download_pdf
 
+from vat_compliance.access import require_doc
 from vat_compliance.vat_compliance.report.vds_management.vds_management import get_data
+
+
+# Written only by generate_mushak_6_6. Code fields are not sanitized on save, and both end up
+# rendered as HTML, so a value sent by a client must never be kept.
+GENERATED_FIELDS = ("certificate_html", "context")
 
 
 class VATDeductionCertificate(Document):
 	def validate(self):
+		self.keep_generated_fields()
 		self.check_date_range_conflicts()
 		self.validate_return_date()
+
+	def keep_generated_fields(self):
+		saved = self.get_doc_before_save()
+		for field in GENERATED_FIELDS:
+			self.set(field, saved.get(field) if saved else None)
 
 	def validate_return_date(self):
 		if self.certificate_type == "Related To VAT Return":
@@ -115,7 +128,8 @@ class VATDeductionCertificate(Document):
 			pi = row.get("invoice_id")
 			key = (pe, pi)
 
-			if key in existing_rows:
+			# Indented tax-group rows repeat their parent's payment with blank ids.
+			if not (pe and pi) or key in existing_rows:
 				continue
 
 			frappe.get_doc(
@@ -132,48 +146,56 @@ class VATDeductionCertificate(Document):
 			existing_rows.add(key)
 
 	def prepare_context(self, data):
-		withheld_data = []
-
 		supplier = frappe.get_doc("Supplier", self.vendor)
-		for index, row in enumerate(data):
-			invoice = frappe.get_doc("Purchase Invoice", row.get("invoice_id"))
-
-			withheld_data.append(
-				{
-					"sl_no": index + 1,
-					"supplier_name": row.get("vendor_name"),
-					"supplier_bin": supplier.get("custom_bin_no"),
-					"inv_number": row.get("invoice_id"),
-					"inv_posting_date": invoice.get("posting_date").strftime("%Y-%m-%d")
-					if invoice.get("posting_date")
-					else None,
-					"total_value_of_supply": row.get("invoice_amount"),
-					"amount_of_vat": invoice.get("total_taxes_and_charges"),
-					"amount_of_vat_withheld": row.get("vds_amount"),
-				}
-			)
-
 		company = frappe.get_doc("Company", self.company)
+		self._require_bins(supplier, company)
 
-		address_obj = get_company_address(self.company)
+		withheld_data = []
+		for row in data:
+			# An indented row is another tax group of the invoice above it.
+			if row.get("indent"):
+				if withheld_data:
+					withheld_data[-1]["amount_of_vat_withheld"] += flt(row.get("vds_amount"))
+				continue
+			withheld_data.append(self._withheld_row(len(withheld_data) + 1, row, supplier))
 
-		if address_obj and address_obj.company_address_display:
-			address = ", ".join(
-				[line.strip() for line in address_obj.company_address_display.split("<br>") if line.strip()]
-			)
-		else:
-			address = ""
-
-		context = {
-			"name_of_withholding_entity": self.company,
-			"address_of_withholding_entity": address,
-			"bin_of_withholding_entity": company.get("custom_bin_no"),
+		# Print formats do not autoescape, and this HTML is stored and shown on the form.
+		return {
+			"name_of_withholding_entity": escape_html(self.company),
+			"address_of_withholding_entity": escape_html(self._company_address()),
+			"bin_of_withholding_entity": escape_html(company.get("custom_bin_no")),
 			"certificate_no": self.name,
 			"date_of_issue": self.posting_date.strftime("%Y-%m-%d") if self.posting_date else None,
 			"withheld_data": withheld_data,
 		}
 
-		return context
+	def _withheld_row(self, sl_no, row, supplier):
+		invoice = frappe.get_doc("Purchase Invoice", row.get("invoice_id"))
+		return {
+			"sl_no": sl_no,
+			"supplier_name": escape_html(supplier.supplier_name),
+			"supplier_bin": escape_html(supplier.get("custom_bin_no")),
+			"inv_number": escape_html(row.get("invoice_id")),
+			"inv_posting_date": invoice.get("posting_date").strftime("%Y-%m-%d")
+			if invoice.get("posting_date")
+			else None,
+			"total_value_of_supply": row.get("invoice_amount"),
+			"amount_of_vat": invoice.get("total_taxes_and_charges"),
+			"amount_of_vat_withheld": flt(row.get("vds_amount")),
+		}
+
+	def _require_bins(self, supplier, company):
+		if not supplier.get("custom_bin_no"):
+			frappe.throw(_("Set a BIN on Supplier {0} before generating Mushak 6.6").format(supplier.name))
+		if not company.get("custom_bin_no"):
+			frappe.throw(_("Set a BIN on Company {0} before generating Mushak 6.6").format(company.name))
+
+	def _company_address(self):
+		address_obj = get_company_address(self.company)
+		if not (address_obj and address_obj.company_address_display):
+			return ""
+		lines = address_obj.company_address_display.split("<br>")
+		return ", ".join(line.strip() for line in lines if line.strip())
 
 	def get_vds_withheld_data(self):
 		"""Get withheld VAT Deduction Certificate data"""
@@ -182,7 +204,7 @@ class VATDeductionCertificate(Document):
 			"to_date": self.to_date,
 			"status": "DDGT",
 			"company": self.company,
-			"vendor": self.vendor,
+			"supplier": self.vendor,
 		}
 		return get_data(filters)
 
@@ -204,8 +226,11 @@ class VATDeductionCertificate(Document):
 		return body_content
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def generate_mushak_6_6(name: str):
+	"""Regenerate a certificate and return it, so the caller needs both read and write access."""
+	require_doc("VAT Deduction Certificate", name, "read", "write")
+
 	vat_deduction_certificate = frappe.get_doc("VAT Deduction Certificate", name)
 	vat_deduction_certificate.update_references_and_context()
 	return vat_deduction_certificate

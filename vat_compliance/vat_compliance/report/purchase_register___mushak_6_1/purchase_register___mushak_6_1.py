@@ -6,10 +6,13 @@ from frappe import _
 from frappe.utils import flt
 
 from vat_compliance import report_kit as kit
+from vat_compliance.access import scope_report_to_company
+from vat_compliance.stock_movements import RunningStock
 from vat_compliance.vat_rates import line_vat
 
 
 def execute(filters=None):
+	scope_report_to_company(filters)
 	if not filters:
 		filters = {}
 
@@ -142,24 +145,25 @@ def get_data(filters):
 	address_cache = {}
 	data = []
 
-	opening_balances = get_opening_balances(filters)
+	stock = RunningStock(get_opening_balances(filters), get_consumption_movements(filters))
 
 	for i, row in enumerate(invoices, start=1):
 		item_code = row.get("item_code")
 		is_stock_item = row.get("is_stock_item", 0)
 
 		if is_stock_item:
-			opening_balance_qty = opening_balances.get(item_code, {}).get("qty", 0)
-			opening_balance_value = opening_balances.get(item_code, {}).get("value", 0)
+			opening_balance_qty, opening_balance_value = stock.opening(item_code)
 
 			purchase_qty = row.get("qty", 0)
 			purchase_value = row.get("base_net_amount", 0) or row.get("net_amount", 0)
 
-			production_consumption_qty = get_stock_consumption(item_code, filters)
-			production_consumption_value = get_stock_consumption_value(item_code, filters)
+			production_consumption_qty, production_consumption_value = stock.take_movements(
+				item_code, row.get("posting_date")
+			)
 
 			closing_balance_qty = opening_balance_qty + purchase_qty - production_consumption_qty
 			closing_balance_value = opening_balance_value + purchase_value - production_consumption_value
+			stock.close(item_code, closing_balance_qty, closing_balance_value)
 
 			item_type = "Stock Item"
 		else:
@@ -294,44 +298,25 @@ def get_opening_balances(filters):
 	return opening_balances
 
 
-def get_stock_consumption(item_code, filters):
-	"""Get stock consumption quantity for production within date range"""
-	consumption_qty = frappe.db.sql(
-		"""
-									SELECT SUM(sed.qty) as total_qty
-									FROM `tabStock Entry Detail` sed
-											 INNER JOIN `tabStock Entry` se ON sed.parent = se.name
-									WHERE sed.item_code = %s
-									  AND se.posting_date BETWEEN %s AND %s
-									  AND se.docstatus = 1
-									  AND se.purpose = 'Manufacture'
-									  AND sed.s_warehouse IS NOT NULL
-									  AND sed.t_warehouse IS NULL
-									""",
-		(item_code, filters.get("from_date"), filters.get("to_date")),
-	)
+def get_consumption_movements(filters):
+	"""Stock consumed in manufacture per item and day, in one query rather than one per row."""
+	conditions = ["se.docstatus = 1", "se.purpose = 'Manufacture'", "sed.s_warehouse IS NOT NULL", "sed.t_warehouse IS NULL"]
+	for key, condition in (
+		("from_date", "se.posting_date >= %(from_date)s"),
+		("to_date", "se.posting_date <= %(to_date)s"),
+		("company", "se.company = %(company)s"),
+	):
+		if filters.get(key):
+			conditions.append(condition)
 
-	return flt(consumption_qty[0][0]) if consumption_qty else 0
-
-
-def get_stock_consumption_value(item_code, filters):
-	"""Get stock consumption value for production within date range"""
-	consumption_value = frappe.db.sql(
-		"""
-									  SELECT SUM(sed.amount) as total_value
-									  FROM `tabStock Entry Detail` sed
-											   INNER JOIN `tabStock Entry` se ON sed.parent = se.name
-									  WHERE sed.item_code = %s
-										AND se.posting_date BETWEEN %s AND %s
-										AND se.docstatus = 1
-										AND se.purpose = 'Manufacture'
-										AND sed.s_warehouse IS NOT NULL
-										AND sed.t_warehouse IS NULL
-									  """,
-		(item_code, filters.get("from_date"), filters.get("to_date")),
-	)
-
-	return flt(consumption_value[0][0]) if consumption_value else 0
+	query = """
+		SELECT sed.item_code, se.posting_date, SUM(sed.qty) AS qty, SUM(sed.amount) AS value
+		FROM `tabStock Entry Detail` sed
+		INNER JOIN `tabStock Entry` se ON sed.parent = se.name
+		WHERE {conditions}
+		GROUP BY sed.item_code, se.posting_date
+	"""
+	return frappe.db.sql(query.replace("{conditions}", " AND ".join(conditions)), filters, as_dict=True)
 
 
 def get_meta(filters, data):

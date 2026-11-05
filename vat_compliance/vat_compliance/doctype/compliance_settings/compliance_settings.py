@@ -906,7 +906,7 @@ class ComplianceSettings(Document):
 	def get_tax_templates(self):
 		return ITEM_TAX_TEMPLATE
 
-	@frappe.whitelist()
+	@frappe.whitelist(methods=["POST"])
 	def create_tax_templates(self, templates: str, default_account: str, company: str):
 		import json
 

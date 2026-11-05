@@ -61,7 +61,6 @@ frappe.query_reports["Mushak 6_3"] = {
 			fieldtype: "Select",
 			options: [
 				"",
-				"Draft",
 				"Return",
 				"Credit Note Issued",
 				"Submitted",
@@ -72,7 +71,6 @@ frappe.query_reports["Mushak 6_3"] = {
 				"Partly Paid and Discounted",
 				"Overdue and Discounted",
 				"Overdue",
-				"Cancelled",
 				"Internal Transfer",
 			].join("\n"),
 		},

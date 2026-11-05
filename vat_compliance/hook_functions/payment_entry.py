@@ -4,7 +4,7 @@ import frappe
 from erpnext.accounts.doctype.payment_entry.payment_entry import PaymentEntry
 from frappe.utils import flt
 
-from vat_compliance.vat_rates import is_taxable_line, line_tax_map
+from vat_compliance.vat_rates import is_taxable_line, line_tax_map, payment_ratio
 
 
 def get_cost_center(doc):
@@ -21,96 +21,74 @@ def get_cost_center(doc):
 
 @frappe.whitelist()
 def calculate_tax_rows(doc: dict | str) -> list:
-	"""
-	Calculate tax rows for a payment entry.
-
-	This function takes a payment entry as input and returns a list of
-	tax rows. The tax rows are calculated based on the references
-	of the payment entry, which are sales invoices or purchase invoices.
-	The allocation ratio is calculated as the minimum of the allocated
-	amount divided by the total net amount of the references.
-
-	The tax rows are calculated for each taxable item of the
-	references. The tax amount is calculated as the allocated amount
-	multiplied by the tax rate.
-
-	The function returns a list of dictionaries, where each
-	dictionary contains the following keys:
-
-	- custom_reference_doctype: the doctype of the reference
-	- custom_reference_name: the name of the reference
-	- account: the account of the tax row
-	- cost_center: the cost center of the tax row
-	- amount: the amount of the tax row
-	- custom_item_code: the item code of the tax row
-	- custom_item_name: the item name of the tax row
-	- custom_allocated_amount: the allocated amount of the tax row
-
-	:param doc: dict | str
-		The payment entry as a dictionary or a string in JSON format.
-	:return list
-		A list of dictionaries, where each dictionary contains the tax rows.
-	"""
+	"""VDS deduction rows for a draft Payment Entry, for the form to show before saving."""
+	frappe.has_permission("Payment Entry", "write", throw=True)
 	if isinstance(doc, str):
 		try:
-			doc = frappe.get_doc(json.loads(doc))
-		except (json.JSONDecodeError, frappe.DoesNotExistError):
+			doc = json.loads(doc)
+		except json.JSONDecodeError:
 			return []
+	if doc.get("doctype") != "Payment Entry":
+		frappe.throw(frappe._("Expected a Payment Entry"))
+	return get_vds_rows(frappe.get_doc(doc), check_read=True)
 
-	references = doc.get("references", [])
+
+def sync_vds_deductions(doc, method=None):
+	"""Payment Entry before_validate: VDS rows always follow the current allocations. Other
+	deductions, such as write-offs, have no reference and are kept."""
+	if not doc.docstatus.is_draft():
+		return
+	deductions = doc.get("deductions") or []
+	kept = [d for d in deductions if not d.get("custom_reference_doctype")]
+	rows = get_vds_rows(doc)
+	if not rows and len(kept) == len(deductions):
+		return
+	doc.set("deductions", kept)
+	for row in rows:
+		doc.append("deductions", row)
+
+
+def get_vds_rows(doc, check_read=False) -> list:
+	"""One row per taxable line and tax account of each invoice marked Withheld."""
 	deductions = []
-
-	for ref in references:
-		if ref.reference_doctype not in ["Sales Invoice", "Purchase Invoice"]:
+	for ref in doc.get("references") or []:
+		if ref.reference_doctype not in ("Sales Invoice", "Purchase Invoice"):
 			continue
-		invoice_name = ref.reference_name
-		vds = ref.get("custom_vdsvcs")
-		if not vds == "Withheld":
+		if ref.get("custom_vdsvcs") != "Withheld":
 			continue
 		try:
-			inv_doc = frappe.get_doc(ref.reference_doctype, invoice_name)
+			inv_doc = frappe.get_doc(ref.reference_doctype, ref.reference_name)
 		except frappe.DoesNotExistError:
 			continue
-
-		cost_center = get_cost_center(inv_doc)
-		if not cost_center:
-			cost_center = frappe.get_value("Company", doc.company, "cost_center")
-
-		items = inv_doc.get("items", [])
-
-		taxable_items = [
-			item for item in items if is_taxable_line(item, inv_doc.company) and flt(item.get("net_amount")) > 0
-		]
-		total_net_amount = sum(flt(item.get("net_amount", 0)) for item in taxable_items)
-
-		if not total_net_amount:
-			continue
-
-		allocation_ratio = min(flt(ref.allocated_amount) / total_net_amount, 1.0)
-
-		for item in taxable_items:
-			item_net_amount = flt(item.get("net_amount"))
-			allocated_amount = item_net_amount * allocation_ratio
-			item_tax_map = line_tax_map(item, inv_doc.company)
-
-			for account, rate in item_tax_map.items():
-				vat_rate = flt(rate) / 100
-				vat_amount = allocated_amount * vat_rate
-
-				deductions.append(
-					{
-						"custom_reference_doctype": inv_doc.doctype,
-						"custom_reference_name": inv_doc.name,
-						"account": account,
-						"cost_center": cost_center,
-						"amount": vat_amount if doc.payment_type == "Receive" else -vat_amount,
-						"custom_item_code": item.get("item_code"),
-						"custom_item_name": item.get("item_name"),
-						"custom_allocated_amount": allocated_amount,
-					}
-				)
-
+		if check_read:
+			inv_doc.check_permission("read")
+		deductions.extend(_invoice_vds_rows(doc, ref, inv_doc))
 	return deductions
+
+
+def _invoice_vds_rows(doc, ref, inv_doc):
+	cost_center = get_cost_center(inv_doc) or frappe.get_value("Company", doc.company, "cost_center")
+	allocation_ratio = payment_ratio(inv_doc, ref.allocated_amount)
+	rows = []
+	for item in inv_doc.get("items", []):
+		if flt(item.get("net_amount")) <= 0 or not is_taxable_line(item, inv_doc.company):
+			continue
+		allocated_amount = flt(item.get("net_amount")) * allocation_ratio
+		for account, rate in line_tax_map(item, inv_doc.company).items():
+			vat_amount = allocated_amount * flt(rate) / 100
+			rows.append(
+				{
+					"custom_reference_doctype": inv_doc.doctype,
+					"custom_reference_name": inv_doc.name,
+					"account": account,
+					"cost_center": cost_center,
+					"amount": vat_amount if doc.payment_type == "Receive" else -vat_amount,
+					"custom_item_code": item.get("item_code"),
+					"custom_item_name": item.get("item_name"),
+					"custom_allocated_amount": allocated_amount,
+				}
+			)
+	return rows
 
 
 class CustomPaymentEntry(PaymentEntry):

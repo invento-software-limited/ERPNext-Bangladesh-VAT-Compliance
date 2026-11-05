@@ -11,8 +11,9 @@ class VCZone(Document):
 	pass
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def sync_zone():
+	frappe.has_permission("VC Zone", "create", throw=True)
 	vschallan = VATSmartChallan()
 	vschallan.get_zone()
 	return "success"

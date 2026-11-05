@@ -1,17 +1,31 @@
 import json
 import mimetypes
 import os
-import xml.etree.ElementTree as ET
-from datetime import datetime, time, timedelta
+from datetime import datetime
+from urllib.parse import urlencode
 
+import defusedxml.ElementTree as ET
 import frappe
 import requests
 import xmltodict
+from defusedxml.common import DefusedXmlException
 from frappe import _
-from frappe.utils import add_days, date_diff, flt, get_url, getdate, nowdate
+from frappe.utils import add_days, add_to_date, cint, date_diff, flt, getdate, now_datetime, nowdate
 from frappe.utils.background_jobs import enqueue
-from frappe.utils.password import get_decrypted_password
+from frappe.utils.password import get_decrypted_password, set_encrypted_password
 from requests.auth import HTTPBasicAuth
+
+from vat_compliance.vat_challan.challan_lines import invoice_timestamp, line_amounts, service_fields
+from vat_compliance.vat_challan.sync_health import report_sync_health
+from vat_compliance.vat_challan.vendor_url import check_base_url
+
+SYNCABLE_STATUSES = ("Pending", "Failed")
+STALE_SYNC_HOURS = 1
+RETURN_LOOKBACK_DAYS = 90
+RETURN_DOCTYPES = {"POS Invoice": {}, "Sales Invoice": {"is_pos": 1}}
+# Assumed to mean "no such invoice" on the details endpoint; to confirm with the vendor.
+VENDOR_NOT_FOUND_STATUSES = (400, 404)
+MAX_XML_RESPONSE_CHARS = 5_000_000
 
 
 class VATSmartChallan:
@@ -40,17 +54,27 @@ class VATSmartChallan:
 		if not config_data:
 			frappe.throw(_("No POS Vendor Configuration found"))
 
-		if config_data.get("disabled") == "1":
+		if cint(config_data.get("disabled")):
 			frappe.throw(_("POS Vendor Configuration is disabled"))
 
 		self.docname = "POS Vendor Configuration"
 		self.base_url = config_data.get("base_url")
 		self.client_id = config_data.get("client_id")
-		self.access_token = config_data.get("access_token")
+		self.access_token = self._stored_token(config_data.get("access_token"))
+		self.last_http_status = None
 		self.expiry_date = config_data.get("expiry_date")
 		self.company_id = config_data.get("company_id")
-		self.client_secret = get_decrypted_password("POS Vendor Configuration", self.docname, "client_secret")
+		# A missing secret fails at send time, where it leaves a Failed invoice to retry.
+		self.client_secret = get_decrypted_password(
+			"POS Vendor Configuration", self.docname, "client_secret", raise_exception=False
+		)
 		self.sync_schedule = config_data.get("sync_schedule")
+
+	def _stored_token(self, value):
+		"""Tokens are encrypted; a value that is not masked predates that and is still usable."""
+		if value and set(value) != {"*"}:
+			return value
+		return get_decrypted_password(self.docname, self.docname, "access_token", raise_exception=False)
 
 	def get_access_token(self, force_refresh=False):
 		"""
@@ -83,6 +107,7 @@ class VATSmartChallan:
 			except (ValueError, TypeError):
 				pass
 
+		check_base_url(self.base_url)
 		url = f"{self.base_url}/integration/vendor_authenticate"
 		headers = {"Content-Type": "application/json"}
 
@@ -101,31 +126,35 @@ class VATSmartChallan:
 					self.access_token = data.get("access_token")
 					self.expiry_date = data.get("expiry_time")
 					self.company_id = data.get("company_id")
-				except Exception as e:
-					frappe.throw(f"Failed to parse JSON response: {raw_content}\nError: {e!s}")
+				except ValueError:
+					frappe.log_error(raw_content, "Vendor token response")
+					frappe.throw(_("Could not read the vendor's token response."))
 			else:
 				# XML response
 				try:
-					root = ET.fromstring(raw_content)
+					root = self._parse_xml(raw_content)
 					access_token_elem = root.find(".//access_token")
 					expiry_time_elem = root.find(".//expiry_time")
 					company_id_elem = root.find(".//company_id")
 
 					if access_token_elem is None:
-						frappe.throw(f"No access_token found in XML response: {raw_content}")
+						frappe.log_error(raw_content, "Vendor token response")
+						frappe.throw(_("Could not read the vendor's token response."))
 
 					self.access_token = access_token_elem.text
 					self.expiry_date = expiry_time_elem.text if expiry_time_elem is not None else None
 					self.company_id = company_id_elem.text if company_id_elem is not None else None
 
-				except ET.ParseError:
-					frappe.throw(f"Failed to parse XML response: {raw_content}")
+				except (ET.ParseError, DefusedXmlException):
+					frappe.log_error(raw_content, "Vendor token response")
+					frappe.throw(_("Could not read the vendor's token response."))
 
 			# Save to Single Doc
-			frappe.db.set_single_value("POS Vendor Configuration", "access_token", self.access_token)
+			# set_single_value alone would bypass the Password field's encryption.
+			set_encrypted_password(self.docname, self.docname, self.access_token, "access_token")
+			frappe.db.set_single_value("POS Vendor Configuration", "access_token", "*" * len(self.access_token or ""))
 			frappe.db.set_single_value("POS Vendor Configuration", "expiry_date", self.expiry_date)
 			frappe.db.set_single_value("POS Vendor Configuration", "company_id", self.company_id)
-			frappe.db.commit()
 
 			return {
 				"access_token": self.access_token,
@@ -134,7 +163,8 @@ class VATSmartChallan:
 			}
 
 		except requests.exceptions.RequestException as e:
-			frappe.throw(f"Failed to authenticate vendor: {e!s}")
+			frappe.log_error(str(e), "Vendor authentication failed")
+			frappe.throw(_("Could not authenticate with the VAT challan vendor."))
 
 	def get_header(self):
 		"""
@@ -385,7 +415,7 @@ class VATSmartChallan:
 			"owner_cc": doc.owner_cc,
 			"owner_mobile": doc.owner_mobile,
 			"owner_email": doc.owner_email,
-			"owner_nid": doc.owner_nid,
+			"owner_nid": doc.get_password("owner_nid", raise_exception=False),
 			"business_name": doc.business_name,
 			"business_address": doc.address_display,
 			"business_logo": business_logo_url,
@@ -514,12 +544,18 @@ class VATSmartChallan:
 
 		# Try XML
 		try:
-			ET.fromstring(response_text)
+			self._parse_xml(response_text)
 			return "xml"
-		except ET.ParseError:
+		except (ET.ParseError, DefusedXmlException):
 			pass
 
 		return "unknown"
+
+	def _parse_xml(self, text):
+		"""Vendor XML is untrusted: defusedxml refuses entity tricks, the cap bounds memory."""
+		if len(text) > MAX_XML_RESPONSE_CHARS:
+			raise DefusedXmlException("Response too large")
+		return ET.fromstring(text)
 
 	def get_response_data(
 		self, url: str, request_type: str, payload: dict | None = None, files: dict | None = None
@@ -548,6 +584,7 @@ class VATSmartChallan:
 			frappe.ValidationError: If request_type is invalid or if response format is unknown.
 			requests.exceptions.RequestException: For network/HTTP errors (after retry logic).
 		"""
+		check_base_url(self.base_url)
 		headers = self.get_header().copy()
 		if request_type == "POST" and files:
 			headers.pop("Content-Type", None)
@@ -576,6 +613,7 @@ class VATSmartChallan:
 					else:
 						response = requests.post(url, headers=headers, json=payload, timeout=30)
 
+			self.last_http_status = response.status_code
 			response.raise_for_status()
 			raw_content = response.text
 			format_type = self.detect_response_format(raw_content)
@@ -592,42 +630,20 @@ class VATSmartChallan:
 			return parsed_data
 
 		except requests.exceptions.RequestException as e:
-			frappe.throw(str(e))
+			frappe.log_error(str(e), "VAT challan vendor request failed")
+			frappe.throw(_("The VAT challan vendor request failed."))
 
 	def get_absolute_file_path(self, file_url: str) -> str:
-		"""
-		Returns the absolute filesystem path of a file stored in ERPNext,
-		handling both /files (public) and /private/files (private) paths.
-		Ensures protection against directory traversal.
-		"""
-		file_url = file_url.lstrip("/")
-
-		# Security: Prevent directory traversal patterns
-		if ".." in file_url or file_url.startswith("/"):
-			frappe.throw(_("Invalid file path"))
-
-		if file_url.startswith("private/files/"):
-			# Only take the filename part for security if it's just a file reference
-			# but here we follow the existing logic while adding validation
-			absolute_path = frappe.get_site_path(file_url)
-		elif file_url.startswith("files/"):
-			# Securely join only the filename part
-			filename = file_url.split("/")[-1]
-			absolute_path = os.path.join(frappe.get_site_path("public", "files"), filename)
-		else:
-			absolute_path = frappe.get_site_path(file_url)
-
-		# Security: Ensure the resolved path is within the site directory
-		site_path = os.path.abspath(frappe.get_site_path())
-		real_path = os.path.abspath(absolute_path)
-
-		if not real_path.startswith(site_path):
-			frappe.throw(_("Access denied to file path"))
-
-		if not os.path.exists(real_path):
-			frappe.throw(f"File does not exist: {real_path}")
-
-		return real_path
+		"""Path of a File's upload. Only the site's upload folders qualify, so site_config.json
+		and the rest of the site folder can never be sent to the vendor."""
+		relative = file_url.lstrip("/")
+		for prefix, folder in (("private/files/", ("private", "files")), ("files/", ("public", "files"))):
+			if relative.startswith(prefix):
+				root = os.path.realpath(frappe.get_site_path(*folder))
+				path = os.path.realpath(os.path.join(root, relative[len(prefix) :]))
+				if path.startswith(root + os.sep) and os.path.isfile(path):
+					return path
+		frappe.throw(_("Invalid file path"))
 
 	def upload_file(self, document_category_key: str, file_path: str, retailer_id: str):
 		"""
@@ -646,10 +662,6 @@ class VATSmartChallan:
 		"""
 		url = f"{self.base_url}/integration/upload_file"
 		absolute_file_path = self.get_absolute_file_path(file_path)
-
-		# Make sure file exists
-		if not os.path.exists(absolute_file_path):
-			frappe.throw(f"File does not exist: {absolute_file_path}")
 
 		# Determine MIME type
 		mime_type, _ = mimetypes.guess_type(absolute_file_path)
@@ -700,61 +712,7 @@ class VATSmartChallan:
 			"email": customer.email_id,
 		}
 
-		vat_invoice_detail = []
-		for item in doc.items:
-			service_type_id = item.get("custom_service_type_id")
-
-			if not service_type_id:
-				frappe.throw(
-					_("Item '{0}' is missing a Service Type ID. Please set it before proceeding.").format(
-						item.item_name
-					)
-				)
-
-			if service_type_id not in valid_service_type_ids:
-				frappe.throw(
-					_(
-						"Service Type '{0}' in item '{1}' is not listed under Retailer '{2}'. Please check retailer setup."
-					).format(item.custom_service_type_name, item.item_name, retailer_doc.name)
-				)
-
-			vat_percentage = flt(item.custom_vat_rate or 0.0)
-			vat_inclusive = item.custom_vat_exclusive == 0
-			qty = flt(item.qty)
-			rate = flt(item.rate)
-			discount_percentage = flt(item.get("discount_percentage") or 0.0)
-			discount_amount = flt(item.get("discount_amount") or 0.0)
-
-			if vat_inclusive:
-				total_amount = qty * rate - discount_amount
-				total_amount_before_tax = total_amount / (1 + vat_percentage / 100)
-				vat_amount = total_amount - total_amount_before_tax
-			else:
-				total_amount_before_tax = qty * rate - discount_amount
-				vat_amount = total_amount_before_tax * vat_percentage / 100
-				total_amount = total_amount_before_tax + vat_amount
-
-			sd_percentage = flt(item.get("sd_percentage") or 0.0)
-			sd_amount = total_amount * sd_percentage / 100
-
-			vat_invoice_detail.append(
-				{
-					"invoice_number": doc.name,
-					"product_name": item.item_name,
-					"quantity": qty,
-					"unit_price": rate,
-					"sd_percentage": sd_percentage,
-					"sd_amount": sd_amount,
-					"total_amount": total_amount + sd_amount,
-					"service_type_id": service_type_id,
-					"discount_percentage": discount_percentage,
-					"discount_amount": discount_amount,
-					"total_amount_before_tax": total_amount_before_tax,
-					"vat_inclusive": vat_inclusive,
-					"vat_percentage": vat_percentage,
-					"vat_amount": vat_amount,
-				}
-			)
+		vat_invoice_detail = [self._sale_line(doc, item, valid_service_type_ids, retailer_doc) for item in doc.items]
 
 		payload = {
 			"invoice_number": doc.name,
@@ -775,26 +733,11 @@ class VATSmartChallan:
 			"total_discount_amount": doc.discount_amount,
 			"vat_invoice_detail": json.dumps(vat_invoice_detail),
 		}
-		if isinstance(doc.posting_date, str):
-			posting_date = datetime.strptime(doc.posting_date, "%Y-%m-%d").date()
-		else:
-			posting_date = doc.posting_date
-
-		if isinstance(doc.posting_time, str):
-			try:
-				posting_time = datetime.strptime(doc.posting_time, "%H:%M:%S.%f").time()
-			except ValueError:
-				posting_time = datetime.strptime(doc.posting_time, "%H:%M:%S").time()
-		else:
-			posting_time = doc.posting_time
-
-		posting_datetime = datetime.combine(posting_date, posting_time)
-		invoice_timestamp = int(posting_datetime.timestamp())
 
 		requested_payloads = {
 			"vat_invoice": {
 				**payload,
-				"invoice_date": invoice_timestamp,
+				"invoice_date": invoice_timestamp(doc.posting_date, doc.posting_time),
 				"buyer_info": buyer_info,
 				"vat_invoice_detail": vat_invoice_detail,
 			}
@@ -808,56 +751,130 @@ class VATSmartChallan:
 		vat_invoice_doc.insert(ignore_permissions=True)
 
 		if self.sync_schedule == "After Submit":
-			self.sync_vat_invoice(vat_invoice_doc)
+			enqueue_sync(vat_invoice_doc.name, after_commit=True)
 
 		return vat_invoice_doc
 
-	def sync_vat_invoice(self, doc):
-		doc.db_set("status", "Syncing")
-
-		url = f"{self.base_url}/integration/record_vat"
-
-		try:
-			payload = doc.requested_payloads
-			if isinstance(payload, str):
-				payload = json.loads(payload)
-
-			parsed_data = self.get_response_data(
-				url,
-				request_type="POST",
-				payload=payload,
+	def _sale_line(self, doc, item, valid_service_type_ids, retailer_doc):
+		service = service_fields(item)
+		if not service.service_type_id:
+			frappe.throw(
+				_("Item '{0}' is missing a Service Type ID. Please set it before proceeding.").format(
+					item.item_name
+				)
+			)
+		if service.service_type_id not in valid_service_type_ids:
+			frappe.throw(
+				_(
+					"Service Type '{0}' in item '{1}' is not listed under Retailer '{2}'. Please check retailer setup."
+				).format(service.service_type_name, item.item_name, retailer_doc.name)
 			)
 
-			response = parsed_data
-			if not isinstance(parsed_data, str):
-				response = json.dumps(parsed_data, indent=2)
+		amounts = line_amounts(doc, item, service.vat_rate, service.vat_inclusive)
+		sd_percentage = flt(item.get("sd_percentage") or 0.0)
+		sd_amount = amounts.total_amount * sd_percentage / 100
+		return {
+			"invoice_number": doc.name,
+			"product_name": item.item_name,
+			"quantity": amounts.qty,
+			"unit_price": amounts.unit_price,
+			"sd_percentage": sd_percentage,
+			"sd_amount": sd_amount,
+			"total_amount": amounts.total_amount + sd_amount,
+			"service_type_id": service.service_type_id,
+			"discount_percentage": flt(item.get("discount_percentage") or 0.0),
+			"discount_amount": amounts.discount_amount,
+			"total_amount_before_tax": amounts.total_amount_before_tax,
+			"vat_inclusive": service.vat_inclusive,
+			"vat_percentage": service.vat_rate,
+			"vat_amount": amounts.vat_amount,
+		}
 
-			if str(parsed_data.get("status_code")) == "200":
-				data = parsed_data.get("data", {})
-				vat_invoice_id = data.get("vat_invoice_id")
-				s_challan_number = data.get("s_challan_number")
+	def sync_vat_invoice(self, doc):
+		"""Bring one invoice up to date with the vendor. Runs outside any document submit,
+		because it commits: the Syncing claim and the outcome must survive a later failure."""
+		previous = self._claim(doc)
+		if not previous:
+			return
 
-				if vat_invoice_id:
-					doc.db_set("vat_invoice_id", vat_invoice_id)
-				if s_challan_number:
-					doc.db_set("s_challan_number", s_challan_number)
-
-				doc.db_set("response", response)
-				doc.db_set("status", "Synced")
-
-				self.get_vat_invoice_details(doc)
-				if doc.is_return and not doc.return_response:
-					self.sync_return_vat_invoice(doc)
-			elif str(parsed_data.get("success")) == "0":
-				self.get_vat_invoice_details(doc)
-				if doc.is_return:
-					self.sync_return_vat_invoice(doc)
-			else:
+		try:
+			# A Failed send may have reached the vendor before the connection dropped.
+			if not self._sale_recorded(doc) and previous == "Failed":
+				self._adopt_existing_sale(doc)
+			if not self._sale_recorded(doc):
+				self._record_sale(doc)
+			if not self._sale_recorded(doc):
 				doc.db_set("status", "Failed")
+				return
 
+			doc.db_set("status", "Synced")
+			self.get_vat_invoice_details(doc)
+			if doc.is_return and not doc.return_response:
+				self.sync_return_vat_invoice(doc)
 		except Exception:
 			doc.db_set("status", "Failed")
 			frappe.log_error(frappe.get_traceback(), "VAT Sync Error")
+
+	def _claim(self, doc):
+		"""Mark the invoice Syncing and return its previous status, or None if it is not due.
+		The row lock stops two overlapping runs sending the same invoice."""
+		status = frappe.db.get_value("VAT Invoice", doc.name, "status", for_update=True)
+		if status not in SYNCABLE_STATUSES:
+			frappe.db.rollback()
+			return None
+		doc.reload()
+		doc.db_set("status", "Syncing")
+		frappe.db.commit()
+		return status
+
+	def _sale_recorded(self, doc):
+		return bool(doc.vat_invoice_id or doc.s_challan_number or doc.get_response)
+
+	def _record_sale(self, doc):
+		payload = doc.requested_payloads
+		if isinstance(payload, str):
+			payload = json.loads(payload)
+
+		parsed_data = self.get_response_data(f"{self.base_url}/integration/record_vat", "POST", payload=payload)
+		doc.db_set("response", json.dumps(parsed_data, indent=2))
+
+		if str(parsed_data.get("status_code")) == "200":
+			self._save_vendor_ids(doc, parsed_data.get("data") or {})
+		else:
+			# A rejection can also mean the vendor already holds this invoice number.
+			self._adopt_existing_sale(doc)
+
+	def _save_vendor_ids(self, doc, data):
+		if data.get("vat_invoice_id"):
+			doc.db_set("vat_invoice_id", data.get("vat_invoice_id"))
+		if data.get("s_challan_number"):
+			doc.db_set("s_challan_number", data.get("s_challan_number"))
+
+	def _adopt_existing_sale(self, doc):
+		"""Accept the vendor's record of this invoice, if it has one. An unclear answer raises,
+		so the invoice stays Failed instead of risking a duplicate send."""
+		parsed_data = self._lookup_invoice(doc)
+		data = (parsed_data or {}).get("data") or {}
+		if str((parsed_data or {}).get("status_code")) != "200":
+			return
+		if not (data.get("vat_invoice_id") or data.get("vat_invoice_detail_data")):
+			return
+		doc.db_set("get_response", json.dumps(parsed_data, indent=2))
+		self._save_vendor_ids(doc, data)
+
+	def _lookup_invoice(self, doc):
+		try:
+			return self._fetch_invoice_details(doc)
+		except frappe.ValidationError:
+			if self.last_http_status in VENDOR_NOT_FOUND_STATUSES:
+				return None
+			raise
+
+	def _fetch_invoice_details(self, doc):
+		query = {"invoice_number": doc.invoice_number}
+		if doc.s_challan_number:
+			query["smart_challan_number"] = doc.s_challan_number
+		return self.get_response_data(f"{self.base_url}/integration/get_vat_invoice_details?{urlencode(query)}", "GET")
 
 	def download_schallan(self, doc):
 		url = f"{self.base_url}/integration/download_schallan"
@@ -883,239 +900,205 @@ class VATSmartChallan:
 			frappe.throw(_("Failed to download Schallan"))
 
 	def get_vat_invoice_details(self, doc):
-		url = f"{self.base_url}/integration/get_vat_invoice_details?invoice_number={doc.invoice_number}&smart_challan_number={doc.s_challan_number}"  # nosemgrep
+		"""Store the vendor's copy of a recorded invoice. Failure is logged, not raised: the
+		sale is already recorded, and a later return fetches the details again."""
 		try:
-			if doc.status == "Pending" or doc.status == "Failed":
-				self.sync_vat_invoice(doc)
-
-			parsed_data = self.get_response_data(
-				url,
-				request_type="GET",
-			)
-			response = parsed_data
-			if not isinstance(parsed_data, str):
-				response = json.dumps(parsed_data, indent=2)
-
-			doc.db_set("get_response", response)
+			parsed_data = self._fetch_invoice_details(doc)
+			doc.db_set("get_response", json.dumps(parsed_data, indent=2))
 		except Exception:
 			frappe.log_error(frappe.get_traceback(), "Get VAT Invoice Details Error")
-		pass
 
-	def return_vat_invoice(self, pos_invoice_doc):
-		try:
-			doc = frappe.get_doc("VAT Invoice", {"invoice_number": pos_invoice_doc.return_against})
-		except Exception:
-			frappe.log_error(frappe.get_traceback(), "VAT Invoice not found error")
+	def return_vat_invoice(self, invoice_doc):
+		"""Prepare the return payload on the original sale's VAT Invoice, ready to sync."""
+		doc = frappe.db.exists("VAT Invoice", {"invoice_number": invoice_doc.return_against})
+		if not doc:
+			frappe.log_error(f"No VAT Invoice for {invoice_doc.return_against}", "VAT Invoice not found error")
 			return
+		doc = frappe.get_doc("VAT Invoice", doc)
 
 		doc.db_set("is_return", 1)
-		doc.db_set("return_invoice_no", pos_invoice_doc.name)
+		doc.db_set("return_invoice_no", invoice_doc.name)
 		if doc.status == "Synced":
 			doc.db_set("status", "Pending")
 
-		vat_invoice_details = frappe.parse_json(doc.get_response)
-		if not vat_invoice_details:
-			self.get_vat_invoice_details(doc)
-			vat_invoice_details = frappe.parse_json(doc.get_response)
-		vat_data = vat_invoice_details.get("data", {})
-
-		vat_invoice_detail_data = vat_data.get("vat_invoice_detail_data")
-		if isinstance(vat_invoice_detail_data, dict):
-			vat_invoice_detail_data = [vat_invoice_detail_data]  # normalize
-
-		return_request_details = []
-		total_vat_amount = 0.0
-		total_vat_percentage = 0.0
-
 		try:
-			for item in pos_invoice_doc.items:
-				matching_vat_detail = next(
-					(d for d in vat_invoice_detail_data if d.get("product_name") == item.item_code), None
-				)
-
-				if not matching_vat_detail:
-					continue
-
-				qty = abs(flt(item.qty))
-				rate = flt(item.rate)
-				discount_percentage = flt(matching_vat_detail.get("discount_percentage") or 0)
-				discount_amount = qty * discount_percentage / 100
-
-				vat_percentage = flt(matching_vat_detail.get("vat_percentage") or 0)
-				vat_inclusive = str(matching_vat_detail.get("vat_inclusive")).lower() == "true"
-
-				if vat_inclusive:
-					total_amount = abs(flt(item.amount)) - discount_amount
-					total_amount_before_tax = total_amount / (1 + vat_percentage / 100)
-					vat_amount = total_amount - total_amount_before_tax
-				else:
-					total_amount_before_tax = abs(flt(item.amount)) - discount_amount
-					vat_amount = total_amount_before_tax * vat_percentage / 100
-					total_amount = total_amount_before_tax + vat_amount
-
-				total_vat_amount += vat_amount
-
-				merged = {
-					"product_name": item.item_code,
-					"unit_of_supply": item.uom,
-					"quantity": qty,
-					"unit_price": rate,
-					"service_type_id": item.custom_service_type_id,
-					"vat_percentage": vat_percentage,
-					"vat_amount": vat_amount,
-					"total_amount": total_amount,
-					"vat_inclusive": vat_inclusive,
-					"total_amount_before_tax": total_amount_before_tax,
-					"discount_percentage": discount_percentage,
-					"discount_amount": discount_amount,
-					"product_id": matching_vat_detail.get("id"),
-				}
-
-				return_request_details.append(merged)
-
-			total_amount_before_tax_sum = sum(d["total_amount_before_tax"] for d in return_request_details)
-			if total_amount_before_tax_sum:
-				total_vat_percentage = (total_vat_amount / total_amount_before_tax_sum) * 100
-
-			if isinstance(pos_invoice_doc.posting_date, str):
-				posting_date = datetime.strptime(pos_invoice_doc.posting_date, "%Y-%m-%d").date()
-			else:
-				posting_date = pos_invoice_doc.posting_date
-
-			posting_time = pos_invoice_doc.posting_time
-			if isinstance(posting_time, str):
-				try:
-					posting_time = datetime.strptime(posting_time, "%H:%M:%S.%f").time()
-				except ValueError:
-					posting_time = datetime.strptime(posting_time, "%H:%M:%S").time()
-			elif isinstance(posting_time, timedelta):
-				total_seconds = int(posting_time.total_seconds())
-				hours = total_seconds // 3600
-				minutes = (total_seconds % 3600) // 60
-				seconds = total_seconds % 60
-				posting_time = time(hour=hours, minute=minutes, second=seconds)
-			elif isinstance(posting_time, datetime):
-				posting_time = posting_time.time()
-
-			posting_datetime = datetime.combine(posting_date, posting_time)
-			invoice_timestamp = int(posting_datetime.timestamp())
-
-			payload = {
-				"invoice_number": doc.invoice_number,
-				"request_date": invoice_timestamp,
-				"total_void_amount": abs(flt(pos_invoice_doc.grand_total)),
-				"total_sd_percentage": 0,
-				"total_sd_amount": 0,
-				"vat_percentage": total_vat_percentage,
-				"vat_amount": total_vat_amount,
-				"return_reason": pos_invoice_doc.remarks,
-				"return_request_details": return_request_details,
-			}
-
-			doc.db_set("return_payload", json.dumps(payload, indent=2))
-
+			doc.db_set("return_payload", json.dumps(self._return_payload(doc, invoice_doc), indent=2))
 		except Exception:
+			doc.db_set("status", "Failed")
 			frappe.log_error(frappe.get_traceback(), "Return Invoice Payload Error")
+
+	def _return_payload(self, doc, invoice_doc):
+		available = self._vendor_lines(doc)
+		details = [self._return_line(invoice_doc, item, available) for item in invoice_doc.items]
+
+		total_vat_amount = sum(d["vat_amount"] for d in details)
+		before_tax = sum(d["total_amount_before_tax"] for d in details)
+		return {
+			"invoice_number": doc.invoice_number,
+			"request_date": invoice_timestamp(invoice_doc.posting_date, invoice_doc.posting_time),
+			"total_void_amount": abs(flt(invoice_doc.grand_total)),
+			"total_sd_percentage": 0,
+			"total_sd_amount": 0,
+			"vat_percentage": total_vat_amount / before_tax * 100 if before_tax else 0.0,
+			"vat_amount": total_vat_amount,
+			"return_reason": invoice_doc.remarks,
+			"return_request_details": details,
+		}
+
+	def _vendor_lines(self, doc):
+		details = frappe.parse_json(doc.get_response) if doc.get_response else None
+		if not details:
+			details = self._fetch_invoice_details(doc)
+			doc.db_set("get_response", json.dumps(details, indent=2))
+
+		lines = ((details or {}).get("data") or {}).get("vat_invoice_detail_data")
+		if isinstance(lines, dict):
+			lines = [lines]
+		if not lines:
+			frappe.throw(_("The vendor returned no lines for invoice {0}").format(doc.invoice_number))
+		return list(lines)
+
+	def _return_line(self, invoice_doc, item, available):
+		"""One return line. The sale sent item_name as product_name, so match on that. A line
+		is used once, because an invoice can repeat an item. No match is an error: skipping it
+		would under-report the return."""
+		match = next((d for d in available if d.get("product_name") == item.item_name), None)
+		if not match:
+			frappe.throw(_("No vendor line matches returned item {0}").format(item.item_name))
+		available.remove(match)
+
+		vat_percentage = flt(match.get("vat_percentage") or 0)
+		vat_inclusive = str(match.get("vat_inclusive")).lower() == "true"
+		amounts = line_amounts(invoice_doc, item, vat_percentage, vat_inclusive)
+		return {
+			"product_name": item.item_name,
+			"unit_of_supply": item.uom,
+			"quantity": amounts.qty,
+			"unit_price": amounts.unit_price,
+			"service_type_id": match.get("service_type_id"),
+			"vat_percentage": vat_percentage,
+			"vat_amount": amounts.vat_amount,
+			"total_amount": amounts.total_amount,
+			"vat_inclusive": vat_inclusive,
+			"total_amount_before_tax": amounts.total_amount_before_tax,
+			"discount_percentage": flt(match.get("discount_percentage") or 0),
+			"discount_amount": amounts.discount_amount,
+			"product_id": match.get("id"),
+		}
 
 	def sync_return_vat_invoice(self, doc):
 		url = f"{self.base_url}/integration/return_invoice_request"
 		try:
-			pos_invoice_doc = None
-
+			invoice_doc = source_invoice(doc.return_invoice_no)
 			if not doc.return_payload:
-				pos_invoice_doc = frappe.get_doc("POS Invoice", doc.return_invoice_no)
-				self.return_vat_invoice(pos_invoice_doc)
+				self.return_vat_invoice(invoice_doc)
+				doc.reload()
 
-			payload = doc.return_payload
-			if isinstance(payload, str):
-				payload = frappe.parse_json(payload)
-
-			if not pos_invoice_doc:
-				pos_invoice_doc = frappe.get_doc("POS Invoice", doc.return_invoice_no)
-
-			return_qty_sum = sum(d.get("quantity", 0) for d in payload.get("return_request_details", []))
-			pos_qty_sum = sum(abs(flt(i.qty)) for i in pos_invoice_doc.items)
-
-			if return_qty_sum == pos_qty_sum:
-				doc.db_set("status", "Return")
-			else:
-				doc.db_set("status", "Partly Return")
-
-			parsed_data = self.get_response_data(
-				url,
-				request_type="POST",
-				payload=payload,
-			)
-
-			response = parsed_data
-			if not isinstance(parsed_data, str):
-				response = json.dumps(parsed_data, indent=2)
-			if parsed_data.get("success") == "0" and parsed_data.get("error") == "Bad request":
+			payload = frappe.parse_json(doc.return_payload)
+			if not payload:
 				doc.db_set("status", "Failed")
+				return
 
-			doc.db_set("return_response", response)
+			parsed_data = self.get_response_data(url, request_type="POST", payload=payload)
+			if self._vendor_rejected(parsed_data):
+				doc.db_set("status", "Failed")
+				frappe.log_error(json.dumps(parsed_data, indent=2), "Return Invoice Rejected")
+				return
+
+			# Set only now, so a rejected return never reads as accepted. return_response also
+			# marks the return as done, so a rejection must not be stored there.
+			doc.db_set("return_response", json.dumps(parsed_data, indent=2))
+			doc.db_set("status", self._return_status(payload, invoice_doc))
 
 		except Exception:
 			doc.db_set("status", "Failed")
 			frappe.log_error(frappe.get_traceback(), "Return Invoice Request Error")
 
+	def _vendor_rejected(self, parsed_data):
+		status_code = parsed_data.get("status_code")
+		return str(parsed_data.get("success")) == "0" or (status_code is not None and str(status_code) != "200")
 
-@frappe.whitelist()
-def auto_sync_vat_invoices():
-	config = frappe.get_single("POS Vendor Configuration")
-	schedule = config.sync_schedule
+	def _return_status(self, payload, invoice_doc):
+		returned = sum(flt(d.get("quantity")) for d in payload.get("return_request_details", []))
+		sold = sum(abs(flt(i.qty)) for i in invoice_doc.items)
+		return "Return" if returned == sold else "Partly Return"
 
-	last_sync = frappe.db.get_single_value("POS Vendor Configuration", "last_sync_date")
-	last_sync_date = getdate(last_sync) if last_sync else None
 
-	today = getdate(nowdate())
-	should_run = False
-
-	if schedule == "Daily":
-		should_run = True
-	elif schedule == "Weekly":
-		should_run = not last_sync or date_diff(today, getdate(last_sync)) >= 7
-	elif schedule == "Monthly":
-		should_run = not last_sync or date_diff(today, getdate(last_sync)) >= 30
-	elif schedule == "Quarterly":
-		should_run = not last_sync or date_diff(today, getdate(last_sync)) >= 90
-	elif schedule == "After Submit":
-		should_run = True
-
-	if not should_run:
-		return
-
-	filters = {"status": "Return"}
-	if last_sync_date:
-		filters["posting_date"] = [">=", last_sync_date]
-
-	vschallan = VATSmartChallan()
-
-	pos_invoices = frappe.get_all("POS Invoice", filters=filters, fields=["name"])
-
-	for pos_inv in pos_invoices:
-		vat_exists = frappe.db.exists("VAT Invoice", {"return_invoice_no": pos_inv.name})
-		if vat_exists:
-			continue
-
-		try:
-			pos_invoice_doc = frappe.get_doc("POS Invoice", pos_inv.name)
-			vschallan.return_vat_invoice(pos_invoice_doc)
-		except Exception:
-			frappe.log_error(frappe.get_traceback(), f"Return VAT Invoice failed for {pos_inv.name}")
-
-	invoices = frappe.get_all(
-		"VAT Invoice", filters={"status": ["in", ["Pending", "Failed"]]}, fields=["name"]
+def enqueue_sync(invoice_name, after_commit=False):
+	enqueue(
+		"vat_compliance.vschallan.sync_vat_invoice_job",
+		invoice_name=invoice_name,
+		queue="long",
+		job_id=f"vat_sync_{invoice_name}",
+		deduplicate=True,
+		enqueue_after_commit=after_commit,
 	)
 
-	for inv in invoices:
-		enqueue(
-			"vschallan.vschallan.sync_vat_invoice_job",
-			invoice_name=inv.name,
-			queue="long",
-		)
 
-	frappe.db.set_single_value("POS Vendor Configuration", "last_sync_date", today)
+def source_invoice(name):
+	"""The POS sale behind a VAT Invoice; POS can create either doctype."""
+	for doctype in RETURN_DOCTYPES:
+		if frappe.db.exists(doctype, name):
+			return frappe.get_doc(doctype, name)
+	frappe.throw(_("Invoice {0} not found").format(name))
+
+
+@frappe.whitelist(methods=["POST"])
+def auto_sync_vat_invoices():
+	frappe.has_permission("VAT Invoice", "write", throw=True)
+	try:
+		if _sync_is_due():
+			_fail_stale_syncing()
+			_prepare_returns()
+			_enqueue_due_invoices()
+			frappe.db.set_single_value("POS Vendor Configuration", "last_sync_date", getdate(nowdate()))
+	finally:
+		report_sync_health()
+
+
+def _sync_is_due():
+	config = frappe.get_single("POS Vendor Configuration")
+	if cint(config.disabled):
+		return False
+	days_between = {"Daily": 0, "After Submit": 0, "Weekly": 7, "Monthly": 30, "Quarterly": 90}.get(config.sync_schedule)
+	if days_between is None:
+		return False
+	if not days_between or not config.last_sync_date:
+		return True
+	return date_diff(nowdate(), config.last_sync_date) >= days_between
+
+
+def _fail_stale_syncing():
+	"""A worker killed mid-send leaves Syncing behind. Failed gets retried, and a retry asks
+	the vendor first, so this cannot cause a duplicate."""
+	cutoff = add_to_date(now_datetime(), hours=-STALE_SYNC_HOURS)
+	for name in frappe.get_all("VAT Invoice", filters={"status": "Syncing", "modified": ["<", cutoff]}, pluck="name"):
+		frappe.db.set_value("VAT Invoice", name, "status", "Failed")
+
+
+def _prepare_returns():
+	cutoff = add_days(nowdate(), -RETURN_LOOKBACK_DAYS)
+	schedule_filters = {"is_return": 1, "docstatus": 1, "posting_date": [">=", cutoff]}
+	vschallan = VATSmartChallan()
+	for doctype, extra in RETURN_DOCTYPES.items():
+		for name in frappe.get_all(doctype, filters={**schedule_filters, **extra}, pluck="name"):
+			_prepare_return(vschallan, doctype, name)
+
+
+def _prepare_return(vschallan, doctype, name):
+	if frappe.db.exists("VAT Invoice", {"return_invoice_no": name}):
+		return
+	try:
+		invoice_doc = frappe.get_doc(doctype, name)
+		if frappe.db.exists("VAT Invoice", {"invoice_number": invoice_doc.return_against}):
+			vschallan.return_vat_invoice(invoice_doc)
+	except Exception:
+		frappe.log_error(frappe.get_traceback(), f"Return VAT Invoice failed for {name}")
+
+
+def _enqueue_due_invoices():
+	for name in frappe.get_all("VAT Invoice", filters={"status": ["in", list(SYNCABLE_STATUSES)]}, pluck="name"):
+		enqueue_sync(name)
 
 
 def sync_vat_invoice_job(invoice_name):
@@ -1124,3 +1107,15 @@ def sync_vat_invoice_job(invoice_name):
 		doc.sync_vat_invoice()
 	except Exception:
 		frappe.log_error(frappe.get_traceback(), "VAT Sync Error")
+
+
+def sync_return_job(invoice_name):
+	"""Report a POS return. Runs after the return commits, so a vendor problem cannot stop the
+	refund at the till; a failure stays on the VAT Invoice for the daily retry."""
+	try:
+		VATSmartChallan().return_vat_invoice(source_invoice(invoice_name))
+		name = frappe.db.exists("VAT Invoice", {"return_invoice_no": invoice_name})
+		if name:
+			frappe.get_doc("VAT Invoice", name).sync_vat_invoice()
+	except Exception:
+		frappe.log_error(frappe.get_traceback(), "Return VAT Invoice Error")
