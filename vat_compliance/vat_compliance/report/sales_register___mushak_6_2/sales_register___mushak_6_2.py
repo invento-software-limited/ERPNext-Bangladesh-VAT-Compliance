@@ -8,7 +8,7 @@ from frappe.utils import flt
 from vat_compliance import report_kit as kit
 from vat_compliance.access import scope_report_to_company
 from vat_compliance.stock_movements import RunningStock
-from vat_compliance.vat_rates import fallback_vat
+from vat_compliance.vat_rates import stored_rate
 
 
 def execute(filters=None):
@@ -108,8 +108,8 @@ def get_data(filters):
 			sii.item_name,
 			sii.qty,
 			sii.rate,
-			sii.amount,
-			sii.net_amount,
+			sii.base_amount as amount,
+			sii.base_net_amount as net_amount,
 			sii.item_tax_template,
 			sii.item_tax_rate,
 			si.name as challan_no,
@@ -170,7 +170,10 @@ def get_data(filters):
 
 		# Calculate VAT amount
 		vat_amount = calculate_vat_amount(
-			row.get("item_tax_template"), row.get("net_amount"), filters.get("company"), row.get("item_tax_rate")
+			row.get("item_tax_template"),
+			row.get("net_amount"),
+			filters.get("company"),
+			row.get("item_tax_rate"),
 		)
 
 		# Get customer BIN/NID
@@ -315,38 +318,20 @@ def get_formatted_address(address_name, address_cache):
 
 
 def calculate_vat_amount(item_tax_template, net_amount, company, item_tax_rate=None):
-	"""Calculate VAT amount based on item tax template, or on the line's VAT-account rate
-	when the line has no template (VAT added through the invoice's tax table)."""
-	if not net_amount:
-		return 0
-	if not item_tax_template:
-		return flt(net_amount) * fallback_vat(item_tax_rate, company)[1] / 100
-
-	try:
-		tax_rate = frappe.db.sql(
-			"""
-								 SELECT tax_rate
-								 FROM `tabItem Tax Template Detail`
-								 WHERE parent = %s
-								   AND parenttype = 'Item Tax Template' LIMIT 1
-								 """,
-			item_tax_template,
-		)
-
-		if tax_rate and tax_rate[0][0]:
-			return net_amount * (tax_rate[0][0] / 100)
-
-	except Exception:
-		frappe.log_error(frappe.get_traceback(), "VAT Calculation Error")
-
-	return 0
+	"""Calculate VAT amount at the rate saved on the invoice line."""
+	return flt(net_amount) * stored_rate(item_tax_template, item_tax_rate, company) / 100
 
 
 def get_meta(filters, data):
 	"""Header cards and charts, from the same register lines as the table."""
 	filters = frappe._dict(filters or {})
-	taxable = lambda r: r.get("taxable_value")
-	vat = lambda r: r.get("vat_amount")
+
+	def taxable(r):
+		return r.get("taxable_value")
+
+	def vat(r):
+		return r.get("vat_amount")
+
 	rated = [r for r in data if flt(r.get("vat_amount"))]
 	return kit.meta(
 		filters,

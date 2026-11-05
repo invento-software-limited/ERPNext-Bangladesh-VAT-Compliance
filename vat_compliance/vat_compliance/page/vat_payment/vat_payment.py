@@ -1,10 +1,7 @@
-import json
-
 import frappe
-from frappe import _
-from frappe.utils import flt
 
 from vat_compliance.access import require_company, require_report
+from vat_compliance.deposits import make_deposit_entry
 from vat_compliance.vat_compliance.report.sales_vat_management.sales_vat_management import (
 	execute as execute_sales_vat,
 )
@@ -13,78 +10,43 @@ from vat_compliance.vat_compliance.report.vds_management.vds_management import e
 
 @frappe.whitelist()
 def get_vat_payment_data(from_date: str, to_date: str, company: str):
+	"""What is still to deposit. A report failure surfaces as an error: an empty list here
+	would read as no VAT due."""
 	require_company(company)
 	require_report("Sales VAT Management")
 	require_report("VDS Management")
 
 	filters = {"from_date": from_date, "to_date": to_date, "company": company}
+	return _collected_sales(execute_sales_vat(filters)[1]) + _withheld_vds(execute_vds(filters)[1])
 
+
+def _collected_sales(rows):
 	data = []
+	for row in rows:
+		if row.get("status") == "Collected":
+			row["party_type"] = "Customer"
+			row["party_name"] = row.get("customer_name")
+			row["liability_head"] = row.get("account_credit")
+			row["source_report"] = "Sales VAT Management"
+			data.append(row)
+	return data
 
-	# Fetch Sales VAT data
-	try:
-		_, sales_data, _ = execute_sales_vat(filters)
-		for row in sales_data:
-			if row.get("status") == "Collected":
-				row["party_type"] = "Customer"
-				row["party_name"] = row.get("customer_name")
-				row["liability_head"] = row.get("account_credit")
-				row["source_report"] = "Sales VAT Management"
-				data.append(row)
-	except Exception as e:
-		frappe.log_error(f"Error fetching Sales VAT data: {e!s}")
 
-	# Fetch VDS data
-	try:
-		_, vds_data, _ = execute_vds(filters)
-		for row in vds_data:
-			if row.get("status") == "DNGT":
-				row["party_type"] = "Supplier"
-				row["party_name"] = row.get("supplier_name")
-				row["source_report"] = "VDS Management"
-				data.append(row)
-	except Exception as e:
-		frappe.log_error(f"Error fetching VDS data: {e!s}")
-
+def _withheld_vds(rows):
+	"""Every undeposited tax group. Indented rows leave the payment's details to the row above."""
+	data, parent = [], {}
+	for row in rows:
+		parent = row if not row.get("indent") else parent
+		if row.get("status") == "DNGT":
+			for field in ("invoice_id", "payment_date", "payment_entry_id"):
+				row[field] = row.get(field) or parent.get(field)
+			row["party_type"] = "Supplier"
+			row["party_name"] = row.get("supplier_name")
+			row["source_report"] = "VDS Management"
+			data.append(row)
 	return data
 
 
 @frappe.whitelist(methods=["POST"])
 def make_journal_entry(rows: str | list):
-	if isinstance(rows, str):
-		rows = json.loads(rows)
-
-	if not rows:
-		frappe.throw(_("No rows selected"))
-
-	je = frappe.new_doc("Journal Entry")
-	je.voucher_type = "VAT Payment Entry"
-	je.posting_date = frappe.utils.nowdate()
-
-	accounts = []
-	for row in rows:
-		liability_head = row.get("liability_head")
-		if not liability_head:
-			frappe.throw(f"Account head missing for row {row.get('invoice_id')}")
-
-		# Handle comma-separated accounts from Sales VAT Management
-		if "," in liability_head:
-			# If multiple accounts, we can't easily determine the split of vds_amount without recalculating.
-			# For now, we'll throw an error or just take the first one?
-			# Throwing an error is safer.
-			frappe.throw(
-				f"Multiple account heads found for {row.get('invoice_id')}: {liability_head}. Please handle manually."
-			)
-
-		accounts.append(
-			{
-				"account": liability_head,
-				"debit_in_account_currency": row.get("vds_amount"),
-				"reference_detail_no": row.get("child_name"),
-				"custom_tax_type": "VAT",
-			}
-		)
-
-	je.set("accounts", accounts)
-	je.insert()
-	return je.name
+	return make_deposit_entry(rows)

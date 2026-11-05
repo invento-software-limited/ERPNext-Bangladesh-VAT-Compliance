@@ -8,13 +8,22 @@ import frappe
 
 from vat_compliance.hook_functions import payment_entry as pe
 
-VDS_ROW = {"custom_reference_doctype": "Purchase Invoice", "custom_reference_name": "PI-1", "account": "VAT", "amount": 5}
+VDS_ROW = {
+	"custom_reference_doctype": "Purchase Invoice",
+	"custom_reference_name": "PI-1",
+	"account": "VAT",
+	"amount": 5,
+}
 
 
 class TestVdsRows(unittest.TestCase):
 	def rows(self, payment_type, allocated=57.5):
 		invoice = frappe._dict(
-			doctype="Purchase Invoice", name="PI-1", company="Co", grand_total=115, items=[{"net_amount": 100, "item_code": "A"}]
+			doctype="Purchase Invoice",
+			name="PI-1",
+			company="Co",
+			grand_total=115,
+			items=[{"net_amount": 100, "item_code": "A"}],
 		)
 		ref = frappe._dict(allocated_amount=allocated)
 		with (

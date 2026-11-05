@@ -54,17 +54,23 @@ def service_fields(item):
 			vat_inclusive=not cint(item.get("custom_vat_exclusive")),
 		)
 
-	master = frappe.db.get_value(
-		"Item", item.item_code, ["custom_service_type", "custom_vat_exclusive"], as_dict=True
-	) or frappe._dict()
+	master = (
+		frappe.db.get_value(
+			"Item", item.item_code, ["custom_service_type", "custom_vat_exclusive"], as_dict=True
+		)
+		or frappe._dict()
+	)
 	service = frappe._dict()
 	if master.custom_service_type:
-		service = frappe.db.get_value(
-			"VC Service Type",
-			master.custom_service_type,
-			["service_id", "service_name", "vat_rate"],
-			as_dict=True,
-		) or frappe._dict()
+		service = (
+			frappe.db.get_value(
+				"VC Service Type",
+				master.custom_service_type,
+				["service_id", "service_name", "vat_rate"],
+				as_dict=True,
+			)
+			or frappe._dict()
+		)
 	return frappe._dict(
 		service_type_id=service.service_id,
 		service_type_name=service.service_name,

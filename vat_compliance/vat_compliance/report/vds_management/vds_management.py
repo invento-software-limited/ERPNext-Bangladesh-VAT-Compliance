@@ -1,15 +1,14 @@
 # Copyright (c) 2025, na and contributors
 # For license information, please see license.txt
 
-import json
-
 import frappe
 from frappe import _
 from frappe.utils import flt
 
 from vat_compliance import report_kit as kit
 from vat_compliance.access import scope_report_to_company
-from vat_compliance.vat_rates import is_taxable_line, line_vat, payment_ratio
+from vat_compliance.deposits import make_deposit_entry, mark_vds_groups
+from vat_compliance.deposits import vds_groups as _get_tax_template_groups
 
 
 def execute(filters=None):
@@ -125,7 +124,7 @@ def _get_payment_entry_data(filters):
 			pe.party as supplier_name,
 			pi.status as invoice_status,
 			pe.name as payment_entry_id,
-			pi.grand_total as invoice_amount,
+			pi.base_grand_total as invoice_amount,
 			per.allocated_amount as vds_amount,
 			per.name as child_name,
 			fy.name as fiscal_year
@@ -140,124 +139,10 @@ def _get_payment_entry_data(filters):
 	return frappe.db.sql(query.replace("{where_clause}", where_clause), filters, as_dict=True)
 
 
-def _get_journal_entry_status(child_name):
-	"""Get journal entry status for a payment entry reference."""
-	if not child_name:
-		return None
-
-	je_account = frappe.db.get_all(
-		"Journal Entry Account",
-		filters={"reference_detail_no": ["like", f"%{child_name}%"], "custom_tax_type": "VAT"},
-		fields=["parent"],
-	)
-
-	if not je_account:
-		return None
-
-	if je_account[0] and not je_account[0].get("parent"):
-		return None
-
-	je_doc = frappe.get_doc("Journal Entry", je_account[0]["parent"])
-
-	if je_doc.docstatus == 1:
-		return "DDGT"
-
-	return None
-
-
-def _get_tax_template_groups(invoice_doc, allocated_amount):
-	"""Get grouped tax template details for an invoice based on allocated amount."""
-	if not invoice_doc:
-		return []
-
-	groups = []
-
-	# Calculate total net amount of taxable items (with a template, or VAT from the tax table)
-	taxable_items = [
-		item
-		for item in invoice_doc.items
-		if is_taxable_line(item, invoice_doc.company) and flt(item.get("net_amount")) > 0
-	]
-	allocation_ratio = payment_ratio(invoice_doc, allocated_amount)
-
-	for item in taxable_items:
-		tax_category = item.get("item_tax_template")
-		first_key, tax_rate = line_vat(item, invoice_doc.company)
-		if not first_key:
-			continue
-
-		account_credit = item.get("expense_account")
-		liability_head = first_key
-		item_net_amount = flt(item.get("net_amount", 0))
-
-		# Calculate allocated amount for this item
-		item_allocated_amount = item_net_amount * allocation_ratio
-
-		# Calculate VDS amount
-		vds_amount = item_allocated_amount * (tax_rate / 100)
-
-		if not vds_amount:
-			continue
-
-		# Group allocation
-		existing_group = next(
-			(
-				group
-				for group in groups
-				if group["account_credit"] == account_credit
-				and group["liability_head"] == liability_head
-				and group["section_ref"] == tax_category
-				and group["applied_rate"] == tax_rate
-			),
-			None,
-		)
-
-		if existing_group:
-			existing_group["vds_amount"] += vds_amount
-			existing_group["net_amount"] += item_allocated_amount
-		else:
-			groups.append(
-				{
-					"account_credit": account_credit,
-					"liability_head": liability_head,
-					"vds_amount": vds_amount,
-					"section_ref": tax_category,
-					"applied_rate": tax_rate,
-					"net_amount": item_allocated_amount,
-				}
-			)
-
-	return groups
-
-
 @frappe.whitelist(methods=["POST"])
 def make_journal_entry(rows: str | list):
-	"""Create a Journal Entry for the selected rows."""
-	if isinstance(rows, str):
-		rows = json.loads(rows)
-
-	if not rows:
-		frappe.throw(_("No rows selected"))
-
-	je = frappe.new_doc("Journal Entry")
-	je.voucher_type = "VAT Payment Entry"
-	je.posting_date = frappe.utils.nowdate()
-
-	accounts = []
-
-	for row in rows:
-		accounts.append(
-			{
-				"account": row.get("liability_head"),
-				"debit_in_account_currency": row.get("vds_amount"),
-				"reference_detail_no": row.get("child_name"),
-				"custom_tax_type": "VAT",
-			}
-		)
-
-	je.set("accounts", accounts)
-	je.insert()
-	return je.name
+	"""Create a draft Journal Entry for the selected rows."""
+	return make_deposit_entry(rows)
 
 
 def _process_data_row(row, invoice_docs):
@@ -265,9 +150,7 @@ def _process_data_row(row, invoice_docs):
 	row["check"] = 0
 	row["supplier_name"] = row.get("supplier_name")
 
-	# Set status based on journal entry
-	je_status = _get_journal_entry_status(row.get("child_name"))
-	row["status"] = je_status if je_status else "DNGT"
+	row["status"] = "DNGT"
 
 	# Format payment month
 	if row.get("payment_date"):
@@ -283,6 +166,7 @@ def _process_data_row(row, invoice_docs):
 
 	if not groups or len(groups) == 0:
 		return []
+	mark_vds_groups(row.get("child_name"), groups)
 
 	# Single group - update main row
 	if len(groups) == 1:
@@ -303,7 +187,8 @@ def _process_data_row(row, invoice_docs):
 			"check": 0,
 			"payment_date": None,
 			"payment_month": None,
-			"status": "",
+			"status": group["status"],
+			"deposit_key": group["deposit_key"],
 			"fiscal_year": None,
 			"invoice_id": "",
 			"invoice_status": "",
@@ -344,8 +229,8 @@ def _filter_by_status(data, status_filter):
 				children.append(data[j])
 				j += 1
 
-			# Include parent and children if status matches
-			if parent_row["status"] == status_filter:
+			# Each tax group has its own status; keep a payment if any group matches.
+			if status_filter in (r["status"] for r in (parent_row, *children)):
 				filtered_result.append(parent_row)
 				filtered_result.extend(children)
 
@@ -388,25 +273,39 @@ def get_data(filters):
 
 
 def get_meta(filters, data):
-	"""Header cards and charts. Indented rows split one payment across tax groups;
-	they carry amount but take the date, supplier and status of the row above."""
+	"""Header cards and charts. Indented rows split one payment across tax groups; they
+	have their own amount and status but take the date and supplier of the row above."""
 	filters = frappe._dict(filters or {})
 	rows, parent = [], {}
 	for r in data:
 		if not r.get("indent"):
 			parent = r
-		rows.append({"date": parent.get("payment_date"), "supplier": parent.get("supplier_name"),
-			"status": parent.get("status"), "amount": flt(r.get("vds_amount"))})
-	amount = lambda r: r["amount"]
+		status = r.get("status") or parent.get("status")
+		rows.append(
+			{
+				"date": parent.get("payment_date"),
+				"supplier": parent.get("supplier_name"),
+				"status": status,
+				"amount": flt(r.get("vds_amount")),
+				# A payment counts once per status, not once per tax group.
+				"counted": not r.get("indent") or status != parent.get("status"),
+			}
+		)
+
+	def amount(r):
+		return r["amount"]
+
 	deposited = [r for r in rows if r["status"] == "DDGT"]
 	return kit.meta(
 		filters,
 		deducted=kit.total(rows, amount),
-		payments=len({r.get("payment_entry_id") for r in data if not r.get("indent") and r.get("payment_entry_id")}),
+		payments=len(
+			{r.get("payment_entry_id") for r in data if not r.get("indent") and r.get("payment_entry_id")}
+		),
 		pending=kit.total([r for r in rows if r["status"] == "DNGT"], amount),
-		pending_count=len([r for r in data if not r.get("indent") and r.get("status") == "DNGT"]),
+		pending_count=len([r for r in rows if r["status"] == "DNGT" and r["counted"]]),
 		deposited=kit.total(deposited, amount),
-		deposited_count=len([r for r in data if not r.get("indent") and r.get("status") == "DDGT"]),
+		deposited_count=len([r for r in deposited if r["counted"]]),
 		suppliers=kit.group(rows, lambda r: r["supplier"], amount),
 		trend=kit.monthly(rows, lambda r: r["date"], amount, filters),
 		trend_deposited=kit.monthly(deposited, lambda r: r["date"], amount, filters),

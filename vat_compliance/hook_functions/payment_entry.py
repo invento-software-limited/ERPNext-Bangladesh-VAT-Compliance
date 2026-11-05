@@ -4,7 +4,7 @@ import frappe
 from erpnext.accounts.doctype.payment_entry.payment_entry import PaymentEntry
 from frappe.utils import flt
 
-from vat_compliance.vat_rates import is_taxable_line, line_tax_map, payment_ratio
+from vat_compliance.vat_rates import is_taxable_line, line_net, line_tax_map, payment_ratio
 
 
 def get_cost_center(doc):
@@ -41,11 +41,35 @@ def sync_vds_deductions(doc, method=None):
 	deductions = doc.get("deductions") or []
 	kept = [d for d in deductions if not d.get("custom_reference_doctype")]
 	rows = get_vds_rows(doc)
+	warn_vds_not_applicable(doc)
 	if not rows and len(kept) == len(deductions):
 		return
 	doc.set("deductions", kept)
 	for row in rows:
 		doc.append("deductions", row)
+
+
+def warn_vds_not_applicable(doc):
+	"""The law on these services is the tax lead's call, so this warns and does not change the
+	amount. Skipping the VDS here would also hide money already withheld from the deposit report."""
+	for ref in doc.get("references") or []:
+		if ref.get("custom_vdsvcs") != "Withheld" or ref.reference_doctype != "Purchase Invoice":
+			continue
+		templates = frappe.get_all(
+			"Purchase Invoice Item",
+			filters={"parent": ref.reference_name, "item_tax_template": ["is", "set"]},
+			pluck="item_tax_template",
+			distinct=True,
+		)
+		for template in templates:
+			if not frappe.get_cached_value("Item Tax Template", template, "custom_deduction_applicability"):
+				frappe.msgprint(
+					frappe._("{0}: VDS is withheld, but {1} is marked as not subject to deduction.").format(
+						ref.reference_name, template
+					),
+					indicator="orange",
+					alert=True,
+				)
 
 
 def get_vds_rows(doc, check_read=False) -> list:
@@ -71,9 +95,9 @@ def _invoice_vds_rows(doc, ref, inv_doc):
 	allocation_ratio = payment_ratio(inv_doc, ref.allocated_amount)
 	rows = []
 	for item in inv_doc.get("items", []):
-		if flt(item.get("net_amount")) <= 0 or not is_taxable_line(item, inv_doc.company):
+		if line_net(item) <= 0 or not is_taxable_line(item, inv_doc.company):
 			continue
-		allocated_amount = flt(item.get("net_amount")) * allocation_ratio
+		allocated_amount = line_net(item) * allocation_ratio
 		for account, rate in line_tax_map(item, inv_doc.company).items():
 			vat_amount = allocated_amount * flt(rate) / 100
 			rows.append(

@@ -14,7 +14,9 @@ from vat_compliance.hook_functions import payment_entry
 from vat_compliance.vat_compliance.report.purchase_sales_ledger_for_trader import (
 	purchase_sales_ledger_for_trader as trader,
 )
-from vat_compliance.vat_compliance.report.sales_register___mushak_6_2 import sales_register___mushak_6_2 as m62
+from vat_compliance.vat_compliance.report.sales_register___mushak_6_2 import (
+	sales_register___mushak_6_2 as m62,
+)
 from vat_compliance.vat_compliance.report.sales_vat_management import sales_vat_management as svm
 from vat_compliance.vat_compliance.report.vds_management import vds_management as vds
 
@@ -23,8 +25,15 @@ OTHER = "AIT - T"
 
 
 def _line(net, rates, template=None, **kw):
-	return frappe._dict(net_amount=net, item_tax_rate=frappe.as_json(rates), item_tax_template=template,
-		item_code="ITEM", item_name="Item", expense_account="Expense - T", **kw)
+	return frappe._dict(
+		net_amount=net,
+		item_tax_rate=frappe.as_json(rates),
+		item_tax_template=template,
+		item_code="ITEM",
+		item_name="Item",
+		expense_account="Expense - T",
+		**kw,
+	)
 
 
 class _Doc:
@@ -47,7 +56,9 @@ class TestVatAccounts(unittest.TestCase):
 
 	def test_resolved_once_per_request_and_per_company(self):
 		frappe.local.vat_compliance_vat_accounts = None
-		with patch.object(vat_rates, "_resolve_vat_accounts", side_effect=lambda c: [f"VAT - {c}"]) as resolve:
+		with patch.object(
+			vat_rates, "_resolve_vat_accounts", side_effect=lambda c: [f"VAT - {c}"]
+		) as resolve:
 			self.assertEqual(vat_rates.vat_accounts("A"), ["VAT - A"])
 			self.assertEqual(vat_rates.vat_accounts("A"), ["VAT - A"])
 			self.assertEqual(vat_rates.vat_accounts("B"), ["VAT - B"])
@@ -79,7 +90,9 @@ class TestLineVat(unittest.TestCase):
 
 	def test_payment_tax_map(self):
 		self.assertEqual(vat_rates.line_tax_map(_line(100, {OTHER: 5, VAT: 15}), "T"), {VAT: 15})
-		self.assertEqual(vat_rates.line_tax_map(_line(100, {OTHER: 5, VAT: 15}, template="X"), "T"), {OTHER: 5, VAT: 15})
+		self.assertEqual(
+			vat_rates.line_tax_map(_line(100, {OTHER: 5, VAT: 15}, template="X"), "T"), {OTHER: 5, VAT: 15}
+		)
 
 
 @patch.object(vat_rates, "vat_accounts", _vat_accounts)
@@ -106,16 +119,34 @@ class TestReports(unittest.TestCase):
 		groups = vds._get_tax_template_groups(inv, 1075)
 		self.assertEqual(len(groups), 1)
 		self.assertEqual(groups[0]["liability_head"], VAT)
-		self.assertAlmostEqual(groups[0]["vds_amount"], 75)  # half the 2,150 gross, so half of 1,000 taxable × 15%
+		self.assertAlmostEqual(
+			groups[0]["vds_amount"], 75
+		)  # half the 2,150 gross, so half of 1,000 taxable x 15%
 
 
 @patch.object(vat_rates, "vat_accounts", _vat_accounts)
 class TestPaymentVds(unittest.TestCase):
 	def test_withheld_payment_deducts_vat_on_a_line_without_template(self):
-		inv = _Doc(doctype="Purchase Invoice", name="PI-1", company="T", cost_center="Main - T",
-			grand_total=1150, items=[_line(1000, {VAT: 15, OTHER: 5})])
-		pe = _Doc(payment_type="Pay", company="T", references=[frappe._dict(
-			reference_doctype="Purchase Invoice", reference_name="PI-1", custom_vdsvcs="Withheld", allocated_amount=1150)])
+		inv = _Doc(
+			doctype="Purchase Invoice",
+			name="PI-1",
+			company="T",
+			cost_center="Main - T",
+			grand_total=1150,
+			items=[_line(1000, {VAT: 15, OTHER: 5})],
+		)
+		pe = _Doc(
+			payment_type="Pay",
+			company="T",
+			references=[
+				frappe._dict(
+					reference_doctype="Purchase Invoice",
+					reference_name="PI-1",
+					custom_vdsvcs="Withheld",
+					allocated_amount=1150,
+				)
+			],
+		)
 		with patch.object(payment_entry.frappe, "get_doc", return_value=inv):
 			rows = payment_entry.get_vds_rows(pe)
 		self.assertEqual([(r["account"], r["amount"]) for r in rows], [(VAT, -150)])

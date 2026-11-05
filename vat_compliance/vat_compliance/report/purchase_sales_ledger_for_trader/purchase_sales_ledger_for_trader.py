@@ -7,7 +7,7 @@ from frappe.utils import flt, getdate
 
 from vat_compliance import report_kit as kit
 from vat_compliance.access import scope_report_to_company
-from vat_compliance.vat_rates import fallback_vat
+from vat_compliance.vat_rates import stored_rate
 
 
 def execute(filters=None):
@@ -141,8 +141,8 @@ def get_purchase_data(filters):
 			pii.item_name as item_description,
 			pii.qty as purchase_qty,
 			pii.rate,
-			pii.amount as purchase_value,
-			pii.net_amount as taxable_value,
+			pii.base_amount as purchase_value,
+			pii.base_net_amount as taxable_value,
 			pii.item_tax_template,
 			pii.item_tax_rate,
 			pi.name as purchase_challan_no,
@@ -197,8 +197,8 @@ def get_sales_data(filters):
 			sii.item_name as item_description,
 			sii.qty,
 			sii.rate,
-			sii.amount as taxable_value,
-			sii.net_amount,
+			sii.base_amount as taxable_value,
+			sii.base_net_amount as net_amount,
 			sii.item_tax_template,
 			sii.item_tax_rate,
 			it.is_stock_item,
@@ -467,30 +467,8 @@ def get_sales_conditions(filters):
 
 
 def calculate_purchase_vat(item_tax_template, taxable_value, company, item_tax_rate=None):
-	"""Calculate VAT for purchase items: the template's rate, or the line's VAT-account
-	rate when it has no template (VAT added through the invoice's tax table)."""
-	if not taxable_value:
-		return 0
-	if not item_tax_template:
-		return flt(taxable_value) * fallback_vat(item_tax_rate, company)[1] / 100
-
-	try:
-		tax_rate = frappe.db.sql(
-			"""
-								 SELECT tax_rate
-								 FROM `tabItem Tax Template Detail`
-								 WHERE parent = %s
-								   AND parenttype = 'Item Tax Template'
-								 """,
-			item_tax_template,
-		)
-
-		if tax_rate and tax_rate[0][0]:
-			return taxable_value * (tax_rate[0][0] / 100)
-	except Exception:
-		pass
-
-	return 0
+	"""VAT at the rate saved on the invoice line."""
+	return flt(taxable_value) * stored_rate(item_tax_template, item_tax_rate, company) / 100
 
 
 def calculate_sales_vat(item_tax_template, taxable_value, company, item_tax_rate=None):
@@ -522,9 +500,16 @@ def get_meta(filters, data):
 	filters = frappe._dict(filters or {})
 	purchases = [r for r in data if r.get("purchase_challan_no")]
 	sales = [r for r in data if r.get("sales_invoice_no")]
-	taxable = lambda r: r.get("taxable_value")
-	vat = lambda r: r.get("vat_amount")
-	day = lambda r: r.get("posting_date")
+
+	def taxable(r):
+		return r.get("taxable_value")
+
+	def vat(r):
+		return r.get("vat_amount")
+
+	def day(r):
+		return r.get("posting_date")
+
 	output, inp = kit.monthly(sales, day, vat, filters), kit.monthly(purchases, day, vat, filters)
 	return kit.meta(
 		filters,
@@ -538,5 +523,8 @@ def get_meta(filters, data):
 		trend_sales=kit.monthly(sales, day, taxable, filters),
 		trend_output=output,
 		trend_input=inp,
-		trend_net={**output, "values": [o - i for o, i in zip(output["values"], inp["values"])]},
+		trend_net={
+			**output,
+			"values": [o - i for o, i in zip(output["values"], inp["values"], strict=False)],
+		},
 	)

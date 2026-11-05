@@ -8,7 +8,7 @@ app_license = "mit"
 # Apps
 # ------------------
 
-# required_apps = []
+required_apps = ["erpnext"]
 
 # Each item in the list will be shown as an app in the apps page
 add_to_apps_screen = [
@@ -140,8 +140,12 @@ override_doctype_class = {"Payment Entry": "vat_compliance.hook_functions.paymen
 
 doc_events = {
 	"POS Invoice": {"on_submit": "vat_compliance.vat_challan.hook_functions.vat_invoice.create_vat_invoice"},
-	"Sales Invoice": {"on_submit": "vat_compliance.vat_challan.hook_functions.vat_invoice.create_vat_invoice"},
+	"Sales Invoice": {
+		"on_submit": "vat_compliance.vat_challan.hook_functions.vat_invoice.create_vat_invoice"
+	},
 	"Payment Entry": {"before_validate": "vat_compliance.hook_functions.payment_entry.sync_vds_deductions"},
+	"Customer": {"validate": "vat_compliance.hook_functions.party_verification.validate_verification"},
+	"Supplier": {"validate": "vat_compliance.hook_functions.party_verification.validate_verification"},
 	"Purchase Invoice": {
 		"validate": "vat_compliance.hook_functions.purchase_invoice.validate_mushak_63",
 		"before_update_after_submit": "vat_compliance.hook_functions.purchase_invoice.validate_mushak_63",

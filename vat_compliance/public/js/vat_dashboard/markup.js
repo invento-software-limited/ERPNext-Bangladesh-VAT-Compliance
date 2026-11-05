@@ -5,7 +5,12 @@ frappe.provide("vat_compliance.page");
 vat_compliance.page.HTML = () => {
 	const P = `<i class="sc p" title="${__("Moves with the period")}"></i>`;
 	const T = `<i class="sc t" title="${__("As of today")}"></i>`;
-	const presets = [["tm", __("This month")], ["lm", __("Last month")], ["fy", __("Fiscal year")], ["1y", __("12 months")]];
+	const presets = [
+		["tm", __("This month")],
+		["lm", __("Last month")],
+		["fy", __("Fiscal year")],
+		["1y", __("12 months")],
+	];
 	return `
 <div class="cd">
 <div class="hd">
@@ -15,18 +20,28 @@ vat_compliance.page.HTML = () => {
     <div class="hd-meta" data-field="meta">—</div>
   </div>
   <div class="hd-r">
-    <div><div class="k">${T}${__("VAT balance")}</div><div class="v" data-field="hd_balance">—</div></div>
-    <div><div class="k">${P}${__("Net VAT")} · <span data-field="hd_period">—</span></div><div class="v" data-field="hd_net">—</div></div>
+    <div><div class="k">${T}${__(
+		"VAT balance"
+	)}</div><div class="v" data-field="hd_balance">—</div></div>
+    <div><div class="k">${P}${__(
+		"Net VAT"
+	)} · <span data-field="hd_period">—</span></div><div class="v" data-field="hd_net">—</div></div>
   </div>
 </div>
 
 <div class="fc">
-  <div class="fc-r1"><select class="fsel" data-f="company" aria-label="${__("Company")}"></select></div>
+  <div class="fc-r1"><select class="fsel" data-f="company" aria-label="${__(
+		"Company"
+  )}"></select></div>
   <div class="fc-r2">
-    <span class="lg"><span><i class="sc p"></i>${__("moves with period")}</span><span><i class="sc t"></i>${__("as of today")}</span></span>
+    <span class="lg"><span><i class="sc p"></i>${__(
+		"moves with period"
+	)}</span><span><i class="sc t"></i>${__("as of today")}</span></span>
     <div class="per" role="group" aria-label="${__("Period")}">
       ${presets.map(([p, l]) => `<button type="button" data-p="${p}">${l}</button>`).join("")}
-      <button type="button" class="cu" data-p="custom" aria-haspopup="dialog">${__("Custom")}</button>
+      <button type="button" class="cu" data-p="custom" aria-haspopup="dialog">${__(
+			"Custom"
+		)}</button>
     </div>
   </div>
 </div>
@@ -38,7 +53,12 @@ vat_compliance.page.HTML = () => {
 vat_compliance.page.BODY = () => {
 	const P = `<i class="sc p"></i>`;
 	const T = `<i class="sc t"></i>`;
-	const stage = (bg, key, label, drill) => `<div class="fl-c" style="--bg:${bg}"><div class="fl-k">${label}</div>
+	const stage = (
+		bg,
+		key,
+		label,
+		drill
+	) => `<div class="fl-c" style="--bg:${bg}"><div class="fl-k">${label}</div>
 		<div class="fl-v"><a class="lk" data-field="st_${key}" data-drill="${drill}">—</a></div><div class="fl-s" data-field="st_${key}_s">—</div></div>`;
 	return `
 <div class="mx surf">
@@ -68,7 +88,9 @@ vat_compliance.page.BODY = () => {
   </div>
 </div>
 
-<div class="sec">${P}${__("Treasury status · Sales VAT & VDS Management rules")}<span class="sub" data-field="status_sub">—</span></div>
+<div class="sec">${P}${__(
+		"Treasury status · Sales VAT & VDS Management rules"
+	)}<span class="sub" data-field="status_sub">—</span></div>
 <div class="fl">
   ${stage("#22405e", "ipnr", __("Invoiced, unpaid"), "s_IPNR")}
   ${stage("#17505d", "collected", __("Collected"), "s_Collected")}
@@ -78,25 +100,43 @@ vat_compliance.page.BODY = () => {
 </div>
 
 <div class="surf card"><div class="two">
-  <div><div class="hrow"><div class="h">${__("Output vs input VAT")}</div><div class="hs" data-field="combo_sub">—</div></div>
+  <div><div class="hrow"><div class="h">${__(
+		"Output vs input VAT"
+  )}</div><div class="hs" data-field="combo_sub">—</div></div>
     <div data-slot="combo"></div>
-    <div class="lgd"><span><i style="background:#097C52"></i>${__("Output VAT")}</span><span><i style="background:#a3552f;height:2px"></i>${__("Input VAT")}</span></div></div>
-  <div><div class="hrow"><div class="h">${__("VAT postings by source")}</div><div class="hs" data-field="mix_sub">—</div></div>
+    <div class="lgd"><span><i style="background:#097C52"></i>${__(
+		"Output VAT"
+	)}</span><span><i style="background:#a3552f;height:2px"></i>${__(
+		"Input VAT"
+	)}</span></div></div>
+  <div><div class="hrow"><div class="h">${__(
+		"VAT postings by source"
+  )}</div><div class="hs" data-field="mix_sub">—</div></div>
     <div data-slot="mix"></div></div>
 </div></div>
 
 <div class="surf card"><div class="two">
-  <div><div class="hrow"><div class="h">${__("Top customers by output VAT")}</div><div class="hs" data-field="cust_sub">—</div></div>
+  <div><div class="hrow"><div class="h">${__(
+		"Top customers by output VAT"
+  )}</div><div class="hs" data-field="cust_sub">—</div></div>
     <div class="rk" data-slot="customers"></div></div>
-  <div><div class="hrow"><div class="h">${__("Top suppliers by input VAT")}</div><div class="hs" data-field="supp_sub">—</div></div>
+  <div><div class="hrow"><div class="h">${__(
+		"Top suppliers by input VAT"
+  )}</div><div class="hs" data-field="supp_sub">—</div></div>
     <div class="rk" data-slot="suppliers"></div></div>
 </div></div>
 
 <div class="surf card">
-  <div class="hrow"><div class="h">${__("VAT postings")}</div><div class="hs" data-field="work_sub">—</div></div>
+  <div class="hrow"><div class="h">${__(
+		"VAT postings"
+  )}</div><div class="hs" data-field="work_sub">—</div></div>
   <div class="tb-wrap"><table class="tb">
-    <thead><tr><th>${__("Date")}</th><th>${__("Document")}</th><th>${__("Source")}</th><th>${__("Party")}</th>
-      <th class="n">${__("Net value")}</th><th class="n">${__("VAT")}</th><th>${__("Item tax template")}</th></tr></thead>
+    <thead><tr><th>${__("Date")}</th><th>${__("Document")}</th><th>${__("Source")}</th><th>${__(
+		"Party"
+	)}</th>
+      <th class="n">${__("Net value")}</th><th class="n">${__("VAT")}</th><th>${__(
+		"Item tax template"
+	)}</th></tr></thead>
     <tbody data-slot="work"></tbody>
   </table></div>
   <div class="more" data-slot="work_more"></div>

@@ -4,25 +4,32 @@
 """VAT as posted to the ledger: which accounts count as VAT, and what each posting is.
 
 Every GL row on a VAT account falls in exactly one source, so
-balance = opening + output − input − deposits + adjustments, always.
+balance = opening + output - input - deposits + adjustments, always.
 """
 
 import frappe
-from frappe.utils import flt, getdate
+from frappe.utils import add_days, flt, getdate
 
-from vat_compliance.vat_rates import vat_accounts  # noqa: F401  the same accounts the VAT reports use
+from vat_compliance.vat_rates import vat_accounts
 
 SOURCES = ("output", "input", "deposit", "opening", "adjustment")
 OUTPUT_VOUCHERS = ("Sales Invoice", "POS Invoice")
 
 
-def gl_rows(company, accounts, upto):
-	"""Non-cancelled VAT postings up to `upto`, through the permission-aware list API."""
+def gl_rows(company, accounts, upto, since=None):
+	"""Non-cancelled VAT postings up to `upto`, through the permission-aware list API. Postings
+	before `since` are summed into one row, because only the balance needs them."""
 	if not accounts:
 		return []
-	rows = frappe.get_list("GL Entry", filters={"company": company, "account": ["in", accounts], "is_cancelled": 0,
-		"posting_date": ["<=", upto]}, fields=["posting_date", "voucher_type", "voucher_no", "debit", "credit"],
-		order_by="posting_date asc, creation asc", limit_page_length=0)
+	scope = {"company": company, "account": ["in", accounts], "is_cancelled": 0}
+	dates = ["between", [since, upto]] if since else ["<=", upto]
+	rows = _carried_forward(scope, since) + frappe.get_list(
+		"GL Entry",
+		filters={**scope, "posting_date": dates},
+		fields=["posting_date", "voucher_type", "voucher_no", "debit", "credit"],
+		order_by="posting_date asc, creation asc",
+		limit_page_length=0,
+	)
 	je_types = _journal_types({r.voucher_no for r in rows if r.voucher_type == "Journal Entry"})
 	for r in rows:
 		r.posting_date = getdate(r.posting_date)
@@ -31,11 +38,37 @@ def gl_rows(company, accounts, upto):
 	return rows
 
 
+def _carried_forward(scope, since):
+	if not since:
+		return []
+	totals = frappe.get_list(
+		"GL Entry",
+		filters={**scope, "posting_date": ["<", since]},
+		fields=[{"SUM": "debit", "as": "debit"}, {"SUM": "credit", "as": "credit"}],
+		limit_page_length=0,
+	)
+	debit, credit = (flt(totals[0].debit), flt(totals[0].credit)) if totals else (0, 0)
+	if not (debit or credit):
+		return []
+	return [
+		frappe._dict(
+			posting_date=add_days(since, -1), voucher_type="", voucher_no="", debit=debit, credit=credit
+		)
+	]
+
+
 def _journal_types(names):
 	if not names or not frappe.has_permission("Journal Entry", "read"):
 		return {}
-	return dict(frappe.get_list("Journal Entry", filters={"name": ["in", list(names)]},
-		fields=["name", "voucher_type"], as_list=True, limit_page_length=0))
+	return dict(
+		frappe.get_list(
+			"Journal Entry",
+			filters={"name": ["in", list(names)]},
+			fields=["name", "voucher_type"],
+			as_list=True,
+			limit_page_length=0,
+		)
+	)
 
 
 def _source(row, je_type):
