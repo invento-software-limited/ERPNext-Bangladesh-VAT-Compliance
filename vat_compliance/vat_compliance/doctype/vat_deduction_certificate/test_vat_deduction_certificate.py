@@ -5,7 +5,6 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 import frappe
-from frappe.tests.utils import FrappeTestCase
 
 from vat_compliance.vat_compliance.doctype.vat_deduction_certificate.vat_deduction_certificate import (
 	generate_mushak_6_6,
@@ -14,7 +13,7 @@ from vat_compliance.vat_compliance.doctype.vat_deduction_certificate.vat_deducti
 MODULE = "vat_compliance.vat_compliance.doctype.vat_deduction_certificate.vat_deduction_certificate"
 
 
-class TestVATDeductionCertificate(FrappeTestCase):
+class TestVATDeductionCertificate(unittest.TestCase):
 	def tearDown(self):
 		frappe.set_user("Administrator")
 

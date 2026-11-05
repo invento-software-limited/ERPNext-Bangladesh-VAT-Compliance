@@ -9,6 +9,7 @@ import frappe
 from vat_compliance import deposits, vat_rates
 from vat_compliance.dashboard import vat_status
 from vat_compliance.hook_functions import party_verification as party
+from vat_compliance.test_vat_rates import _Doc
 from vat_compliance.vat_compliance.page.vat_payment import vat_payment
 from vat_compliance.vat_compliance.report.mushak_6_3.mushak_6_3 import build_manifest
 from vat_compliance.vat_compliance.report.vds_management import vds_management as vds
@@ -76,7 +77,7 @@ class TestGroupStatus(unittest.TestCase):
 		)
 
 	def test_multi_rate_payment_splits_into_rows_with_their_own_status(self):
-		invoice = D(
+		invoice = _Doc(
 			company="T",
 			grand_total=120,
 			items=[
