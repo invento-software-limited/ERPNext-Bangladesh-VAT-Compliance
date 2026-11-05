@@ -15,6 +15,7 @@ from frappe.utils.print_format import download_pdf
 
 from vat_compliance.access import require_doc
 from vat_compliance.vat_compliance.report.vds_management.vds_management import get_data
+from vat_compliance.vat_rates import add_invoice_vat
 
 # Written only by generate_mushak_6_6. Code fields are not sanitized on save, and both end up
 # rendered as HTML, so a value sent by a client must never be kept.
@@ -170,6 +171,13 @@ class VATDeductionCertificate(Document):
 
 	def _withheld_row(self, sl_no, row, supplier):
 		invoice = frappe.get_doc("Purchase Invoice", row.get("invoice_id"))
+		vat = frappe._dict(
+			name=invoice.name,
+			company=invoice.company,
+			total_taxes_and_charges=invoice.total_taxes_and_charges,
+			base_total_taxes_and_charges=invoice.base_total_taxes_and_charges,
+		)
+		add_invoice_vat("Purchase Invoice", [vat])
 		return {
 			"sl_no": sl_no,
 			"supplier_name": escape_html(supplier.supplier_name),
@@ -179,7 +187,7 @@ class VATDeductionCertificate(Document):
 			if invoice.get("posting_date")
 			else None,
 			"total_value_of_supply": row.get("invoice_amount"),
-			"amount_of_vat": invoice.get("total_taxes_and_charges"),
+			"amount_of_vat": vat.base_vat_amount,
 			"amount_of_vat_withheld": flt(row.get("vds_amount")),
 		}
 

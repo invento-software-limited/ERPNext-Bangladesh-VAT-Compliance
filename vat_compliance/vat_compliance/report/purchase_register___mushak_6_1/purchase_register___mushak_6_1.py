@@ -8,7 +8,7 @@ from frappe.utils import flt
 from vat_compliance import report_kit as kit
 from vat_compliance.access import scope_report_to_company
 from vat_compliance.stock_movements import RunningStock
-from vat_compliance.vat_rates import line_vat
+from vat_compliance.vat_rates import line_net, line_vat
 
 
 def execute(filters=None):
@@ -185,7 +185,7 @@ def get_data(filters):
 		# rate only, so another tax on the line is never reported as VAT.
 		tax_rate = line_vat(row, filters.get("company"))[1]
 
-		vat_amount = row.get("net_amount", 0) * (tax_rate / 100)
+		vat_amount = line_net(row) * (tax_rate / 100)
 
 		# Get supplier BIN/NID
 		supplier = row.get("supplier")
