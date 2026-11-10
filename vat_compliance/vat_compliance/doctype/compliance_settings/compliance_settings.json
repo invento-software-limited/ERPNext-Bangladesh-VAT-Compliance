@@ -6,17 +6,12 @@
     "engine": "InnoDB",
     "field_order": [
         "tax_setup_section",
-        "default_account",
-        "column_break_jxjt",
+        "tax_template_guidelines",
         "company",
+        "column_break_jxjt",
+        "default_account",
         "section_break_zkwm",
-        "tax_template_html",
-        "api_configuration_tab",
-        "api_config_section",
-        "upstream_proxy",
-        "enable_proxy",
-        "column_break_rdcn",
-        "request_timeout"
+        "tax_template_html"
     ],
     "fields": [
         {
@@ -26,12 +21,10 @@
             "label": "Tax Template Setup"
         },
         {
-            "fieldname": "default_account",
-            "fieldtype": "Link",
-            "in_list_view": 1,
-            "label": "Default VAT Account",
-            "options": "Account",
-            "reqd": 1
+            "fieldname": "tax_template_guidelines",
+            "fieldtype": "HTML",
+            "label": "Guidelines",
+            "options": "<div class=\"tax-template-guideline-box\" style=\"background: var(--bg-light-gray, #f8f9fa); border-left: 4px solid var(--primary, #1b84ff); padding: 12px 16px; margin-bottom: 16px; border-radius: 4px;\">\n<div style=\"font-weight: 600; font-size: 13px; margin-bottom: 6px; color: var(--text-color, #1f272e);\">Tax Template Setup Guidelines</div>\n<ol style=\"margin: 0; padding-left: 20px; font-size: 12px; color: var(--text-muted, #525252); line-height: 1.6;\">\n<li><b>Select Company:</b> Choose your company to associate with the created Item Tax Templates.</li>\n<li><b>Select Default VAT Account:</b> Choose the designated Tax Account (e.g. VAT / Output VAT under Current Liabilities).</li>\n<li><b>Review Statutory Rates:</b> The table below displays standard Bangladesh VAT service codes, rates, and deduction rules according to NBR SROs.</li>\n<li><b>Select &amp; Create:</b> Check the boxes for the templates your business requires and click <b>Create Selected Templates</b>.</li>\n<li><b>Assign to Items:</b> Link the generated Item Tax Templates to items in <b>Item Master &gt; Item Tax</b> to automate VAT and VDS calculation on invoices.</li>\n</ol>\n</div>"
         },
         {
             "fieldname": "company",
@@ -42,58 +35,31 @@
             "reqd": 1
         },
         {
-            "depends_on": "eval:doc.default_account && doc.company",
-            "fieldname": "tax_template_html",
-            "fieldtype": "HTML",
-            "label": "Tax Templates"
-        },
-        {
-            "fieldname": "api_config_section",
-            "fieldtype": "Section Break"
-        },
-        {
-            "default": "socks5://115.127.110.98:1080",
-            "fieldname": "upstream_proxy",
-            "fieldtype": "Data",
-            "label": "Upstream Proxy",
-            "read_only": 1,
-            "read_only_depends_on": "eval:!frappe.user.has_role(\"System Manager\")"
-        },
-        {
-            "default": "1",
-            "fieldname": "enable_proxy",
-            "fieldtype": "Check",
-            "label": "Enable Proxy"
-        },
-        {
-            "default": "30",
-            "fieldname": "request_timeout",
-            "fieldtype": "Int",
-            "label": "Request Timeout",
-            "read_only": 1,
-            "read_only_depends_on": "eval:!frappe.user.has_role(\"System Manager\")"
-        },
-        {
             "fieldname": "column_break_jxjt",
             "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "default_account",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Default VAT Account",
+            "options": "Account",
+            "reqd": 1
         },
         {
             "fieldname": "section_break_zkwm",
             "fieldtype": "Section Break"
         },
         {
-            "fieldname": "api_configuration_tab",
-            "fieldtype": "Tab Break",
-            "label": "API Configuration"
-        },
-        {
-            "fieldname": "column_break_rdcn",
-            "fieldtype": "Column Break"
+            "depends_on": "eval:doc.default_account && doc.company",
+            "fieldname": "tax_template_html",
+            "fieldtype": "HTML",
+            "label": "Tax Templates"
         }
     ],
     "issingle": 1,
     "links": [],
-    "modified": "2025-12-08 12:00:22.116977",
+    "modified": "2026-11-10 18:00:00.000000",
     "modified_by": "Administrator",
     "module": "Vat Compliance",
     "name": "Compliance Settings",

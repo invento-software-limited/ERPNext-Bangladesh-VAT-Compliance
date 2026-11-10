@@ -12,10 +12,30 @@ frappe.ui.form.on("Compliance Settings", {
 	},
 
 	refresh: function (frm) {
+		frm.trigger("render_guidelines");
 		frm.trigger("render_tax_template_table");
 		frm.add_custom_button(__("Create Selected Templates"), () => {
 			frm.trigger("create_templates");
 		});
+	},
+
+	render_guidelines: function (frm) {
+		if (frm.fields_dict.tax_template_guidelines) {
+			frm.fields_dict.tax_template_guidelines.$wrapper.html(`
+				<div class="tax-template-guideline-box" style="background: var(--bg-light-gray, #f8f9fa); border-left: 4px solid var(--primary, #1b84ff); padding: 12px 16px; margin-bottom: 16px; border-radius: 4px;">
+					<div style="font-weight: 600; font-size: 13px; margin-bottom: 6px; color: var(--text-color, #1f272e);">
+						Tax Template Setup Guidelines
+					</div>
+					<ol style="margin: 0; padding-left: 20px; font-size: 12px; color: var(--text-muted, #525252); line-height: 1.6;">
+						<li><b>Select Company:</b> Choose your company to associate with the created Item Tax Templates.</li>
+						<li><b>Select Default VAT Account:</b> Choose the designated Tax Account (e.g. VAT / Output VAT under Current Liabilities).</li>
+						<li><b>Review Statutory Rates:</b> The table below displays standard Bangladesh VAT service codes, rates, and deduction rules according to NBR SROs.</li>
+						<li><b>Select &amp; Create:</b> Check the boxes for the templates your business requires and click <b>Create Selected Templates</b>.</li>
+						<li><b>Assign to Items:</b> Link the generated Item Tax Templates to items in <b>Item Master &gt; Item Tax</b> to automate VAT and VDS calculation on invoices.</li>
+					</ol>
+				</div>
+			`);
+		}
 	},
 
 	company: function (frm) {

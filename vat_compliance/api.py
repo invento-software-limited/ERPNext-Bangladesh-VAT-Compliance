@@ -31,15 +31,15 @@ def _get_acs_session():
 		}
 	)
 	settings = frappe.get_single("Compliance Settings")
-	if settings.enable_proxy:
-		proxy = settings.upstream_proxy
+	if getattr(settings, "enable_proxy", None):
+		proxy = getattr(settings, "upstream_proxy", None)
 		if proxy:
 			session.proxies = {
 				"http": proxy,
 				"https": proxy,
 			}
 
-	timeout = settings.request_timeout or 30
+	timeout = getattr(settings, "request_timeout", 30) or 30
 	response = session.get(csrf_url, timeout=timeout)
 	response.raise_for_status()
 
@@ -67,7 +67,7 @@ def validate_bin(bin_no: str):
 	try:
 		session = _get_acs_session()
 		settings = frappe.get_single("Compliance Settings")
-		timeout = settings.request_timeout or 30
+		timeout = getattr(settings, "request_timeout", 30) or 30
 
 		params = {"binNo": bin_no}
 
@@ -98,7 +98,7 @@ def validate_tin(tin_no: str):
 	try:
 		session = _get_acs_session()
 		settings = frappe.get_single("Compliance Settings")
-		timeout = settings.request_timeout or 30
+		timeout = getattr(settings, "request_timeout", 30) or 30
 
 		params = {"tinNo": tin_no}
 
